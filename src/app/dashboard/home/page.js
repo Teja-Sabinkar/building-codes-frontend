@@ -387,6 +387,20 @@ export default function HomePage() {
     return null;
   }
 
+  // Debug: Log what we're passing to RegulationPanel
+  if (currentConversation?.messages) {
+    console.log('🔍 DEBUGGING: Messages being passed to MessageList:');
+    currentConversation.messages.forEach((msg, index) => {
+      console.log(`Message ${index}:`, {
+        role: msg.role,
+        hasRegulation: !!msg.regulation,
+        regulationKeys: msg.regulation ? Object.keys(msg.regulation) : 'none',
+        referencesCount: msg.regulation?.references?.length || 0,
+        contentPreview: msg.content.substring(0, 50) + '...'
+      });
+    });
+  }
+
   return (
     <div className={styles.container}>
       <div className={styles.mainContent}>
