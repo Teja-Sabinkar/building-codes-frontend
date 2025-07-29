@@ -1,0 +1,35 @@
+/* src/components/settings/SettingsLayout.module.css */
+
+.settingsLayout {
+  display: flex;
+  flex-direction: column;
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  max-width: 800px;
+  margin: 0 auto;
+  height: fit-content;
+}
+
+.contentContainer {
+  padding: 1.5rem;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .settingsLayout {
+    margin: 0;
+    border-radius: 0;
+    box-shadow: none;
+  }
+  
+  .contentContainer {
+    padding: 1rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .contentContainer {
+    padding: 0.75rem;
+  }
+}

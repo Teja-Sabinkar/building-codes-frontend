@@ -1,0 +1,329 @@
+/* src/components/home/RegulationPanel/MessageInput.module.css - Building Codes Theme */
+
+.inputContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 16px;
+  background-color: #ffffff;
+  border-top: 1px solid #e5e7eb;
+}
+
+/* Voice Section */
+.voiceSection {
+  background-color: #f0fdf4;
+  border: 1px solid #bbf7d0;
+  border-radius: 12px;
+  padding: 12px;
+  transition: all 0.2s ease;
+}
+
+.voiceSection:hover {
+  border-color: #86efac;
+  background-color: #ecfdf5;
+}
+
+.voiceControls {
+  width: 100%;
+}
+
+/* Input Form */
+.inputForm {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.inputWrapper {
+  display: flex;
+  align-items: flex-end;
+  gap: 8px;
+  padding: 12px 16px;
+  background-color: #ffffff;
+  border: 2px solid #e5e7eb;
+  border-radius: 12px;
+  transition: all 0.2s ease;
+  position: relative;
+}
+
+.inputWrapper.focused {
+  border-color: #059669;
+  box-shadow: 0 0 0 3px rgba(5, 150, 105, 0.1);
+  background-color: #fefefe;
+}
+
+.inputWrapper.disabled {
+  background-color: #f9fafb;
+  border-color: #d1d5db;
+  opacity: 0.8;
+}
+
+/* Textarea */
+.textarea {
+  flex: 1;
+  border: none;
+  outline: none;
+  resize: none;
+  font-size: 16px;
+  line-height: 1.5;
+  color: #1f2937;
+  background: transparent;
+  min-height: 24px;
+  max-height: 120px;
+  font-family: inherit;
+}
+
+.textarea::placeholder {
+  color: #9ca3af;
+}
+
+.textarea:disabled {
+  color: #6b7280;
+  cursor: not-allowed;
+}
+
+/* Input Actions */
+.inputActions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Voice Button - Building Codes Theme */
+.voiceButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border: none;
+  border-radius: 8px;
+  background-color: transparent;
+  color: #6b7280;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.voiceButton:hover:not(:disabled) {
+  background-color: #059669;
+  color: white;
+}
+
+.voiceButton:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.voiceButton.voiceButtonActive {
+  background-color: #dcfce7;
+  color: #059669;
+}
+
+.voiceIcon {
+  width: 18px;
+  height: 18px;
+}
+
+/* Character Count */
+.characterCount {
+  font-size: 12px;
+  color: #6b7280;
+  font-weight: 500;
+  min-width: 20px;
+  text-align: center;
+}
+
+/* Send Button - Building Codes Theme */
+.sendButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border: none;
+  border-radius: 8px;
+  background-color: #e5e7eb;
+  color: #9ca3af;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.sendButton:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.sendButtonActive {
+  background-color: #059669;
+  color: #ffffff;
+}
+
+.sendButtonActive:hover:not(:disabled) {
+  background-color: #047857;
+}
+
+.sendIcon {
+  width: 16px;
+  height: 16px;
+}
+
+/* Loading Spinner */
+.loadingSpinner {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.spinnerIcon {
+  width: 16px;
+  height: 16px;
+  animation: spin 1s linear infinite;
+  color: #059669;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* UPDATED: Helper Text with New Tips Structure */
+.helperText {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  font-size: 12px;
+  color: #6b7280;
+  padding: 0 4px;
+}
+
+.tipsContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.tip {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  line-height: 1.4;
+  font-size: 12px;
+}
+
+.tip strong {
+  color: #059669;
+  font-weight: 600;
+}
+
+.disabledTip {
+  color: #f59e0b;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+/* REMOVED: Quick Examples Styles - No longer needed */
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .inputContainer {
+    padding: 12px;
+  }
+
+  .inputWrapper {
+    padding: 10px 12px;
+  }
+
+  .textarea {
+    font-size: 16px;
+    /* Prevent zoom on iOS */
+  }
+
+  .voiceButton,
+  .sendButton {
+    width: 36px;
+    height: 36px;
+  }
+
+  .voiceIcon,
+  .sendIcon {
+    width: 18px;
+    height: 18px;
+  }
+
+  .helperText {
+    font-size: 11px;
+  }
+
+  .tip {
+    font-size: 11px;
+  }
+
+  .voiceSection {
+    padding: 10px;
+  }
+}
+
+@media (max-width: 480px) {
+  .helperText {
+    gap: 6px;
+  }
+
+  .tipsContainer {
+    gap: 4px;
+  }
+
+  .tip {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 2px;
+    font-size: 10px;
+  }
+}
+
+/* Accessibility */
+.voiceButton:focus-visible,
+.sendButton:focus-visible {
+  outline: 2px solid #059669;
+  outline-offset: 2px;
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  .inputWrapper,
+  .voiceButton,
+  .sendButton,
+  .voiceSection {
+    transition: none;
+  }
+
+  .spinnerIcon {
+    animation: none;
+  }
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+  .inputWrapper.focused {
+    border-color: #047857;
+    box-shadow: 0 0 0 3px rgba(4, 120, 87, 0.2);
+  }
+
+  .voiceSection {
+    border-color: #059669;
+  }
+
+  .sendButtonActive {
+    background-color: #047857;
+  }
+
+  .voiceButton.voiceButtonActive {
+    background-color: #bbf7d0;
+    color: #047857;
+  }
+}

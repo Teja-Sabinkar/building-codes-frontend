@@ -1,0 +1,448 @@
+/* src/components/common/VoiceControls/VoiceControls.module.css - Building Codes Theme */
+
+.voiceControls {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 100%;
+}
+
+.unsupported {
+  padding: 12px;
+  background-color: #fef3c7;
+  border: 1px solid #f59e0b;
+  border-radius: 8px;
+}
+
+.unsupportedMessage {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #92400e;
+  font-size: 14px;
+}
+
+.warningIcon {
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+}
+
+/* Microphone Container */
+.microphoneContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Microphone Button - Building Codes Theme */
+.microphoneButton {
+  position: relative;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  border: 2px solid #e5e7eb;
+  background-color: #ffffff;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.microphoneButton:hover:not(:disabled) {
+  border-color: #059669;
+  background-color: #f0fdf4;
+}
+
+.microphoneButton:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+  background-color: #f9fafb;
+}
+
+/* Button States - Building Codes Colors */
+.microphoneButton.idle {
+  border-color: #6b7280;
+  background-color: #ffffff;
+}
+
+.microphoneButton.listening {
+  border-color: #059669;
+  background-color: #f0fdf4;
+  animation: pulseListening 2s infinite;
+}
+
+.microphoneButton.speaking {
+  border-color: #10b981;
+  background-color: #ecfdf5;
+  animation: pulseSpeaking 1.5s infinite;
+}
+
+.microphoneButton.error {
+  border-color: #ef4444;
+  background-color: #fef2f2;
+}
+
+.microphoneButton.disabled {
+  border-color: #d1d5db;
+  background-color: #f9fafb;
+}
+
+/* Microphone Icon */
+.micIcon {
+  width: 20px;
+  height: 20px;
+  color: #6b7280;
+  transition: color 0.2s ease;
+  z-index: 2;
+}
+
+.microphoneButton.listening .micIcon {
+  color: #059669;
+}
+
+.microphoneButton.speaking .micIcon {
+  color: #10b981;
+}
+
+.microphoneButton.error .micIcon {
+  color: #ef4444;
+}
+
+/* Listening Animation - Green Theme */
+.listeningAnimation {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 100%;
+  height: 100%;
+  z-index: 1;
+}
+
+.pulse {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background-color: rgba(5, 150, 105, 0.2);
+  transform: translate(-50%, -50%);
+  animation: pulse 1.5s infinite;
+}
+
+.pulse:nth-child(2) {
+  animation-delay: 0.5s;
+}
+
+.pulse:nth-child(3) {
+  animation-delay: 1s;
+}
+
+/* Speaking Animation - Green Theme */
+.speakingAnimation {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  display: flex;
+  gap: 2px;
+  z-index: 1;
+}
+
+.soundWave {
+  width: 2px;
+  height: 8px;
+  background-color: rgba(16, 185, 129, 0.6);
+  border-radius: 1px;
+  animation: soundWave 0.8s infinite ease-in-out;
+}
+
+.soundWave:nth-child(2) {
+  animation-delay: 0.2s;
+}
+
+.soundWave:nth-child(3) {
+  animation-delay: 0.4s;
+}
+
+/* Status Indicator */
+.statusIndicator {
+  min-height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.statusText {
+  font-size: 12px;
+  color: #059669;
+  font-weight: 500;
+}
+
+.speakingStatus {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.stopSpeakingButton {
+  width: 16px;
+  height: 16px;
+  border: none;
+  background: none;
+  cursor: pointer;
+  color: #ef4444;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.stopIcon {
+  width: 16px;
+  height: 16px;
+}
+
+.errorText {
+  font-size: 12px;
+  color: #ef4444;
+  font-weight: 500;
+  text-align: center;
+  max-width: 200px;
+}
+
+/* Transcript Container - Building Codes Theme */
+.transcriptContainer {
+  background-color: #f0fdf4;
+  border: 1px solid #bbf7d0;
+  border-radius: 8px;
+  padding: 12px;
+  margin-top: 8px;
+}
+
+.transcriptHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.transcriptLabel {
+  font-size: 12px;
+  font-weight: 600;
+  color: #059669;
+}
+
+.transcriptActions {
+  display: flex;
+  gap: 4px;
+}
+
+.transcriptAction {
+  width: 20px;
+  height: 20px;
+  border: none;
+  background: none;
+  cursor: pointer;
+  color: #059669;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+}
+
+.transcriptAction:hover {
+  background-color: #dcfce7;
+  color: #047857;
+}
+
+.actionIcon {
+  width: 14px;
+  height: 14px;
+}
+
+.transcriptText {
+  font-size: 14px;
+  line-height: 1.5;
+  color: #1f2937;
+  min-height: 20px;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+}
+
+.interimText {
+  color: #6b7280;
+  font-style: italic;
+}
+
+.listeningPrompt {
+  color: #059669;
+  font-style: italic;
+  animation: blink 1.5s infinite;
+}
+
+/* Voice Tips for Building Codes */
+.voiceTips {
+  margin-top: 12px;
+  padding: 12px;
+  background-color: #ffffff;
+  border: 1px solid #d1fae5;
+  border-radius: 6px;
+}
+
+.tipsHeader {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 8px;
+}
+
+.tipsIcon {
+  width: 14px;
+  height: 14px;
+  color: #059669;
+}
+
+.tipsLabel {
+  font-size: 11px;
+  font-weight: 600;
+  color: #059669;
+}
+
+.tipsList {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.tip {
+  font-size: 11px;
+  color: #6b7280;
+  padding: 4px 8px;
+  background-color: #f9fafb;
+  border-radius: 4px;
+  border-left: 2px solid #10b981;
+}
+
+/* Animations - Green Theme */
+@keyframes pulseListening {
+  0%, 100% {
+    box-shadow: 0 0 0 0 rgba(5, 150, 105, 0.4);
+  }
+  50% {
+    box-shadow: 0 0 0 8px rgba(5, 150, 105, 0);
+  }
+}
+
+@keyframes pulseSpeaking {
+  0%, 100% {
+    box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.4);
+  }
+  50% {
+    box-shadow: 0 0 0 8px rgba(16, 185, 129, 0);
+  }
+}
+
+@keyframes pulse {
+  0% {
+    transform: translate(-50%, -50%) scale(1);
+    opacity: 1;
+  }
+  100% {
+    transform: translate(-50%, -50%) scale(2);
+    opacity: 0;
+  }
+}
+
+@keyframes soundWave {
+  0%, 100% {
+    height: 4px;
+  }
+  50% {
+    height: 12px;
+  }
+}
+
+@keyframes blink {
+  0%, 50% {
+    opacity: 1;
+  }
+  51%, 100% {
+    opacity: 0.5;
+  }
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .microphoneButton {
+    width: 44px;
+    height: 44px;
+  }
+  
+  .micIcon {
+    width: 18px;
+    height: 18px;
+  }
+  
+  .transcriptContainer {
+    padding: 10px;
+  }
+  
+  .transcriptText {
+    font-size: 13px;
+  }
+  
+  .voiceTips {
+    padding: 10px;
+  }
+  
+  .tip {
+    font-size: 10px;
+  }
+}
+
+/* Accessibility */
+@media (prefers-reduced-motion: reduce) {
+  .microphoneButton.listening,
+  .microphoneButton.speaking {
+    animation: none;
+  }
+  
+  .pulse,
+  .soundWave,
+  .listeningPrompt {
+    animation: none;
+  }
+  
+  .microphoneButton.listening {
+    background-color: #f0fdf4;
+    border-color: #059669;
+  }
+  
+  .microphoneButton.speaking {
+    background-color: #ecfdf5;
+    border-color: #10b981;
+  }
+}
+
+/* Focus styles for accessibility */
+.microphoneButton:focus-visible {
+  outline: 2px solid #059669;
+  outline-offset: 2px;
+}
+
+.transcriptAction:focus-visible {
+  outline: 2px solid #059669;
+  outline-offset: 1px;
+}
+
+.stopSpeakingButton:focus-visible {
+  outline: 2px solid #059669;
+  outline-offset: 1px;
+}

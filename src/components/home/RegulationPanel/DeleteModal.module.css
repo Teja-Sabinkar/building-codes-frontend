@@ -1,0 +1,229 @@
+/* src/components/home/RegulationPanel/DeleteModal.module.css - Building Codes Theme */
+
+.modalOverlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    animation: fadeIn 0.2s ease-out;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+.modalContent {
+    background-color: white;
+    border-radius: 0.75rem;
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+    max-width: 400px;
+    width: 90%;
+    max-height: 90vh;
+    overflow: hidden;
+    animation: slideIn 0.2s ease-out;
+    border: 1px solid #f3f4f6;
+}
+
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: scale(0.95) translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+    }
+}
+
+.modalHeader {
+    display: flex;
+    gap: 1rem;
+    padding: 1.5rem;
+    align-items: flex-start;
+    background-color: #fefefe;
+}
+
+.modalIcon {
+    width: 3rem;
+    height: 3rem;
+    background-color: #fef2f2;
+    border: 2px solid #fecaca;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.warningIcon {
+    width: 1.5rem;
+    height: 1.5rem;
+    color: #ef4444;
+}
+
+.modalText {
+    flex: 1;
+}
+
+.modalTitle {
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: #1f2937;
+    margin: 0 0 0.5rem 0;
+}
+
+.modalDescription {
+    font-size: 0.875rem;
+    color: #6b7280;
+    line-height: 1.5;
+    margin: 0;
+}
+
+.modalActions {
+    display: flex;
+    gap: 0.75rem;
+    padding: 0 1.5rem 1.5rem 1.5rem;
+    justify-content: flex-end;
+    background-color: #fefefe;
+}
+
+.cancelButton {
+    background-color: white;
+    border: 1px solid #d1d5db;
+    color: #374151;
+    padding: 0.5rem 1rem;
+    border-radius: 0.375rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.cancelButton:hover:not(:disabled) {
+    background-color: #f9fafb;
+    border-color: #9ca3af;
+    color: #1f2937;
+}
+
+.cancelButton:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.deleteButton {
+    background-color: #ef4444;
+    border: 1px solid #ef4444;
+    color: white;
+    padding: 0.5rem 1rem;
+    border-radius: 0.375rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.deleteButton:hover:not(:disabled) {
+    background-color: #dc2626;
+    border-color: #dc2626;
+}
+
+.deleteButton:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+}
+
+.loadingSpinner {
+    width: 1rem;
+    height: 1rem;
+    border-radius: 50%;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-top-color: white;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* Responsive Design */
+@media (max-width: 640px) {
+    .modalContent {
+        margin: 1rem;
+        width: calc(100% - 2rem);
+    }
+
+    .modalHeader {
+        padding: 1.25rem;
+    }
+
+    .modalActions {
+        padding: 0 1.25rem 1.25rem 1.25rem;
+        flex-direction: column-reverse;
+    }
+
+    .cancelButton,
+    .deleteButton {
+        width: 100%;
+        justify-content: center;
+    }
+}
+
+/* Focus styles for accessibility */
+.cancelButton:focus-visible,
+.deleteButton:focus-visible {
+    outline: 2px solid #059669;
+    outline-offset: 2px;
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+    .modalContent {
+        border: 2px solid #000000;
+    }
+    
+    .modalIcon {
+        border-color: #ef4444;
+    }
+    
+    .cancelButton {
+        border-color: #000000;
+    }
+    
+    .deleteButton {
+        background-color: #dc2626;
+        border-color: #dc2626;
+    }
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+    .modalOverlay,
+    .modalContent {
+        animation: none;
+    }
+    
+    .loadingSpinner {
+        animation: none;
+    }
+    
+    .cancelButton,
+    .deleteButton {
+        transition: none;
+    }
+}

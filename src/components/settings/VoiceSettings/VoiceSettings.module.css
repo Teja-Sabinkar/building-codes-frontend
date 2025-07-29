@@ -1,0 +1,574 @@
+/* src/components/settings/VoiceSettings/VoiceSettings.module.css */
+
+.voiceSettings {
+  padding: 24px;
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+/* Unsupported State */
+.unsupported {
+  background-color: #fef3c7;
+  border: 1px solid #f59e0b;
+  border-radius: 12px;
+  padding: 24px;
+  text-align: center;
+}
+
+.unsupportedIcon {
+  margin-bottom: 16px;
+}
+
+.warningIcon {
+  width: 48px;
+  height: 48px;
+  color: #d97706;
+}
+
+.unsupportedContent h3 {
+  color: #92400e;
+  margin-bottom: 8px;
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.unsupportedContent p {
+  color: #78350f;
+  line-height: 1.6;
+  margin: 0;
+}
+
+/* Settings Header */
+.settingsHeader {
+  margin-bottom: 32px;
+}
+
+.title {
+  font-size: 28px;
+  font-weight: 700;
+  color: #1f2937;
+  margin-bottom: 8px;
+}
+
+.description {
+  font-size: 16px;
+  color: #6b7280;
+  line-height: 1.6;
+  margin: 0;
+}
+
+/* Settings Grid */
+.settingsGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 24px;
+  margin-bottom: 32px;
+}
+
+.settingGroup {
+  background-color: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 20px;
+  transition: all 0.2s ease;
+}
+
+.settingGroup:hover {
+  border-color: #d1d5db;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.settingLabel {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 600;
+  color: #374151;
+  margin-bottom: 12px;
+  font-size: 14px;
+}
+
+.labelIcon {
+  width: 16px;
+  height: 16px;
+  color: #6b7280;
+}
+
+/* Voice Select */
+.voiceSelect {
+  width: 100%;
+  padding: 10px 12px;
+  border: 2px solid #e5e7eb;
+  border-radius: 8px;
+  font-size: 14px;
+  color: #374151;
+  background-color: #ffffff;
+  cursor: pointer;
+  transition: border-color 0.2s ease;
+}
+
+.voiceSelect:focus {
+  outline: none;
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.voiceSelect optgroup {
+  font-weight: 600;
+  color: #6b7280;
+}
+
+.voiceSelect option {
+  font-weight: 400;
+  color: #374151;
+  padding: 4px;
+}
+
+/* Slider Controls */
+.sliderContainer {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+
+.slider {
+  flex: 1;
+  height: 6px;
+  border-radius: 3px;
+  background: #e5e7eb;
+  outline: none;
+  cursor: pointer;
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+.slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: #3b82f6;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.slider::-webkit-slider-thumb:hover {
+  background: #2563eb;
+  transform: scale(1.1);
+}
+
+.slider::-moz-range-thumb {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: #3b82f6;
+  cursor: pointer;
+  border: none;
+  transition: all 0.2s ease;
+}
+
+.slider::-moz-range-thumb:hover {
+  background: #2563eb;
+  transform: scale(1.1);
+}
+
+.slider:focus::-webkit-slider-thumb {
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.3);
+}
+
+.slider:focus::-moz-range-thumb {
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.3);
+}
+
+.sliderValue {
+  font-weight: 600;
+  color: #374151;
+  min-width: 40px;
+  text-align: center;
+  font-size: 14px;
+}
+
+/* Setting Hints */
+.settingHint {
+  font-size: 12px;
+  color: #9ca3af;
+  line-height: 1.4;
+}
+
+/* Controls Section */
+.controlsSection {
+  display: flex;
+  gap: 16px;
+  justify-content: center;
+  margin-bottom: 32px;
+  flex-wrap: wrap;
+}
+
+.testButton {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 24px;
+  background-color: #10b981;
+  color: #ffffff;
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-size: 14px;
+}
+
+.testButton:hover:not(:disabled) {
+  background-color: #059669;
+  transform: translateY(-1px);
+}
+
+.testButton:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.testButtonActive {
+  background-color: #047857;
+}
+
+.testIcon {
+  width: 16px;
+  height: 16px;
+}
+
+.testSpinner {
+  display: flex;
+  align-items: center;
+}
+
+.soundWave {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.waveBar {
+  width: 3px;
+  background-color: #ffffff;
+  border-radius: 2px;
+  animation: waveAnimation 1s infinite ease-in-out;
+}
+
+.waveBar:nth-child(1) {
+  height: 8px;
+  animation-delay: 0s;
+}
+
+.waveBar:nth-child(2) {
+  height: 12px;
+  animation-delay: 0.1s;
+}
+
+.waveBar:nth-child(3) {
+  height: 6px;
+  animation-delay: 0.2s;
+}
+
+.resetButton {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 24px;
+  background-color: #ffffff;
+  color: #6b7280;
+  border: 2px solid #e5e7eb;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-size: 14px;
+}
+
+.resetButton:hover:not(:disabled) {
+  border-color: #d1d5db;
+  color: #374151;
+  transform: translateY(-1px);
+}
+
+.resetButton:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.resetIcon {
+  width: 16px;
+  height: 16px;
+}
+
+/* Info Section */
+.infoSection {
+  display: grid;
+  gap: 24px;
+}
+
+.infoCard {
+  background-color: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 20px;
+}
+
+.infoHeader {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.infoIcon {
+  width: 20px;
+  height: 20px;
+  color: #3b82f6;
+}
+
+.infoHeader h3 {
+  font-size: 18px;
+  font-weight: 600;
+  color: #1f2937;
+  margin: 0;
+}
+
+.infoContent {
+  color: #4b5563;
+  line-height: 1.6;
+}
+
+.featureList {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.feature {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+/* Compatibility Info */
+.compatibilityInfo {
+  background-color: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 20px;
+}
+
+.compatibilityInfo h4 {
+  font-size: 16px;
+  font-weight: 600;
+  color: #1f2937;
+  margin-bottom: 16px;
+}
+
+.browserGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 12px;
+}
+
+.browserItem {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 12px;
+  background-color: #f9fafb;
+  border-radius: 6px;
+  font-size: 14px;
+}
+
+.browserName {
+  font-weight: 500;
+  color: #374151;
+}
+
+.compatStatus {
+  font-size: 12px;
+  font-weight: 600;
+}
+
+/* Animations */
+@keyframes waveAnimation {
+  0%, 100% {
+    height: 6px;
+  }
+  50% {
+    height: 12px;
+  }
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .voiceSettings {
+    padding: 16px;
+  }
+  
+  .settingsGrid {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+  
+  .controlsSection {
+    flex-direction: column;
+    align-items: center;
+  }
+  
+  .testButton,
+  .resetButton {
+    width: 100%;
+    max-width: 300px;
+    justify-content: center;
+  }
+  
+  .browserGrid {
+    grid-template-columns: 1fr;
+  }
+  
+  .title {
+    font-size: 24px;
+  }
+}
+
+@media (max-width: 480px) {
+  .settingGroup {
+    padding: 16px;
+  }
+  
+  .sliderContainer {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 8px;
+  }
+  
+  .sliderValue {
+    text-align: left;
+    min-width: auto;
+  }
+}
+
+/* Dark Mode Support */
+@media (prefers-color-scheme: dark) {
+  .title {
+    color: #f9fafb;
+  }
+  
+  .description {
+    color: #d1d5db;
+  }
+  
+  .settingGroup {
+    background-color: #374151;
+    border-color: #4b5563;
+  }
+  
+  .settingGroup:hover {
+    border-color: #6b7280;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  }
+  
+  .settingLabel {
+    color: #f3f4f6;
+  }
+  
+  .voiceSelect {
+    background-color: #374151;
+    border-color: #4b5563;
+    color: #f3f4f6;
+  }
+  
+  .voiceSelect:focus {
+    border-color: #3b82f6;
+  }
+  
+  .sliderValue {
+    color: #f3f4f6;
+  }
+  
+  .settingHint {
+    color: #9ca3af;
+  }
+  
+  .resetButton {
+    background-color: #374151;
+    border-color: #4b5563;
+    color: #d1d5db;
+  }
+  
+  .resetButton:hover:not(:disabled) {
+    border-color: #6b7280;
+    color: #f3f4f6;
+  }
+  
+  .infoCard {
+    background-color: #374151;
+    border-color: #4b5563;
+  }
+  
+  .infoHeader h3 {
+    color: #f9fafb;
+  }
+  
+  .infoContent {
+    color: #d1d5db;
+  }
+  
+  .compatibilityInfo {
+    background-color: #374151;
+    border-color: #4b5563;
+  }
+  
+  .compatibilityInfo h4 {
+    color: #f9fafb;
+  }
+  
+  .browserItem {
+    background-color: #4b5563;
+  }
+  
+  .browserName {
+    color: #f3f4f6;
+  }
+}
+
+/* Reduced Motion Support */
+@media (prefers-reduced-motion: reduce) {
+  .waveBar {
+    animation: none;
+    height: 8px;
+  }
+  
+  .testButton,
+  .resetButton,
+  .settingGroup {
+    transition: none;
+  }
+  
+  .slider::-webkit-slider-thumb,
+  .slider::-moz-range-thumb {
+    transition: none;
+  }
+  
+  .testButton:hover:not(:disabled),
+  .resetButton:hover:not(:disabled) {
+    transform: none;
+  }
+}
+
+/* Focus Styles for Accessibility */
+.testButton:focus-visible,
+.resetButton:focus-visible {
+  outline: 2px solid #3b82f6;
+  outline-offset: 2px;
+}

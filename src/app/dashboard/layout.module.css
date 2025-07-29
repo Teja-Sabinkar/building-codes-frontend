@@ -1,0 +1,407 @@
+/* app/dashboard/layout.module.css - Building Codes Assistant Theme */
+
+.dashboardLayout {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #f0fdf4, #ecfdf5);
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+.appContainer {
+  min-height: 100vh;
+  position: relative;
+}
+
+/* Professional Loading Screen - Building Codes Theme */
+.loadingScreen {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(135deg, #059669 0%, #10b981 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  animation: loadingFadeIn 0.5s ease-out;
+}
+
+@keyframes loadingFadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.loadingContent {
+  text-align: center;
+  color: white;
+  max-width: 400px;
+  padding: 2rem;
+  animation: contentSlideUp 0.6s ease-out 0.2s both;
+}
+
+@keyframes contentSlideUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.logoContainer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+
+.loadingLogo {
+  font-size: 3rem;
+  animation: logoFloat 2s ease-in-out infinite;
+  text-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+@keyframes logoFloat {
+  0%, 100% {
+    transform: translateY(0) rotate(0deg);
+  }
+  25% {
+    transform: translateY(-5px) rotate(2deg);
+  }
+  50% {
+    transform: translateY(-10px) rotate(0deg);
+  }
+  75% {
+    transform: translateY(-5px) rotate(-2deg);
+  }
+}
+
+.loadingTitle {
+  font-size: 2.5rem;
+  font-weight: 700;
+  margin: 0;
+  color: #ffffff;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  letter-spacing: -0.025em;
+}
+
+.loadingSpinner {
+  width: 60px;
+  height: 60px;
+  border: 4px solid rgba(255, 255, 255, 0.2);
+  border-top: 4px solid #ffffff;
+  border-right: 4px solid rgba(255, 255, 255, 0.6);
+  border-radius: 50%;
+  animation: spin 1s cubic-bezier(0.68, -0.55, 0.265, 1.55) infinite;
+  margin: 0 auto 1.5rem;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+@keyframes spin {
+  0% { 
+    transform: rotate(0deg);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  }
+  50% {
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
+  }
+  100% { 
+    transform: rotate(360deg);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  }
+}
+
+.loadingText {
+  font-size: 1.125rem;
+  font-weight: 500;
+  margin: 0 0 2rem 0;
+  opacity: 0.95;
+  letter-spacing: 0.025em;
+  line-height: 1.4;
+}
+
+.loadingProgress {
+  width: 100%;
+  height: 4px;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 2px;
+  overflow: hidden;
+  position: relative;
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+.progressBar {
+  height: 100%;
+  background: linear-gradient(90deg, #ffffff, #f0fdf4, #dcfce7);
+  border-radius: 2px;
+  animation: progressLoad 2.5s ease-in-out infinite;
+  box-shadow: 0 1px 2px rgba(255, 255, 255, 0.3);
+}
+
+@keyframes progressLoad {
+  0% {
+    width: 0%;
+    opacity: 0.5;
+    transform: translateX(-10px);
+  }
+  30% {
+    width: 40%;
+    opacity: 0.8;
+  }
+  60% {
+    width: 75%;
+    opacity: 1;
+  }
+  100% {
+    width: 100%;
+    opacity: 0.9;
+    transform: translateX(10px);
+  }
+}
+
+/* Error Boundary */
+.errorBoundary {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10000;
+}
+
+.errorContent {
+  background: white;
+  padding: 2rem;
+  border-radius: 1rem;
+  text-align: center;
+  max-width: 400px;
+  margin: 1rem;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+}
+
+.errorContent h2 {
+  color: #dc2626;
+  margin: 0 0 1rem 0;
+  font-size: 1.5rem;
+  font-weight: 600;
+}
+
+.errorContent p {
+  color: #6b7280;
+  margin: 0 0 2rem 0;
+  line-height: 1.5;
+}
+
+.refreshButton {
+  background: #059669;
+  color: white;
+  border: none;
+  padding: 0.75rem 1.5rem;
+  border-radius: 0.5rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.refreshButton:hover {
+  background: #047857;
+}
+
+/* Toast Notifications */
+.toastContainer {
+  position: fixed;
+  top: 1rem;
+  right: 1rem;
+  z-index: 1000;
+  pointer-events: none;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .loadingContent {
+    padding: 1rem;
+    max-width: 300px;
+  }
+  
+  .loadingTitle {
+    font-size: 2rem;
+  }
+  
+  .loadingText {
+    font-size: 1rem;
+  }
+  
+  .loadingSpinner {
+    width: 50px;
+    height: 50px;
+    border-width: 3px;
+  }
+  
+  .logoContainer {
+    flex-direction: column;
+    gap: 0.5rem;
+    margin-bottom: 1.5rem;
+  }
+  
+  .loadingLogo {
+    font-size: 2.5rem;
+  }
+  
+  .errorContent {
+    padding: 1.5rem;
+    margin: 0.5rem;
+  }
+  
+  .errorContent h2 {
+    font-size: 1.25rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .loadingTitle {
+    font-size: 1.75rem;
+  }
+  
+  .loadingText {
+    font-size: 0.9rem;
+  }
+  
+  .loadingSpinner {
+    width: 40px;
+    height: 40px;
+    border-width: 2px;
+  }
+  
+  .loadingLogo {
+    font-size: 2rem;
+  }
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+  .loadingScreen {
+    background: #000000;
+  }
+  
+  .loadingTitle {
+    color: #ffffff;
+  }
+  
+  .loadingSpinner {
+    border-color: rgba(255, 255, 255, 0.3);
+    border-top-color: #ffffff;
+    border-right-color: #ffffff;
+  }
+  
+  .progressBar {
+    background: #ffffff;
+  }
+  
+  .errorContent {
+    border: 2px solid #000000;
+  }
+  
+  .refreshButton {
+    background: #000000;
+    border: 2px solid #000000;
+  }
+  
+  .refreshButton:hover {
+    background: #333333;
+  }
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  .loadingScreen {
+    animation: none;
+  }
+  
+  .loadingContent {
+    animation: none;
+  }
+  
+  .logoFloat,
+  .spin,
+  .progressLoad {
+    animation: none;
+  }
+  
+  .loadingSpinner {
+    border-top-color: #ffffff;
+    animation: none;
+  }
+  
+  .progressBar {
+    width: 100%;
+    animation: none;
+  }
+}
+
+/* Print styles */
+@media print {
+  .loadingScreen,
+  .errorBoundary,
+  .toastContainer {
+    display: none !important;
+  }
+  
+  .dashboardLayout {
+    background: white;
+  }
+}
+
+/* Building Codes Theme Support */
+.dashboardLayout {
+  background: linear-gradient(135deg, #f0fdf4, #ecfdf5);
+  color: #1f2937;
+}
+
+/* Performance optimizations */
+.dashboardLayout {
+  contain: layout style;
+  transform: translateZ(0); /* Create stacking context */
+}
+
+.appContainer {
+  contain: layout;
+}
+
+/* Smooth transitions */
+.dashboardLayout :global(*) {
+  box-sizing: border-box;
+}
+
+/* Focus management */
+.appContainer:focus-within {
+  /* Enhanced focus visibility when any child has focus */
+}
+
+/* Loading screen exit animation */
+.loadingScreen.exit {
+  animation: loadingFadeOut 0.5s ease-in forwards;
+}
+
+@keyframes loadingFadeOut {
+  from {
+    opacity: 1;
+    transform: scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: scale(1.05);
+  }
+}
