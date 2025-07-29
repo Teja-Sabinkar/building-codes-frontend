@@ -240,7 +240,7 @@ export default function MessageList({
     );
   };
 
-  // NEW: Function to format references in green
+  // Function to format references in green
   const formatReferences = (text) => {
     // Pattern to match (Reference: ...) text
     const referencePattern = /(\(Reference:[^)]+\))/g;
@@ -259,7 +259,7 @@ export default function MessageList({
     });
   };
 
-  // NEW: Add this function to parse and format building code responses
+  // Parse and format building code responses
   const parseAndFormatBuildingCodeContent = (content) => {
     const lines = content.split('\n');
     const elements = [];
@@ -356,14 +356,36 @@ export default function MessageList({
   };
 
   const renderRegulationResult = (message, messageIndex) => {
-    if (!message.regulation || !message.regulation.answer) return null;
+    // 🔍 DEBUG: Log message structure for debugging
+    console.log(`🔍 Message ${messageIndex} regulation check:`, {
+      hasRegulation: !!message.regulation,
+      regulationType: typeof message.regulation,
+      hasAnswer: message.regulation?.answer ? 'YES' : 'NO',
+      hasReferences: message.regulation?.references ? 'YES' : 'NO',
+      referencesCount: message.regulation?.references?.length || 0,
+      messageRole: message.role
+    });
+
+    if (!message.regulation || !message.regulation.answer) {
+      console.log(`❌ No regulation data for message ${messageIndex}`);
+      return null;
+    }
 
     const regulation = message.regulation;
+
+    // 🔍 DEBUG: Log references specifically
+    if (regulation.references && regulation.references.length > 0) {
+      console.log(`✅ Message ${messageIndex} has ${regulation.references.length} references:`, 
+        regulation.references.map(ref => `Page ${ref.page}`).join(', ')
+      );
+    } else {
+      console.log(`❌ Message ${messageIndex} has no references`);
+    }
 
     return (
       <div className={styles.regulationContainer}>
         <div className={styles.regulationHeader}>
-          {/* UPDATED: Show references in header */}
+          {/* Show references in header */}
           {regulation.references && regulation.references.length > 0 && (
             <div className={styles.headerReferencesSection}>
               <div className={styles.headerReferencesTitle}>
@@ -379,9 +401,16 @@ export default function MessageList({
               </div>
             </div>
           )}
+          
+          {/* 🔍 DEBUG: Show debug info in development */}
+          {process.env.NODE_ENV === 'development' && (
+            <div style={{ fontSize: '0.7rem', color: '#888', marginTop: '0.5rem', borderTop: '1px solid #ddd', paddingTop: '0.5rem' }}>
+              <strong>DEBUG:</strong> Confidence: {regulation.confidence}, 
+              References: {regulation.references?.length || 0}, 
+              Processing: {regulation.processingTime}s
+            </div>
+          )}
         </div>
-
-        {/* REMOVED: References section is now in header */}
       </div>
     );
   };

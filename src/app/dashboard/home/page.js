@@ -105,7 +105,8 @@ export default function HomePage() {
     try {
       console.log('📤 Sending regulation query:', {
         message,
-        conversationId: currentConversation?._id
+        conversationId: currentConversation?._id,
+        apiUrl: process.env.NEXT_PUBLIC_API_URL
       });
 
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/query`, {
@@ -116,19 +117,43 @@ export default function HomePage() {
         body: JSON.stringify({
           question: message,
           conversationId: currentConversation?._id,
-          maxResults: 5
+          maxResults: 10  // ← CHANGED: Request 10 results to get chunks 1-3 + 4-8 for references
         }),
       });
 
       if (response.ok) {
         const data = await response.json();
 
+        // 🔍 DEBUG: Log the API response structure
+        console.log('🔍 API Response received:', data);
+        console.log('🔍 Has regulation:', !!data.regulation);
+        console.log('🔍 References:', data.regulation?.references);
+        console.log('🔍 References count:', data.regulation?.references?.length);
+
         console.log('✅ Regulation query successful:', {
           hasConversation: !!data.conversation,
           hasResult: !!data.regulation,
           messageCount: data.conversation?.messages?.length,
-          confidence: data.regulation?.confidence
+          confidence: data.regulation?.confidence,
+          referencesCount: data.regulation?.references?.length
         });
+
+        // 🔧 CRITICAL FIX: Ensure assistant messages have regulation data
+        if (data.conversation && data.conversation.messages) {
+          const updatedMessages = data.conversation.messages.map((msg, index) => {
+            // If this is the latest assistant message, attach the regulation data
+            if (msg.role === 'assistant' && index === data.conversation.messages.length - 1) {
+              return {
+                ...msg,
+                regulation: data.regulation  // ← CRITICAL: Attach regulation data to message
+              };
+            }
+            return msg;
+          });
+
+          // Update the conversation with regulation-enhanced messages
+          data.conversation.messages = updatedMessages;
+        }
 
         // Update conversation state
         setCurrentConversation(data.conversation);
@@ -271,8 +296,9 @@ export default function HomePage() {
               'Content-Type': 'application/json',
             },
             body: JSON.stringify({
-              question: '', // Empty message since we're regenerating
+              question: newContent, // Use the edited content for regeneration
               conversationId: currentConversation._id,
+              maxResults: 10,  // ← Ensure we get references
               isRegeneration: true
             }),
           });
@@ -280,6 +306,20 @@ export default function HomePage() {
           if (queryResponse.ok) {
             const queryData = await queryResponse.json();
             console.log('✅ Regeneration completed:', queryData);
+
+            // 🔧 CRITICAL: Attach regulation data to the latest assistant message
+            if (queryData.conversation && queryData.conversation.messages) {
+              const updatedMessages = queryData.conversation.messages.map((msg, index) => {
+                if (msg.role === 'assistant' && index === queryData.conversation.messages.length - 1) {
+                  return {
+                    ...msg,
+                    regulation: queryData.regulation
+                  };
+                }
+                return msg;
+              });
+              queryData.conversation.messages = updatedMessages;
+            }
 
             // Update conversation with the new response
             setCurrentConversation(queryData.conversation);
