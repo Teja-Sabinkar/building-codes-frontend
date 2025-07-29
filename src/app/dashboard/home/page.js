@@ -108,7 +108,7 @@ export default function HomePage() {
         conversationId: currentConversation?._id
       });
 
-      const response = await fetch('/api/building-codes/query', {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/query`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -265,7 +265,7 @@ export default function HomePage() {
 
         try {
           // Call the building codes query API to regenerate from the edited message
-          const queryResponse = await fetch('/api/building-codes/query', {
+          const queryResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/query`, {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
