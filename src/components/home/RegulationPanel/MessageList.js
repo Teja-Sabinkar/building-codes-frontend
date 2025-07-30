@@ -1,4 +1,4 @@
-// src/components/home/RegulationPanel/MessageList.js - Building Codes Assistant
+// src/components/home/RegulationPanel/MessageList.js - Building Codes Assistant - FINAL VERSION
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
@@ -10,8 +10,7 @@ export default function MessageList({
   isGenerating,
   onEditMessage,
   user,
-  enableTTS = true,
-  debugMode = false // Add this prop to control debug mode
+  enableTTS = true
 }) {
   const messagesEndRef = useRef(null);
   const [editingMessageIndex, setEditingMessageIndex] = useState(null);
@@ -356,70 +355,7 @@ export default function MessageList({
     return elements;
   };
 
-  // Updated renderRegulationResult function with debug mode
   const renderRegulationResult = (message, messageIndex) => {
-    // Test references for debug mode
-    const debugTestReferences = [
-      { document: "NBC 2016", section: "Related Content", page: "184" },
-      { document: "NBC 2016", section: "Related Content", page: "228" },
-      { document: "NBC 2016", section: "Related Content", page: "192" },
-      { document: "NBC 2016", section: "Related Content", page: "156" },
-      { document: "NBC 2016", section: "Related Content", page: "183" }
-    ];
-
-    // Debug mode: Force show references for all assistant messages
-    if (debugMode && message.role === 'assistant') {
-      console.log(`🔍 DEBUG MODE: Forcing references for message ${messageIndex}`);
-      
-      return (
-        <div className={styles.regulationContainer}>
-          <div className={styles.regulationHeader}>
-            <div className={styles.headerReferencesSection}>
-              <div className={styles.headerReferencesTitle}>
-                Also refer these pages:
-              </div>
-              <div className={styles.headerReferencesList}>
-                {debugTestReferences.map((ref, index) => (
-                  <span key={index} className={styles.headerReferenceItem}>
-                    Page {ref.page}
-                    {index < debugTestReferences.length - 1 && ', '}
-                  </span>
-                ))}
-              </div>
-            </div>
-            
-            {/* Debug info */}
-            <div style={{ 
-              fontSize: '0.7rem', 
-              color: '#888', 
-              marginTop: '0.5rem', 
-              borderTop: '1px solid #ddd', 
-              paddingTop: '0.5rem',
-              backgroundColor: '#fff9c4',
-              padding: '0.5rem',
-              border: '1px solid #fbbf24',
-              borderRadius: '4px'
-            }}>
-              <strong>🧪 DEBUG MODE:</strong> 
-              Showing test references. 
-              Actual regulation data: {!!message.regulation ? 'EXISTS' : 'NONE'}, 
-              Actual references: {message.regulation?.references?.length || 0}
-            </div>
-          </div>
-        </div>
-      );
-    }
-
-    // Production mode: Use actual regulation data
-    console.log(`🔍 Message ${messageIndex} regulation check:`, {
-      hasRegulation: !!message.regulation,
-      regulationType: typeof message.regulation,
-      hasAnswer: message.regulation?.answer ? 'YES' : 'NO',
-      hasReferences: message.regulation?.references ? 'YES' : 'NO',
-      referencesCount: message.regulation?.references?.length || 0,
-      messageRole: message.role
-    });
-
     if (!message.regulation || !message.regulation.answer) {
       console.log(`❌ No regulation data for message ${messageIndex}`);
       return null;
@@ -427,14 +363,8 @@ export default function MessageList({
 
     const regulation = message.regulation;
 
-    // Log references specifically
-    if (regulation.references && regulation.references.length > 0) {
-      console.log(`✅ Message ${messageIndex} has ${regulation.references.length} references:`, 
-        regulation.references.map(ref => `Page ${ref.page}`).join(', ')
-      );
-    } else {
-      console.log(`❌ Message ${messageIndex} has no references`);
-    }
+    // Log successful detection
+    console.log(`✅ Rendering regulation for message ${messageIndex} with ${regulation.references?.length || 0} references`);
 
     return (
       <div className={styles.regulationContainer}>
@@ -456,12 +386,18 @@ export default function MessageList({
             </div>
           )}
           
-          {/* Development debug info */}
-          {process.env.NODE_ENV === 'development' && (
-            <div style={{ fontSize: '0.7rem', color: '#888', marginTop: '0.5rem', borderTop: '1px solid #ddd', paddingTop: '0.5rem' }}>
-              <strong>DEBUG:</strong> Confidence: {regulation.confidence}, 
-              References: {regulation.references?.length || 0}, 
-              Processing: {regulation.processingTime}s
+          {/* Optional: Keep debug info for development (remove later) */}
+          {process.env.NODE_ENV === 'development' && regulation.references && (
+            <div style={{ 
+              fontSize: '0.7rem', 
+              color: '#666', 
+              marginTop: '0.5rem', 
+              padding: '0.25rem',
+              background: '#f9f9f9',
+              borderRadius: '4px',
+              borderLeft: '3px solid #059669'
+            }}>
+              <strong>✅ SUCCESS:</strong> Found {regulation.references.length} references from chunks 4-8
             </div>
           )}
         </div>
@@ -503,20 +439,6 @@ export default function MessageList({
               )}
             </div>
           </div>
-          
-          {/* Debug mode indicator */}
-          {debugMode && (
-            <div style={{
-              marginTop: '1rem',
-              padding: '0.75rem',
-              backgroundColor: '#fff9c4',
-              border: '1px solid #fbbf24',
-              borderRadius: '8px',
-              fontSize: '0.9rem'
-            }}>
-              <strong>🧪 DEBUG MODE ACTIVE:</strong> Test references will be displayed for all assistant messages.
-            </div>
-          )}
         </div>
       </div>
     );
