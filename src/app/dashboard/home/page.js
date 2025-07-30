@@ -1,4 +1,4 @@
-// src/app/dashboard/home/page.js - Building Codes Assistant
+// src/app/dashboard/home/page.js - Building Codes Assistant - COMPLETE FIX
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -89,15 +89,32 @@ export default function HomePage() {
           id: newConversation._id,
           title: newConversation.title
         });
+
+        return newConversation; // Return the new conversation
       }
     } catch (error) {
       console.error('Error creating conversation:', error);
     }
+    return null;
   };
 
   const sendMessage = async (message) => {
-    if (!currentConversation) {
-      await createNewConversation();
+    console.log('📤 Sending regulation query:', message);
+    
+    // Ensure we have a current conversation
+    let conversation = currentConversation;
+    if (!conversation) {
+      console.log('🔄 No current conversation, creating new one...');
+      conversation = await createNewConversation();
+      if (!conversation) {
+        console.error('❌ Failed to create conversation');
+        return;
+      }
+    }
+
+    if (isGenerating) {
+      console.log('❌ Cannot send messages: Currently generating');
+      return;
     }
 
     setIsGenerating(true);
@@ -105,7 +122,7 @@ export default function HomePage() {
     try {
       console.log('📤 Sending regulation query:', {
         message,
-        conversationId: currentConversation?._id,
+        conversationId: conversation._id,
         apiUrl: process.env.NEXT_PUBLIC_API_URL
       });
 
@@ -116,15 +133,16 @@ export default function HomePage() {
         },
         body: JSON.stringify({
           question: message,
-          conversationId: currentConversation?._id,
-          maxResults: 10  // ← CHANGED: Request 10 results to get chunks 1-3 + 4-8 for references
+          conversationId: conversation._id,
+          maxResults: 10  // Request 10 results to get chunks 1-3 + 4-8 for references
         }),
       });
 
       if (response.ok) {
         const data = await response.json();
 
-        // 🔍 DEBUG: Log the API response structure
+        // 🔍 DEBUG: Log the complete API response
+        console.log('🔍 FULL API RESPONSE:', JSON.stringify(data, null, 2));
         console.log('🔍 API Response received:', data);
         console.log('🔍 Has regulation:', !!data.regulation);
         console.log('🔍 References:', data.regulation?.references);
@@ -139,10 +157,13 @@ export default function HomePage() {
         });
 
         // 🔧 CRITICAL FIX: Ensure assistant messages have regulation data
-        if (data.conversation && data.conversation.messages) {
+        if (data.conversation && data.conversation.messages && data.regulation) {
+          console.log('🔧 Attaching regulation data to assistant messages...');
+          
           const updatedMessages = data.conversation.messages.map((msg, index) => {
-            // If this is the latest assistant message, attach the regulation data
-            if (msg.role === 'assistant' && index === data.conversation.messages.length - 1) {
+            // If this is an assistant message, attach the regulation data
+            if (msg.role === 'assistant') {
+              console.log(`🔗 Attaching regulation to assistant message ${index}`);
               return {
                 ...msg,
                 regulation: data.regulation  // ← CRITICAL: Attach regulation data to message
@@ -153,15 +174,21 @@ export default function HomePage() {
 
           // Update the conversation with regulation-enhanced messages
           data.conversation.messages = updatedMessages;
+          console.log('✅ Regulation data attached to', updatedMessages.filter(m => m.role === 'assistant').length, 'assistant messages');
         }
 
         // Update conversation state
         setCurrentConversation(data.conversation);
-        setConversations(prev =>
-          prev.map(conv =>
+        setConversations(prev => {
+          const updated = prev.map(conv =>
             conv._id === data.conversation._id ? data.conversation : conv
-          )
-        );
+          );
+          // If this is a new conversation, add it
+          if (!prev.find(conv => conv._id === data.conversation._id)) {
+            return [data.conversation, ...prev];
+          }
+          return updated;
+        });
 
         // Update current regulation result
         if (data.regulation) {
@@ -232,7 +259,6 @@ export default function HomePage() {
             // If no more conversations, create a new one
             setCurrentConversation(null);
             setCurrentRegulationResult(null);
-            createNewConversation();
           }
         }
       } else {
@@ -298,7 +324,7 @@ export default function HomePage() {
             body: JSON.stringify({
               question: newContent, // Use the edited content for regeneration
               conversationId: currentConversation._id,
-              maxResults: 10,  // ← Ensure we get references
+              maxResults: 10,  // Ensure we get references
               isRegeneration: true
             }),
           });
@@ -308,9 +334,9 @@ export default function HomePage() {
             console.log('✅ Regeneration completed:', queryData);
 
             // 🔧 CRITICAL: Attach regulation data to the latest assistant message
-            if (queryData.conversation && queryData.conversation.messages) {
+            if (queryData.conversation && queryData.conversation.messages && queryData.regulation) {
               const updatedMessages = queryData.conversation.messages.map((msg, index) => {
-                if (msg.role === 'assistant' && index === queryData.conversation.messages.length - 1) {
+                if (msg.role === 'assistant') {
                   return {
                     ...msg,
                     regulation: queryData.regulation
@@ -372,6 +398,20 @@ export default function HomePage() {
     );
   };
 
+  // 🔍 DEBUG: Log what we're passing to RegulationPanel
+  if (currentConversation?.messages) {
+    console.log('🔍 DEBUGGING: Messages being passed to MessageList:');
+    currentConversation.messages.forEach((msg, index) => {
+      console.log(`Message ${index}:`, {
+        role: msg.role,
+        hasRegulation: !!msg.regulation,
+        regulationKeys: msg.regulation ? Object.keys(msg.regulation) : 'none',
+        referencesCount: msg.regulation?.references?.length || 0,
+        contentPreview: msg.content.substring(0, 50) + '...'
+      });
+    });
+  }
+
   // Show loading while checking authentication
   if (loading) {
     return (
@@ -385,20 +425,6 @@ export default function HomePage() {
   // Don't render if not authenticated (will redirect)
   if (!user) {
     return null;
-  }
-
-  // Debug: Log what we're passing to RegulationPanel
-  if (currentConversation?.messages) {
-    console.log('🔍 DEBUGGING: Messages being passed to MessageList:');
-    currentConversation.messages.forEach((msg, index) => {
-      console.log(`Message ${index}:`, {
-        role: msg.role,
-        hasRegulation: !!msg.regulation,
-        regulationKeys: msg.regulation ? Object.keys(msg.regulation) : 'none',
-        referencesCount: msg.regulation?.references?.length || 0,
-        contentPreview: msg.content.substring(0, 50) + '...'
-      });
-    });
   }
 
   return (
