@@ -265,6 +265,23 @@ export default function MessageList({
     });
   };
 
+  // Function to parse bold markdown and format text
+  const parseBoldMarkdown = (text) => {
+    // Pattern to match **bold text**
+    const boldPattern = /(\*\*[^*]+\*\*)/g;
+
+    const parts = text.split(boldPattern);
+
+    return parts.map((part, index) => {
+      if (part.match(boldPattern)) {
+        // Remove the ** markers and make it bold
+        const boldText = part.replace(/\*\*/g, '');
+        return <strong key={index}>{boldText}</strong>;
+      }
+      return formatReferences(part);
+    });
+  };
+
   // Parse and format building code responses
   const parseAndFormatBuildingCodeContent = (content) => {
     const lines = content.split('\n');
@@ -292,16 +309,31 @@ export default function MessageList({
 
       if (trimmedLine === '') return;
 
+      // Check for bold headers (like **CLEAR FLOOR SPACE**)
+      if (trimmedLine.match(/^\*\*[^*]+\*\*$/)) {
+        flushBullets();
+        const headerText = trimmedLine.replace(/\*\*/g, '');
+        elements.push(
+          <div key={`bold-header-${index}`} className={styles.mainHeader}>
+            <h3 className={styles.mainTitle}>
+              {headerText}
+            </h3>
+          </div>
+        );
+        return;
+      }
+
       // Headers (end with colon)
       if (trimmedLine.endsWith(':') &&
         !trimmedLine.includes('Citation:') &&
         !trimmedLine.includes('Applicability:')) {
 
         flushBullets();
+        const headerContent = parseBoldMarkdown(trimmedLine.replace(':', ''));
         elements.push(
           <div key={`header-${index}`} className={styles.mainHeader}>
             <h3 className={styles.mainTitle}>
-              {trimmedLine.replace(':', '')}
+              {headerContent}
             </h3>
           </div>
         );
@@ -311,8 +343,8 @@ export default function MessageList({
       // Bullet points
       if (trimmedLine.startsWith('- ') || trimmedLine.startsWith('• ')) {
         const bulletText = trimmedLine.substring(2).trim();
-        // Parse references and make them green
-        const formattedBulletText = formatReferences(bulletText);
+        // Parse both bold markdown and references
+        const formattedBulletText = parseBoldMarkdown(bulletText);
         bullets.push(formattedBulletText);
         return;
       }
@@ -321,11 +353,12 @@ export default function MessageList({
       if (trimmedLine.startsWith('Citation:')) {
         flushBullets();
         const citationText = trimmedLine.replace('Citation:', '').trim();
+        const formattedCitation = parseBoldMarkdown(citationText);
         elements.push(
           <div key={`citation-${index}`} className={styles.fieldContainer}>
             <div className={styles.fieldRow}>
               <div className={styles.fieldLabel}>Source:</div>
-              <div className={styles.fieldValue}>{citationText}</div>
+              <div className={styles.fieldValue}>{formattedCitation}</div>
             </div>
           </div>
         );
@@ -336,11 +369,12 @@ export default function MessageList({
       if (trimmedLine.startsWith('Applicability:')) {
         flushBullets();
         const applicabilityText = trimmedLine.replace('Applicability:', '').trim();
+        const formattedApplicability = parseBoldMarkdown(applicabilityText);
         elements.push(
           <div key={`applicability-${index}`} className={styles.fieldContainer}>
             <div className={styles.fieldRow}>
               <div className={styles.fieldLabel}>Applies to:</div>
-              <div className={styles.fieldValue}>{applicabilityText}</div>
+              <div className={styles.fieldValue}>{formattedApplicability}</div>
             </div>
           </div>
         );
@@ -349,7 +383,7 @@ export default function MessageList({
 
       // Regular content
       flushBullets();
-      const formattedContent = formatReferences(trimmedLine);
+      const formattedContent = parseBoldMarkdown(trimmedLine);
       elements.push(
         <div key={`content-${index}`} className={styles.contentParagraph}>
           {formattedContent}
