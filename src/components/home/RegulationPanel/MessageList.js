@@ -171,6 +171,12 @@ export default function MessageList({
       .replace(/```[\s\S]*?```/gi, '')
       .replace(/`[^`]*`/gi, '');
 
+    // Remove CITATION section and everything after it
+    processedContent = processedContent.replace(/\*\*CITATION\*\*[\s\S]*$/gi, '');
+
+    // Also remove "Citation:" lines
+    processedContent = processedContent.replace(/^Citation:.*$/gmi, '');
+
     // Clean up extra whitespace and newlines
     processedContent = processedContent
       .replace(/\n\s*\n\s*\n+/g, '\n\n')
@@ -244,9 +250,9 @@ export default function MessageList({
   const formatReferences = (text) => {
     // Pattern to match (Reference: ...) text
     const referencePattern = /(\(Reference:[^)]+\))/g;
-    
+
     const parts = text.split(referencePattern);
-    
+
     return parts.map((part, index) => {
       if (part.match(referencePattern)) {
         return (
@@ -385,13 +391,13 @@ export default function MessageList({
               </div>
             </div>
           )}
-          
+
           {/* Optional: Keep debug info for development (remove later) */}
           {process.env.NODE_ENV === 'development' && regulation.references && (
-            <div style={{ 
-              fontSize: '0.7rem', 
-              color: '#666', 
-              marginTop: '0.5rem', 
+            <div style={{
+              fontSize: '0.7rem',
+              color: '#666',
+              marginTop: '0.5rem',
               padding: '0.25rem',
               background: '#f9f9f9',
               borderRadius: '4px',
