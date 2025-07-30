@@ -10,7 +10,8 @@ export default function MessageList({
   isGenerating,
   onEditMessage,
   user,
-  enableTTS = true
+  enableTTS = true,
+  debugMode = false // Add this prop to control debug mode
 }) {
   const messagesEndRef = useRef(null);
   const [editingMessageIndex, setEditingMessageIndex] = useState(null);
@@ -355,8 +356,61 @@ export default function MessageList({
     return elements;
   };
 
+  // Updated renderRegulationResult function with debug mode
   const renderRegulationResult = (message, messageIndex) => {
-    // 🔍 DEBUG: Log message structure for debugging
+    // Test references for debug mode
+    const debugTestReferences = [
+      { document: "NBC 2016", section: "Related Content", page: "184" },
+      { document: "NBC 2016", section: "Related Content", page: "228" },
+      { document: "NBC 2016", section: "Related Content", page: "192" },
+      { document: "NBC 2016", section: "Related Content", page: "156" },
+      { document: "NBC 2016", section: "Related Content", page: "183" }
+    ];
+
+    // Debug mode: Force show references for all assistant messages
+    if (debugMode && message.role === 'assistant') {
+      console.log(`🔍 DEBUG MODE: Forcing references for message ${messageIndex}`);
+      
+      return (
+        <div className={styles.regulationContainer}>
+          <div className={styles.regulationHeader}>
+            <div className={styles.headerReferencesSection}>
+              <div className={styles.headerReferencesTitle}>
+                Also refer these pages:
+              </div>
+              <div className={styles.headerReferencesList}>
+                {debugTestReferences.map((ref, index) => (
+                  <span key={index} className={styles.headerReferenceItem}>
+                    Page {ref.page}
+                    {index < debugTestReferences.length - 1 && ', '}
+                  </span>
+                ))}
+              </div>
+            </div>
+            
+            {/* Debug info */}
+            <div style={{ 
+              fontSize: '0.7rem', 
+              color: '#888', 
+              marginTop: '0.5rem', 
+              borderTop: '1px solid #ddd', 
+              paddingTop: '0.5rem',
+              backgroundColor: '#fff9c4',
+              padding: '0.5rem',
+              border: '1px solid #fbbf24',
+              borderRadius: '4px'
+            }}>
+              <strong>🧪 DEBUG MODE:</strong> 
+              Showing test references. 
+              Actual regulation data: {!!message.regulation ? 'EXISTS' : 'NONE'}, 
+              Actual references: {message.regulation?.references?.length || 0}
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    // Production mode: Use actual regulation data
     console.log(`🔍 Message ${messageIndex} regulation check:`, {
       hasRegulation: !!message.regulation,
       regulationType: typeof message.regulation,
@@ -373,7 +427,7 @@ export default function MessageList({
 
     const regulation = message.regulation;
 
-    // 🔍 DEBUG: Log references specifically
+    // Log references specifically
     if (regulation.references && regulation.references.length > 0) {
       console.log(`✅ Message ${messageIndex} has ${regulation.references.length} references:`, 
         regulation.references.map(ref => `Page ${ref.page}`).join(', ')
@@ -402,7 +456,7 @@ export default function MessageList({
             </div>
           )}
           
-          {/* 🔍 DEBUG: Show debug info in development */}
+          {/* Development debug info */}
           {process.env.NODE_ENV === 'development' && (
             <div style={{ fontSize: '0.7rem', color: '#888', marginTop: '0.5rem', borderTop: '1px solid #ddd', paddingTop: '0.5rem' }}>
               <strong>DEBUG:</strong> Confidence: {regulation.confidence}, 
@@ -449,6 +503,20 @@ export default function MessageList({
               )}
             </div>
           </div>
+          
+          {/* Debug mode indicator */}
+          {debugMode && (
+            <div style={{
+              marginTop: '1rem',
+              padding: '0.75rem',
+              backgroundColor: '#fff9c4',
+              border: '1px solid #fbbf24',
+              borderRadius: '8px',
+              fontSize: '0.9rem'
+            }}>
+              <strong>🧪 DEBUG MODE ACTIVE:</strong> Test references will be displayed for all assistant messages.
+            </div>
+          )}
         </div>
       </div>
     );
