@@ -1,4 +1,4 @@
-// src/components/home/RegulationPanel/MessageList.js - Building Codes Assistant - FINAL VERSION
+// src/components/home/RegulationPanel/MessageList.js - Building Codes Assistant - QUERY TYPE AWARENESS
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
@@ -395,6 +395,26 @@ export default function MessageList({
     return elements;
   };
 
+  // NEW: Smart function to determine if references should be shown
+  const shouldShowReferences = (regulation) => {
+    if (!regulation || !regulation.references || regulation.references.length === 0) {
+      return false;
+    }
+
+    // Get query type from regulation data
+    const queryType = regulation.query_type;
+
+    // Only show references for building codes queries
+    if (queryType === "building_codes") {
+      console.log('✅ Showing references for building_codes query');
+      return true;
+    }
+
+    // Don't show references for other query types
+    console.log(`❌ Not showing references for query type: ${queryType}`);
+    return false;
+  };
+
   const renderRegulationResult = (message, messageIndex) => {
     if (!message.regulation || !message.regulation.answer) {
       console.log(`❌ No regulation data for message ${messageIndex}`);
@@ -403,22 +423,25 @@ export default function MessageList({
 
     const regulation = message.regulation;
 
-    // Log successful detection
-    console.log(`✅ Rendering regulation for message ${messageIndex} with ${regulation.references?.length || 0} references`);
+    // Log query type detection
+    console.log(`🔍 Message ${messageIndex} regulation analysis:`, {
+      queryType: regulation.query_type,
+      hasReferences: !!regulation.references,
+      referencesCount: regulation.references?.length || 0,
+      shouldShow: shouldShowReferences(regulation)
+    });
 
     return (
       <div className={styles.regulationContainer}>
         <div className={styles.regulationHeader}>
-          {/* Show references in header */}
-          {regulation.references && regulation.references.length > 0 && (
+          {/* NEW: Conditional references display based on query type */}
+          {shouldShowReferences(regulation) && (
             <div className={styles.headerReferencesSection}>
-              <div className={styles.headerReferencesTitle}>
-                Also refer these pages:
-              </div>
+              <div className={styles.headerReferencesTitle}>Also refer these pages:</div>
               <div className={styles.headerReferencesList}>
                 {regulation.references.map((ref, index) => (
                   <span key={index} className={styles.headerReferenceItem}>
-                    Page {ref.page}
+                    {ref.display_text || `${ref.document} Page ${ref.page}`}
                     {index < regulation.references.length - 1 && ', '}
                   </span>
                 ))}
@@ -426,8 +449,8 @@ export default function MessageList({
             </div>
           )}
 
-          {/* Optional: Keep debug info for development (remove later) */}
-          {process.env.NODE_ENV === 'development' && regulation.references && (
+          {/* Development debug info - shows query type for testing */}
+          {process.env.NODE_ENV === 'development' && (
             <div style={{
               fontSize: '0.7rem',
               color: '#666',
@@ -435,9 +458,11 @@ export default function MessageList({
               padding: '0.25rem',
               background: '#f9f9f9',
               borderRadius: '4px',
-              borderLeft: '3px solid #059669'
+              borderLeft: shouldShowReferences(regulation) ? '3px solid #059669' : '3px solid #dc2626'
             }}>
-              <strong>✅ SUCCESS:</strong> Found {regulation.references.length} references from chunks 4-8
+              <strong>Query Type:</strong> {regulation.query_type || 'unknown'} | 
+              <strong> References:</strong> {shouldShowReferences(regulation) ? 'SHOWN' : 'HIDDEN'} | 
+              <strong> Count:</strong> {regulation.references?.length || 0}
             </div>
           )}
         </div>
@@ -449,7 +474,7 @@ export default function MessageList({
     return (
       <div className={styles.emptyMessages}>
         <div className={styles.welcomeMessage}>
-          <h3>Welcome to Building Codes AI!</h3>
+          <h3>Welcome to REG-GPT!</h3>
           <p>Get instant, professional building code compliance reports with AI-powered analysis and precise citations.</p>
 
           <div className={styles.capabilities}>
@@ -471,7 +496,7 @@ export default function MessageList({
               </svg>
             </div>
             <div className={styles.noteContent}>
-              <strong>Professional Report Format:</strong> Every response includes structured compliance summaries, specific code citations, and detailed requirement breakdowns designed for architecture professionals.
+              <strong>Smart Query Routing:</strong> REG-GPT intelligently handles building code questions, system information queries, and provides helpful guidance when information isn't available.
               {enableTTS && isTTSSupported && (
                 <>
                   <br /><strong>🔊 Voice Features:</strong> Ask questions hands-free and listen to responses while working on designs.
@@ -566,7 +591,7 @@ export default function MessageList({
                 </div>
               </div>
 
-              {/* Render regulation result for assistant messages */}
+              {/* Render regulation result for assistant messages with query type awareness */}
               {message.role === 'assistant' && renderRegulationResult(message, index)}
             </div>
           </div>

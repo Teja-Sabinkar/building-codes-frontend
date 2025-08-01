@@ -1,4 +1,4 @@
-// src/app/dashboard/home/page.js - Building Codes Assistant - COMPLETE FIX
+// src/app/dashboard/home/page.js - Building Codes Assistant - QUERY TYPE AWARENESS
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -141,32 +141,42 @@ export default function HomePage() {
       if (response.ok) {
         const data = await response.json();
 
-        // 🔍 DEBUG: Log the complete API response
+        // 🔍 DEBUG: Log the complete API response including query_type
         console.log('🔍 FULL API RESPONSE:', JSON.stringify(data, null, 2));
         console.log('🔍 API Response received:', data);
         console.log('🔍 Has regulation:', !!data.regulation);
+        console.log('🔍 Query Type:', data.regulation?.query_type);
         console.log('🔍 References:', data.regulation?.references);
         console.log('🔍 References count:', data.regulation?.references?.length);
 
         console.log('✅ Regulation query successful:', {
           hasConversation: !!data.conversation,
           hasResult: !!data.regulation,
+          queryType: data.regulation?.query_type,
           messageCount: data.conversation?.messages?.length,
           confidence: data.regulation?.confidence,
           referencesCount: data.regulation?.references?.length
         });
 
-        // 🔧 CRITICAL FIX: Ensure assistant messages have regulation data
+        // 🔧 CRITICAL FIX: Ensure assistant messages have regulation data WITH QUERY TYPE
         if (data.conversation && data.conversation.messages && data.regulation) {
-          console.log('🔧 Attaching regulation data to assistant messages...');
+          console.log('🔧 Attaching regulation data (with query_type) to assistant messages...');
           
           const updatedMessages = data.conversation.messages.map((msg, index) => {
             // If this is an assistant message, attach the regulation data
             if (msg.role === 'assistant') {
-              console.log(`🔗 Attaching regulation to assistant message ${index}`);
+              console.log(`🔗 Attaching regulation to assistant message ${index}:`, {
+                queryType: data.regulation.query_type,
+                hasReferences: !!data.regulation.references,
+                referencesCount: data.regulation.references?.length || 0
+              });
               return {
                 ...msg,
-                regulation: data.regulation  // ← CRITICAL: Attach regulation data to message
+                regulation: {
+                  ...data.regulation,
+                  // Ensure query_type is preserved in message regulation data
+                  query_type: data.regulation.query_type
+                }
               };
             }
             return msg;
@@ -174,7 +184,7 @@ export default function HomePage() {
 
           // Update the conversation with regulation-enhanced messages
           data.conversation.messages = updatedMessages;
-          console.log('✅ Regulation data attached to', updatedMessages.filter(m => m.role === 'assistant').length, 'assistant messages');
+          console.log('✅ Regulation data (with query_type) attached to', updatedMessages.filter(m => m.role === 'assistant').length, 'assistant messages');
         }
 
         // Update conversation state
@@ -333,13 +343,16 @@ export default function HomePage() {
             const queryData = await queryResponse.json();
             console.log('✅ Regeneration completed:', queryData);
 
-            // 🔧 CRITICAL: Attach regulation data to the latest assistant message
+            // 🔧 CRITICAL: Attach regulation data with query_type to the latest assistant message
             if (queryData.conversation && queryData.conversation.messages && queryData.regulation) {
               const updatedMessages = queryData.conversation.messages.map((msg, index) => {
                 if (msg.role === 'assistant') {
                   return {
                     ...msg,
-                    regulation: queryData.regulation
+                    regulation: {
+                      ...queryData.regulation,
+                      query_type: queryData.regulation.query_type  // Preserve query_type
+                    }
                   };
                 }
                 return msg;
@@ -398,13 +411,14 @@ export default function HomePage() {
     );
   };
 
-  // 🔍 DEBUG: Log what we're passing to RegulationPanel
+  // 🔍 DEBUG: Log what we're passing to RegulationPanel with query_type awareness
   if (currentConversation?.messages) {
-    console.log('🔍 DEBUGGING: Messages being passed to MessageList:');
+    console.log('🔍 DEBUGGING: Messages being passed to MessageList (with query_type):');
     currentConversation.messages.forEach((msg, index) => {
       console.log(`Message ${index}:`, {
         role: msg.role,
         hasRegulation: !!msg.regulation,
+        queryType: msg.regulation?.query_type || 'none',
         regulationKeys: msg.regulation ? Object.keys(msg.regulation) : 'none',
         referencesCount: msg.regulation?.references?.length || 0,
         contentPreview: msg.content.substring(0, 50) + '...'
