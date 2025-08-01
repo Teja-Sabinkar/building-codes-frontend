@@ -1,4 +1,4 @@
-// src/components/home/RegulationPanel/MessageList.js - Building Codes Assistant - QUERY TYPE AWARENESS
+// src/components/home/RegulationPanel/MessageList.js - Building Codes Assistant - BULLET POINT REFERENCES
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
@@ -395,7 +395,7 @@ export default function MessageList({
     return elements;
   };
 
-  // NEW: Smart function to determine if references should be shown
+  // Smart function to determine if references should be shown
   const shouldShowReferences = (regulation) => {
     if (!regulation || !regulation.references || regulation.references.length === 0) {
       return false;
@@ -423,7 +423,7 @@ export default function MessageList({
 
     const regulation = message.regulation;
 
-    // Log query type detection
+    // Log query type detection (console only - not visible to users)
     console.log(`🔍 Message ${messageIndex} regulation analysis:`, {
       queryType: regulation.query_type,
       hasReferences: !!regulation.references,
@@ -431,40 +431,29 @@ export default function MessageList({
       shouldShow: shouldShowReferences(regulation)
     });
 
+    // Only render the container if we actually have references to show
+    if (!shouldShowReferences(regulation)) {
+      console.log(`📝 No regulation container needed for query type: ${regulation.query_type}`);
+      return null; // Don't render anything - no container, no header, nothing
+    }
+
+    // Only render if we have references to show
+    console.log(`✅ Rendering regulation container with ${regulation.references.length} references`);
+    
     return (
       <div className={styles.regulationContainer}>
         <div className={styles.regulationHeader}>
-          {/* NEW: Conditional references display based on query type */}
-          {shouldShowReferences(regulation) && (
-            <div className={styles.headerReferencesSection}>
-              <div className={styles.headerReferencesTitle}>Also refer these pages:</div>
-              <div className={styles.headerReferencesList}>
-                {regulation.references.map((ref, index) => (
-                  <span key={index} className={styles.headerReferenceItem}>
-                    {ref.display_text || `${ref.document} Page ${ref.page}`}
-                    {index < regulation.references.length - 1 && ', '}
-                  </span>
-                ))}
-              </div>
+          <div className={styles.headerReferencesSection}>
+            <div className={styles.headerReferencesTitle}>Also refer these pages:</div>
+            <div className={styles.headerReferencesList}>
+              {/* NEW: Display as bullet points instead of comma-separated */}
+              {regulation.references.map((ref, index) => (
+                <div key={index} className={styles.headerReferenceItem}>
+                  • {ref.display_text || `${ref.document} Page ${ref.page}`}
+                </div>
+              ))}
             </div>
-          )}
-
-          {/* Development debug info - shows query type for testing */}
-          {process.env.NODE_ENV === 'development' && (
-            <div style={{
-              fontSize: '0.7rem',
-              color: '#666',
-              marginTop: '0.5rem',
-              padding: '0.25rem',
-              background: '#f9f9f9',
-              borderRadius: '4px',
-              borderLeft: shouldShowReferences(regulation) ? '3px solid #059669' : '3px solid #dc2626'
-            }}>
-              <strong>Query Type:</strong> {regulation.query_type || 'unknown'} | 
-              <strong> References:</strong> {shouldShowReferences(regulation) ? 'SHOWN' : 'HIDDEN'} | 
-              <strong> Count:</strong> {regulation.references?.length || 0}
-            </div>
-          )}
+          </div>
         </div>
       </div>
     );
