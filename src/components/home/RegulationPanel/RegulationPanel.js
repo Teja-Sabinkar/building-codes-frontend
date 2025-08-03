@@ -35,6 +35,31 @@ export default function RegulationPanel({
     setSidebarOpen(isSidebarOpen);
   }, [isSidebarOpen]);
 
+  // Helper function to get the display title for a conversation
+  const getConversationDisplayTitle = (conversation) => {
+    if (!conversation) return 'Building Codes Assistant';
+    
+    // 🔧 FIX: Always use database title if it exists and is not empty
+    if (conversation.title && conversation.title.trim() && conversation.title !== 'New Regulation Query') {
+      return conversation.title;
+    }
+    
+    // Fallback: Use first user message if no database title
+    if (conversation.messages && conversation.messages.length > 0) {
+      const firstUserMessage = conversation.messages.find(msg => msg.role === 'user');
+      if (firstUserMessage && firstUserMessage.content) {
+        const content = firstUserMessage.content.trim();
+        if (content.length > 60) {
+          return content.substring(0, 57) + '...';
+        }
+        return content;
+      }
+    }
+    
+    // Final fallback
+    return 'New Regulation Query';
+  };
+
   const handleLogout = async () => {
     try {
       await fetch('/api/auth/logout', {
@@ -105,10 +130,17 @@ export default function RegulationPanel({
         newTitle
       });
 
+      const authToken = localStorage.getItem('authToken');
+      
+      if (!authToken) {
+        throw new Error('No authentication token found');
+      }
+
       const response = await fetch('/api/conversations', {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': `Bearer ${authToken}`,
         },
         body: JSON.stringify({
           conversationId: currentConversation._id,
@@ -124,8 +156,9 @@ export default function RegulationPanel({
         throw new Error(data.error || 'Failed to update title');
       }
 
-      console.log('✅ Title updated successfully:', data);
+      console.log('✅ Title updated in database:', data.conversation?.title);
 
+      // Update the conversation in the frontend state
       if (onUpdateConversation && data.conversation) {
         onUpdateConversation(data.conversation);
       }
@@ -148,6 +181,21 @@ export default function RegulationPanel({
     }
   };
 
+  // Get the current display title
+  const displayTitle = getConversationDisplayTitle(currentConversation);
+  
+  // Determine if the title is editable (show edit icon)
+  const isTitleEditable = currentConversation && currentConversation.messages && currentConversation.messages.length > 0;
+
+  console.log('🔍 RegulationPanel - Title Display:', {
+    conversationId: currentConversation?._id,
+    storedTitle: currentConversation?.title,
+    displayTitle,
+    hasMessages: currentConversation?.messages?.length || 0,
+    firstMessage: currentConversation?.messages?.[0]?.content?.substring(0, 30) + '...',
+    isTitleEditable
+  });
+
   return (
     <div className={styles.regulationPanel}>
       {/* Conversation Sidebar */}
@@ -160,7 +208,7 @@ export default function RegulationPanel({
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                 </svg>
               </div>
-              <span className={styles.brandText}>Reg-GPT</span>
+              <span className={styles.brandText}>REG-GPT</span>
             </div>
           )}
           <button
@@ -274,17 +322,20 @@ export default function RegulationPanel({
           <div className={styles.headerTitle}>
             {currentConversation ? (
               <div className={styles.titleContainer}>
-                <button
-                  onClick={() => setIsTitleEditOpen(true)}
-                  className={styles.editableTitleButton}
-                  title="Click to rename conversation"
-                >
-                  <h2 className={styles.conversationTitle}>{currentConversation.title}</h2>
-                  <svg xmlns="http://www.w3.org/2000/svg" className={styles.editIcon} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                  </svg>
-                </button>
-         
+                {isTitleEditable ? (
+                  <button
+                    onClick={() => setIsTitleEditOpen(true)}
+                    className={styles.editableTitleButton}
+                    title="Click to rename conversation"
+                  >
+                    <h2 className={styles.conversationTitle}>{displayTitle}</h2>
+                    <svg xmlns="http://www.w3.org/2000/svg" className={styles.editIcon} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                    </svg>
+                  </button>
+                ) : (
+                  <h2 className={styles.conversationTitle}>{displayTitle}</h2>
+                )}
               </div>
             ) : (
               <h2>Building Codes Assistant</h2>
@@ -348,7 +399,7 @@ export default function RegulationPanel({
       {/* Title Edit Modal */}
       <TitleEditModal
         isOpen={isTitleEditOpen}
-        currentTitle={currentConversation?.title || ''}
+        currentTitle={displayTitle}
         onSave={handleTitleEdit}
         onCancel={() => setIsTitleEditOpen(false)}
         isLoading={isUpdatingTitle}

@@ -4,8 +4,8 @@ import AuthHeader from '@/components/auth/AuthHeader';
 import styles from './SignupPage.module.css';
 
 export const metadata = {
-  title: 'Sign Up | AI CAD',
-  description: 'Create an account for AI CAD',
+  title: 'Sign Up | REG-GPT',
+  description: 'Create an account for Building Codes Assistant',
 };
 
 export default function SignupPage() {

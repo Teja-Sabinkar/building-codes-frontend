@@ -105,16 +105,16 @@ export default function ResetPasswordForm() {
       <div className="w-full">
         <div className={styles.formContainer}>
           <div className="text-center">
-            <svg className="mx-auto h-12 w-12 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <svg className="mx-auto h-12 w-12 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
-            <h2 className="text-2xl font-bold mt-4 mb-2 text-gray-800">Password Reset Successful</h2>
+            <h2 className="text-xl font-semibold mt-4 mb-2 text-gray-800">Password Reset Successful</h2>
             <p className="text-gray-600 mb-6">
               Your password has been successfully reset.
             </p>
             <Link 
               href="/auth/login"
-              className="inline-block bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-6 rounded-md focus:outline-none focus:shadow-outline transition-colors"
+              className="inline-block bg-green-600 hover:bg-green-700 text-white font-semibold py-2 px-6 rounded-md focus:outline-none focus:shadow-outline transition-colors"
             >
               Log in with new password
             </Link>
@@ -130,7 +130,7 @@ export default function ResetPasswordForm() {
         <h2 className={styles.formTitle}>Reset Your Password</h2>
         
         {errors.form && (
-          <div className="mb-4 p-3 bg-red-50 text-red-500 text-sm rounded-md">
+          <div className={styles.errorMessage}>
             {errors.form}
           </div>
         )}
@@ -174,10 +174,17 @@ export default function ResetPasswordForm() {
         <div className="flex items-center justify-center">
           <button
             type="submit"
-            className={`${styles.submitButton} ${isLoading ? 'opacity-70 cursor-not-allowed' : ''}`}
+            className={styles.submitButton}
             disabled={isLoading || !token}
           >
-            {isLoading ? 'Resetting Password...' : 'Reset Password'}
+            {isLoading ? (
+              <>
+                <div className={styles.loadingSpinner}></div>
+                <span className="ml-2">Resetting Password...</span>
+              </>
+            ) : (
+              'Reset Password'
+            )}
           </button>
         </div>
       </form>

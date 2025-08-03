@@ -1,39 +1,52 @@
-/* src/components/home/RegulationPanel/ConversationList.module.css - Building Codes Theme */
+/* src/components/home/RegulationPanel/ConversationList.module.css - FIXED ACTIVE STATE STYLING */
 
 .conversationList {
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
+  gap: 0.75rem;
+  overflow-y: auto;
+  max-height: calc(100vh - 200px);
 }
 
 .conversationItem {
   position: relative;
-  background-color: white;
-  border: 1px solid #e2e8f0;
-  border-radius: 0.5rem;
-  padding: 0.75rem;
+  padding: 1rem;
+  border-radius: 0.75rem;
+  /* FIXED: Use consistent border without override conflicts */
+  border: 2px solid #e5e7eb;
+  background: #ffffff;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all 0.2s ease-in-out;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
 .conversationItem:hover {
-  border-color: #bbf7d0;
-  box-shadow: 0 1px 3px 0 rgba(5, 150, 105, 0.1);
-  background-color: #f0fdf4;
+  border-color: #d1d5db;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
 
+/* FIXED: Active conversation styling */
 .conversationItem.active {
-  border-color: #059669;
-  background-color: #f0fdf4;
-  box-shadow: 0 1px 3px 0 rgba(5, 150, 105, 0.15);
+  border-color: #059669 !important;
+  background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
+  box-shadow: 0 4px 12px rgba(5, 150, 105, 0.15);
+  /* ADDED: Ensure border is always visible at any zoom */
+  border-style: solid;
+  border-width: 2px;
+}
+
+.conversationItem.active:hover {
+  border-color: #047857 !important;
+  box-shadow: 0 6px 16px rgba(5, 150, 105, 0.2);
 }
 
 .conversationHeader {
   display: flex;
-  align-items: flex-start;
   justify-content: space-between;
+  align-items: flex-start;
   margin-bottom: 0.5rem;
-  gap: 0.5rem;
+  gap: 0.75rem;
+  min-height: 1.5rem;
 }
 
 .conversationTitle {
@@ -41,12 +54,18 @@
   font-weight: 600;
   color: #1f2937;
   margin: 0;
-  line-height: 1.2;
+  line-height: 1.3;
   flex: 1;
-  min-width: 0;
+  min-width: 0; /* Allow flex item to shrink below content size */
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+/* Active conversation title styling */
+.conversationItem.active .conversationTitle {
+  color: #047857;
+  font-weight: 700;
 }
 
 .conversationDate {
@@ -56,21 +75,15 @@
   flex-shrink: 0;
 }
 
-/* Conversation metadata */
-.conversationMeta {
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
+/* Active conversation date styling */
+.conversationItem.active .conversationDate {
+  color: #059669;
+  font-weight: 500;
 }
 
-.conversationPreview {
-  font-size: 0.75rem;
-  color: #6b7280;
-  line-height: 1.3;
-  margin: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+.conversationMeta {
+  display: flex;
+  justify-content: flex-start;
 }
 
 .conversationStats {
@@ -79,159 +92,153 @@
   gap: 0.75rem;
 }
 
-.regulationCount,
 .messageCount {
   display: flex;
   align-items: center;
   gap: 0.25rem;
-  font-size: 0.6875rem;
+  font-size: 0.75rem;
   color: #6b7280;
+}
+
+/* Active conversation stats styling */
+.conversationItem.active .messageCount {
+  color: #059669;
   font-weight: 500;
 }
 
-.regulationCount {
-  color: #059669;
-}
-
-.regulationCount .statIcon {
-  color: #059669;
-}
-
-.messageCount .statIcon {
-  color: #9ca3af;
-}
-
 .statIcon {
-  width: 0.75rem;
-  height: 0.75rem;
+  width: 0.875rem;
+  height: 0.875rem;
   flex-shrink: 0;
 }
 
-/* Options Menu */
+/* Remove special styling for active conversation options - treat same as inactive */
+
 .conversationOptions {
   position: absolute;
-  top: 0.5rem;
+  bottom: 0.5rem;
   right: 0.5rem;
   display: flex;
   gap: 0.25rem;
-  opacity: 0;
-  animation: fadeIn 0.2s ease forwards;
+  background: transparent;
+  border-radius: 0.5rem;
+  padding: 0.25rem;
+  backdrop-filter: blur(4px);
+  z-index: 20;
 }
 
-@keyframes fadeIn {
-  to {
-    opacity: 1;
-  }
-}
+/* Remove the hide options rule since we now show options for active conversations */
 
 .optionButton {
-  background-color: rgba(255, 255, 255, 0.95);
-  border: 1px solid #e2e8f0;
-  border-radius: 0.25rem;
-  padding: 0.25rem;
-  cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: all 0.2s ease;
-  backdrop-filter: blur(4px);
-}
-
-.optionButton:hover {
-  background-color: #fee2e2;
-  border-color: #ef4444;
-}
-
-.optionIcon {
-  width: 0.875rem;
-  height: 0.875rem;
+  width: 1.75rem;
+  height: 1.75rem;
+  border: none;
+  background: transparent;
+  border-radius: 0.375rem;
+  cursor: pointer;
+  transition: all 0.15s ease-in-out;
   color: #6b7280;
 }
 
-.optionButton:hover .optionIcon {
+.optionButton:hover {
   color: #ef4444;
 }
 
-/* Empty State */
+.optionIcon {
+  width: 1rem;
+  height: 1rem;
+}
+
+/* Empty state */
 .emptyConversations {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 2rem 1rem;
+  padding: 3rem 1rem;
   text-align: center;
+  color: #6b7280;
 }
 
 .emptyIcon {
-  width: 3rem;
-  height: 3rem;
-  background-color: #f0fdf4;
-  border: 2px solid #bbf7d0;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
   margin-bottom: 1rem;
 }
 
 .emptyIconSvg {
-  width: 1.5rem;
-  height: 1.5rem;
-  color: #059669;
+  width: 3rem;
+  height: 3rem;
+  color: #d1d5db;
 }
 
 .emptyText {
-  font-size: 0.875rem;
+  font-size: 1rem;
   font-weight: 500;
   color: #374151;
-  margin: 0 0 0.25rem 0;
+  margin-bottom: 0.5rem;
 }
 
 .emptySubtext {
-  font-size: 0.75rem;
+  font-size: 0.875rem;
   color: #6b7280;
-  margin: 0;
 }
 
-/* Responsive adjustments */
+  /* Mobile responsiveness */
 @media (max-width: 768px) {
-  .conversationItem {
-    padding: 0.625rem;
+  .conversationList {
+    padding: 0.5rem 0;
+    gap: 0.375rem;
   }
-  
+
+  .conversationItem {
+    padding: 0.75rem;
+  }
+
   .conversationTitle {
     font-size: 0.8125rem;
   }
-  
-  .conversationPreview {
-    font-size: 0.6875rem;
+
+  .conversationStats {
+    gap: 0.5rem;
   }
-  
-  .regulationCount,
+
   .messageCount {
-    font-size: 0.625rem;
-  }
-  
-  .statIcon {
-    width: 0.6875rem;
-    height: 0.6875rem;
-  }
-  
-  .conversationDate {
     font-size: 0.6875rem;
   }
-  
-  .emptyConversations {
-    padding: 1.5rem 0.75rem;
+
+  .statIcon {
+    width: 0.75rem;
+    height: 0.75rem;
   }
-  
-  .emptyIcon {
-    width: 2.5rem;
-    height: 2.5rem;
+
+  .conversationOptions {
+    bottom: 0.375rem;
+    right: 0.375rem;
   }
-  
-  .emptyIconSvg {
-    width: 1.25rem;
-    height: 1.25rem;
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+  .conversationItem.active {
+    border-color: #000000;
+    background: #ffffff;
+  }
+
+  .conversationItem.active .conversationTitle {
+    color: #000000;
+  }
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  .conversationItem {
+    transition: none;
+  }
+
+  .conversationItem:hover,
+  .conversationItem.active {
+    transform: none;
   }
 }

@@ -1,8 +1,8 @@
 // app/api/auth/login/route.js
 import { NextResponse } from 'next/server';
+import jwt from 'jsonwebtoken';
 import connectToDatabase from '@/lib/db/mongodb';
 import User from '@/models/User';
-import { generateToken, setAuthCookie } from '@/lib/auth/auth';
 
 export async function POST(request) {
   try {
@@ -20,11 +20,19 @@ export async function POST(request) {
       );
     }
     
-    // Find the user by email
-    const user = await User.findOne({ email }).select('+password');
+    // Find the user by email (include password for comparison)
+    const user = await User.findOne({ email: email.toLowerCase() }).select('+password');
     
-    // Check if user exists and password is correct
-    if (!user || !(await user.comparePassword(password))) {
+    if (!user) {
+      return NextResponse.json(
+        { error: 'Invalid email or password' },
+        { status: 401 }
+      );
+    }
+    
+    // Check if password is correct
+    const isPasswordValid = await user.comparePassword(password);
+    if (!isPasswordValid) {
       return NextResponse.json(
         { error: 'Invalid email or password' },
         { status: 401 }
@@ -40,16 +48,17 @@ export async function POST(request) {
     }
     
     // Update last login time
-    user.lastLogin = Date.now();
+    user.lastLogin = new Date();
     await user.save({ validateBeforeSave: false });
     
     // Generate JWT token
-    const token = generateToken(user);
+    const token = jwt.sign(
+      { userId: user._id, email: user.email },
+      process.env.JWT_SECRET,
+      { expiresIn: '7d' }
+    );
     
-    // Set the token in a cookie
-    setAuthCookie(token);
-    
-    // Return success response
+    // Return success response WITH token
     return NextResponse.json({
       message: 'Login successful',
       user: {
@@ -57,12 +66,12 @@ export async function POST(request) {
         name: user.name,
         email: user.email,
         isEmailVerified: user.isEmailVerified,
-      }
+      },
+      token
     });
     
   } catch (error) {
     console.error('Login error:', error);
-    
     return NextResponse.json(
       { error: 'An error occurred during login' },
       { status: 500 }

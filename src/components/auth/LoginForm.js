@@ -87,7 +87,7 @@ export default function LoginForm() {
         <h2 className={styles.formTitle}>Log In</h2>
         
         {errors.form && (
-          <div className="mb-4 p-3 bg-red-50 text-red-500 text-sm rounded-md">
+          <div className={styles.errorMessage}>
             {errors.form}
           </div>
         )}
@@ -137,31 +137,38 @@ export default function LoginForm() {
         </div>
         
         <div className={styles.formGroup}>
-          <label className="flex items-center">
+          <label className={styles.checkboxGroup}>
             <input
               type="checkbox"
               name="rememberMe"
               checked={formData.rememberMe}
               onChange={handleChange}
-              className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+              className={styles.checkbox}
             />
-            <span className="ml-2 text-sm text-gray-600">Remember me</span>
+            <span className={styles.checkboxLabel}>Remember me</span>
           </label>
         </div>
         
         <div className="flex items-center justify-center">
           <button
             type="submit"
-            className={`${styles.submitButton} ${isLoading ? 'opacity-70 cursor-not-allowed' : ''}`}
+            className={styles.submitButton}
             disabled={isLoading}
           >
-            {isLoading ? 'Logging in...' : 'Log In'}
+            {isLoading ? (
+              <>
+                <div className={styles.loadingSpinner}></div>
+                <span className="ml-2">Logging in...</span>
+              </>
+            ) : (
+              'Log In'
+            )}
           </button>
         </div>
       </form>
       
       <div className={styles.formFooter}>
-        <p className="text-sm text-gray-600">
+        <p>
           Don't have an account?{' '}
           <Link href="/auth/signup" className={styles.link}>
             Sign up

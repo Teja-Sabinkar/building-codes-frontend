@@ -4,8 +4,8 @@ import AuthHeader from '@/components/auth/AuthHeader';
 import styles from './LoginPage.module.css';
 
 export const metadata = {
-  title: 'Login | AI CAD',
-  description: 'Log in to your AI CAD account',
+  title: 'Login | REG-GPT',
+  description: 'Log in to your Building Codes Assistant account',
 };
 
 export default function LoginPage() {

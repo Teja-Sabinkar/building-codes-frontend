@@ -88,9 +88,9 @@ export default function VerifyEmailPage() {
               <p className="text-gray-600 mb-6">{verificationStatus.message}</p>
               <Link
                 href="/auth/login"
-                className="inline-block bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-6 rounded-md focus:outline-none focus:shadow-outline transition-colors"
+                className="inline-block bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-6 rounded-md focus:outline-none focus:shadow-outline transition-colors"
               >
-                Log In
+                Log In to REG-GPT
               </Link>
             </div>
           ) : verificationStatus.error ? (
@@ -108,7 +108,7 @@ export default function VerifyEmailPage() {
                   // This would be implemented to resend verification email
                   alert('Verification email resent. Please check your inbox.');
                 }}
-                className="inline-block bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-6 rounded-md focus:outline-none focus:shadow-outline transition-colors"
+                className="inline-block bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-6 rounded-md focus:outline-none focus:shadow-outline transition-colors"
               >
                 Resend Verification Email
               </button>
@@ -116,7 +116,7 @@ export default function VerifyEmailPage() {
           ) : (
             <div className="text-center py-4">
               <p className="text-gray-600 mb-6">
-                Please check your email for a verification link. Click the link in the email to verify your account.
+                Please check your email for a verification link. Click the link in the email to verify your REG-GPT account.
               </p>
               <p className="text-gray-600 mb-4">
                 If you didn't receive the email, check your spam folder or request a new verification link.
@@ -126,7 +126,7 @@ export default function VerifyEmailPage() {
                   // This would be implemented to resend verification email
                   alert('Verification email resent. Please check your inbox.');
                 }}
-                className="inline-block bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-6 rounded-md focus:outline-none focus:shadow-outline transition-colors"
+                className="inline-block bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-6 rounded-md focus:outline-none focus:shadow-outline transition-colors"
               >
                 Resend Verification Email
               </button>

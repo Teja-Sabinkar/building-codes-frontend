@@ -19,23 +19,39 @@ export function AuthProvider({ children }) {
 
   const checkAuth = async () => {
     try {
+      const token = localStorage.getItem('authToken');
+      
+      if (!token) {
+        setUser(null);
+        if (pathname?.startsWith('/dashboard')) {
+          router.push('/auth/login');
+        }
+        setLoading(false);
+        return;
+      }
+
       const response = await fetch('/api/auth/me', {
         method: 'GET',
-        credentials: 'include'
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
       });
 
       if (response.ok) {
         const data = await response.json();
         setUser(data.user);
       } else {
+        // Token is invalid, remove it
+        localStorage.removeItem('authToken');
         setUser(null);
-        // Only redirect to login if on a protected route
         if (pathname?.startsWith('/dashboard')) {
           router.push('/auth/login');
         }
       }
     } catch (error) {
       console.error('Auth check error:', error);
+      localStorage.removeItem('authToken');
       setUser(null);
       if (pathname?.startsWith('/dashboard')) {
         router.push('/auth/login');
@@ -52,13 +68,17 @@ export function AuthProvider({ children }) {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ email, password }),
-        credentials: 'include'
+        body: JSON.stringify({ email, password })
       });
 
       const data = await response.json();
 
       if (response.ok) {
+        // Store JWT token in localStorage
+        if (data.token) {
+          localStorage.setItem('authToken', data.token);
+        }
+        
         setUser(data.user);
         router.push('/dashboard/home');
         return { success: true, user: data.user };
@@ -78,13 +98,18 @@ export function AuthProvider({ children }) {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ name, email, password }),
-        credentials: 'include'
+        body: JSON.stringify({ name, email, password })
       });
 
       const data = await response.json();
 
       if (response.ok) {
+        // Store JWT token if provided (for immediate login after signup)
+        if (data.token) {
+          localStorage.setItem('authToken', data.token);
+          setUser(data.user);
+        }
+        
         return { success: true, message: data.message, user: data.user };
       } else {
         return { success: false, error: data.error };
@@ -97,10 +122,19 @@ export function AuthProvider({ children }) {
 
   const logout = async () => {
     try {
-      await fetch('/api/auth/logout', {
-        method: 'POST',
-        credentials: 'include'
-      });
+      // Remove token from localStorage
+      localStorage.removeItem('authToken');
+      
+      // Optional: Call logout endpoint if you have server-side cleanup
+      const token = localStorage.getItem('authToken');
+      if (token) {
+        await fetch('/api/auth/logout', {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
+      }
     } catch (error) {
       console.error('Logout error:', error);
     } finally {
@@ -168,6 +202,8 @@ export function AuthProvider({ children }) {
       const data = await response.json();
 
       if (response.ok) {
+        // After email verification, refresh user data
+        await checkAuth();
         return { success: true, message: data.message };
       } else {
         return { success: false, error: data.error };
@@ -205,11 +241,11 @@ export function AuthProvider({ children }) {
 
 export function useAuth() {
   const context = useContext(AuthContext);
-  
+
   if (context === undefined) {
     throw new Error('useAuth must be used within an AuthProvider');
   }
-  
+
   return context;
 }
 

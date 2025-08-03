@@ -79,7 +79,7 @@ export default function TitleEditModal({
     <div className={styles.overlay} onClick={handleCancel}>
       <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
         <div className={styles.header}>
-          <h3 className={styles.title}>Rename Regulation Session</h3>
+          <h3 className={styles.title}>Edit Conversation Title</h3>
           <button
             onClick={handleCancel}
             className={styles.closeButton}
@@ -117,35 +117,6 @@ export default function TitleEditModal({
               </span>
             </div>
 
-            <div className={styles.suggestions}>
-              <span className={styles.suggestionsLabel}>Suggestions:</span>
-              <div className={styles.suggestionButtons}>
-                <button
-                  type="button"
-                  onClick={() => setTitle("Residential Building Requirements")}
-                  className={styles.suggestionButton}
-                  disabled={isLoading}
-                >
-                  Residential Requirements
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setTitle("Commercial Fire Safety Codes")}
-                  className={styles.suggestionButton}
-                  disabled={isLoading}
-                >
-                  Fire Safety Codes
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setTitle("ADA Accessibility Compliance")}
-                  className={styles.suggestionButton}
-                  disabled={isLoading}
-                >
-                  ADA Compliance
-                </button>
-              </div>
-            </div>
             
             {error && (
               <div className={styles.errorMessage}>

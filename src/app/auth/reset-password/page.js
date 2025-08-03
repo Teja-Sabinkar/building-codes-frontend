@@ -4,8 +4,8 @@ import AuthHeader from '@/components/auth/AuthHeader';
 import styles from './ResetPasswordPage.module.css';
 
 export const metadata = {
-  title: 'Reset Password | AI CAD',
-  description: 'Reset your AI CAD password',
+  title: 'Reset Password | REG-GPT',
+  description: 'Reset your Building Codes Assistant password',
 };
 
 export default function ResetPasswordPage() {

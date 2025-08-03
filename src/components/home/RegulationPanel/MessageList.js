@@ -75,11 +75,26 @@ export default function MessageList({
     setPreviousMessageCount(messages.length);
   }, [messages, isGenerating, enableTTS, isTTSSupported, previousMessageCount, isInitialLoad]);
 
-  const formatTime = (dateString) => {
-    return new Date(dateString).toLocaleTimeString([], {
-      hour: '2-digit',
-      minute: '2-digit'
-    });
+  const formatTime = (timestamp) => {
+    if (!timestamp) return 'Just now';
+
+    try {
+      // Handle both string and Date object formats
+      const date = timestamp instanceof Date ? timestamp : new Date(timestamp);
+
+      if (isNaN(date.getTime())) {
+        console.warn('formatTime: Invalid date:', timestamp);
+        return 'Just now';
+      }
+
+      return date.toLocaleTimeString([], {
+        hour: '2-digit',
+        minute: '2-digit'
+      });
+    } catch (error) {
+      console.error('formatTime error:', error, 'Input:', timestamp);
+      return 'Just now';
+    }
   };
 
   const handleEditStart = (messageIndex, currentContent) => {
@@ -439,7 +454,25 @@ export default function MessageList({
 
     // Only render if we have references to show
     console.log(`✅ Rendering regulation container with ${regulation.references.length} references`);
-    
+
+
+
+
+    // Replace the existing debug with this more detailed version
+    console.log('🕐 Message timestamp debug:', {
+      messageId: message._id || 'no-id',
+      timestamp: message.timestamp,
+      timestampType: typeof message.timestamp,
+      timestampString: String(message.timestamp),
+      isValidDate: message.timestamp ? !isNaN(new Date(message.timestamp).getTime()) : false,
+      formattedTime: message.timestamp ? formatTime(message.timestamp) : 'NO TIMESTAMP',
+      actualDateObject: message.timestamp ? new Date(message.timestamp) : 'NO TIMESTAMP',
+      currentTime: new Date().toLocaleTimeString()
+    });
+
+
+
+
     return (
       <div className={styles.regulationContainer}>
         <div className={styles.regulationHeader}>

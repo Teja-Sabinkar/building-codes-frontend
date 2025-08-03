@@ -1,0 +1,282 @@
+/* app/page.module.css - Minimal REG-GPT Landing Page */
+
+.container {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background-color: #fefefe;
+}
+
+/* Header */
+.header {
+  background-color: white;
+  border-bottom: 1px solid #e5e7eb;
+  padding: 1rem 0;
+}
+
+.headerContent {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 1.5rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.logo {
+  width: 2rem;
+  height: 2rem;
+  background-color: #059669;
+  border-radius: 0.375rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.logoIcon {
+  width: 1.25rem;
+  height: 1.25rem;
+  color: white;
+}
+
+.brandText {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #1f2937;
+}
+
+.authButtons {
+  display: flex;
+  gap: 0.75rem;
+}
+
+.loginButton,
+.signupButton {
+  padding: 0.5rem 1rem;
+  border-radius: 0.375rem;
+  font-weight: 500;
+  text-decoration: none;
+  transition: all 0.2s ease;
+  font-size: 0.875rem;
+}
+
+.loginButton {
+  background-color: #059669;
+  color: white;
+  border: 1px solid #059669;
+}
+
+.loginButton:hover {
+  background-color: #047857;
+  border-color: #047857;
+}
+
+.signupButton {
+  background-color: white;
+  color: #059669;
+  border: 1px solid #059669;
+}
+
+.signupButton:hover {
+  background-color: #f0fdf4;
+}
+
+/* Main Content */
+.main {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem 1.5rem;
+}
+
+.heroSection {
+  text-align: center;
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.heroTitle {
+  font-size: 2.5rem;
+  font-weight: 800;
+  color: #1f2937;
+  margin-bottom: 1.5rem;
+  line-height: 1.2;
+}
+
+.heroDescription {
+  font-size: 1.125rem;
+  color: #6b7280;
+  margin-bottom: 2rem;
+  line-height: 1.6;
+}
+
+.heroButtons {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin-bottom: 3rem;
+}
+
+.primaryButton,
+.secondaryButton {
+  padding: 0.75rem 1.5rem;
+  border-radius: 0.5rem;
+  font-weight: 600;
+  text-decoration: none;
+  transition: all 0.2s ease;
+  text-align: center;
+}
+
+.primaryButton {
+  background-color: #059669;
+  color: white;
+  border: 2px solid #059669;
+}
+
+.primaryButton:hover {
+  background-color: #047857;
+  border-color: #047857;
+  transform: translateY(-1px);
+}
+
+.secondaryButton {
+  background-color: white;
+  color: #6b7280;
+  border: 2px solid #e5e7eb;
+}
+
+.secondaryButton:hover {
+  background-color: #f9fafb;
+  border-color: #d1d5db;
+}
+
+/* Example Card */
+.exampleCard {
+  background-color: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 0.5rem;
+  padding: 1.5rem;
+  max-width: 400px;
+  margin: 0 auto;
+}
+
+.exampleLabel {
+  font-size: 0.875rem;
+  color: #6b7280;
+  margin-bottom: 0.5rem;
+  font-weight: 500;
+}
+
+.exampleQuery {
+  color: #059669;
+  font-style: italic;
+  font-size: 0.875rem;
+}
+
+/* Footer */
+.footer {
+  background-color: white;
+  border-top: 1px solid #e5e7eb;
+  padding: 1.5rem 0;
+}
+
+.footerContent {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 1.5rem;
+  text-align: center;
+}
+
+.footerText {
+  font-size: 0.875rem;
+  color: #6b7280;
+}
+
+/* Responsive Design */
+@media (min-width: 640px) {
+  .heroButtons {
+    flex-direction: row;
+    justify-content: center;
+  }
+  
+  .primaryButton,
+  .secondaryButton {
+    min-width: 140px;
+  }
+}
+
+@media (min-width: 768px) {
+  .heroTitle {
+    font-size: 3rem;
+  }
+  
+  .heroDescription {
+    font-size: 1.25rem;
+  }
+}
+
+@media (max-width: 640px) {
+  .headerContent {
+    padding: 0 1rem;
+  }
+  
+  .brandText {
+    font-size: 1.25rem;
+  }
+  
+  .authButtons {
+    gap: 0.5rem;
+  }
+  
+  .loginButton,
+  .signupButton {
+    padding: 0.375rem 0.75rem;
+    font-size: 0.8rem;
+  }
+  
+  .main {
+    padding: 1.5rem 1rem;
+  }
+  
+  .heroTitle {
+    font-size: 2rem;
+  }
+  
+  .heroDescription {
+    font-size: 1rem;
+  }
+  
+  .exampleCard {
+    padding: 1rem;
+  }
+}
+
+/* Focus states for accessibility */
+.loginButton:focus-visible,
+.signupButton:focus-visible,
+.primaryButton:focus-visible,
+.secondaryButton:focus-visible {
+  outline: 2px solid #059669;
+  outline-offset: 2px;
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  .loginButton,
+  .signupButton,
+  .primaryButton,
+  .secondaryButton {
+    transition: none;
+  }
+  
+  .primaryButton:hover {
+    transform: none;
+  }
+}

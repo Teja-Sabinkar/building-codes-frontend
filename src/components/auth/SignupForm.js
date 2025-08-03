@@ -103,13 +103,30 @@ export default function SignupForm() {
     }
   };
 
+  if (isSuccess) {
+    return (
+      <div className="w-full">
+        <div className={styles.formContainer}>
+          <div className="text-center">
+            <svg className="mx-auto h-12 w-12 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <h2 className="text-xl font-semibold mt-4 mb-2 text-gray-800">Account Created Successfully!</h2>
+            <p className="text-gray-600 mb-4">{successMessage}</p>
+            <p className="text-sm text-gray-500">Redirecting to email verification...</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="w-full">
       <form onSubmit={handleSubmit} className={styles.formContainer}>
         <h2 className={styles.formTitle}>Create Account</h2>
         
         {errors.form && (
-          <div className="mb-4 p-3 bg-red-50 text-red-500 text-sm rounded-md">
+          <div className={styles.errorMessage}>
             {errors.form}
           </div>
         )}
@@ -187,15 +204,15 @@ export default function SignupForm() {
         </div>
         
         <div className={styles.formGroup}>
-          <label className="flex items-start">
+          <label className={styles.checkboxGroup}>
             <input
               type="checkbox"
               name="agreeToTerms"
               checked={formData.agreeToTerms}
               onChange={handleChange}
-              className="h-4 w-4 mt-1 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+              className={styles.checkbox}
             />
-            <span className="ml-2 text-sm text-gray-600">
+            <span className={styles.checkboxLabel}>
               I agree to the{' '}
               <Link href="/terms" className={styles.link}>
                 Terms of Service
@@ -214,16 +231,23 @@ export default function SignupForm() {
         <div className="flex items-center justify-center">
           <button
             type="submit"
-            className={`${styles.submitButton} ${isLoading ? 'opacity-70 cursor-not-allowed' : ''}`}
+            className={styles.submitButton}
             disabled={isLoading}
           >
-            {isLoading ? 'Creating Account...' : 'Sign Up'}
+            {isLoading ? (
+              <>
+                <div className={styles.loadingSpinner}></div>
+                <span className="ml-2">Creating Account...</span>
+              </>
+            ) : (
+              'Sign Up'
+            )}
           </button>
         </div>
       </form>
       
       <div className={styles.formFooter}>
-        <p className="text-sm text-gray-600">
+        <p>
           Already have an account?{' '}
           <Link href="/auth/login" className={styles.link}>
             Log in

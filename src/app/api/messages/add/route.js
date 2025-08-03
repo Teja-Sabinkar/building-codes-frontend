@@ -1,12 +1,38 @@
 // src/app/api/messages/add/route.js - Building Codes Assistant
 import { NextResponse } from 'next/server';
+import { headers } from 'next/headers';
+import jwt from 'jsonwebtoken';
 import connectToDatabase from '@/lib/db/mongodb';
+import User from '@/models/User';
 import Conversation from '@/models/Conversation';
-import { getCurrentUser } from '@/lib/auth/auth';
+
+// Helper function to get authenticated user (JWT-based)
+async function getAuthenticatedUser() {
+  try {
+    const headersList = headers();
+    const authorization = headersList.get('authorization');
+    
+    if (!authorization || !authorization.startsWith('Bearer ')) {
+      return null;
+    }
+    
+    const token = authorization.substring(7);
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    
+    await connectToDatabase();
+    const userId = decoded.userId || decoded.id;
+    const user = await User.findById(userId);
+    
+    return user ? { id: user._id, email: user.email, name: user.name } : null;
+  } catch (error) {
+    return null;
+  }
+}
 
 export async function POST(request) {
   try {
-    const currentUser = getCurrentUser();
+    // Change from cookie-based to JWT-based authentication
+    const currentUser = await getAuthenticatedUser();
     
     if (!currentUser) {
       return NextResponse.json(
@@ -23,7 +49,8 @@ export async function POST(request) {
       conversationId,
       role,
       contentLength: content?.length,
-      hasRegulationData: !!regulation
+      hasRegulationData: !!regulation,
+      regulationQueryType: regulation?.query_type // ✅ Log the incoming query_type
     });
     
     // Enhanced validation for regulation context
@@ -68,11 +95,20 @@ export async function POST(request) {
         );
       }
       
-      // Set defaults for missing regulation fields
+      // CRITICAL FIX: Preserve ALL regulation fields, especially query_type
+      // Don't just set defaults - preserve existing values
       regulation.confidence = regulation.confidence || 0.5;
       regulation.processingTime = regulation.processingTime || 0;
       regulation.references = regulation.references || [];
       regulation.queryMetadata = regulation.queryMetadata || {};
+      // ✅ CRITICAL: Preserve the query_type field
+      regulation.query_type = regulation.query_type || 'building_codes';
+      
+      console.log('🔧 Processed regulation data with preserved query_type:', {
+        query_type: regulation.query_type,
+        hasAnswer: !!regulation.answer,
+        referencesCount: regulation.references?.length || 0
+      });
     }
     
     const conversation = await Conversation.findOne({
@@ -102,11 +138,21 @@ export async function POST(request) {
       timestamp: new Date()
     };
     
-    // Add regulation data if provided
+    // Add regulation data if provided - PRESERVE ALL FIELDS
     if (regulation) {
-      messageData.regulation = regulation;
+      // ✅ CRITICAL FIX: Use the complete regulation object with all fields preserved
+      messageData.regulation = {
+        ...regulation, // Spread all fields including query_type
+        // Ensure core fields exist
+        confidence: regulation.confidence || 0.5,
+        processingTime: regulation.processingTime || 0,
+        references: regulation.references || [],
+        queryMetadata: regulation.queryMetadata || {},
+        query_type: regulation.query_type || 'building_codes' // ✅ Explicitly preserve query_type
+      };
       
-      console.log('📊 Adding regulation data:', {
+      console.log('📊 Adding regulation data with preserved query_type:', {
+        query_type: messageData.regulation.query_type,
         hasAnswer: !!regulation.answer,
         confidence: regulation.confidence,
         referencesCount: regulation.references?.length || 0,
@@ -125,6 +171,17 @@ export async function POST(request) {
       throw new Error('Failed to reload conversation after adding message');
     }
     
+    // ✅ VERIFY: Log the saved message to confirm query_type was preserved
+    if (regulation && updatedConversation.messages.length > 0) {
+      const savedMessage = updatedConversation.messages[updatedConversation.messages.length - 1];
+      console.log('✅ Verified saved message regulation data:', {
+        messageId: savedMessage._id,
+        hasRegulation: !!savedMessage.regulation,
+        savedQueryType: savedMessage.regulation?.query_type,
+        regulationKeys: savedMessage.regulation ? Object.keys(savedMessage.regulation) : 'none'
+      });
+    }
+    
     // Calculate regulation statistics
     const regulationMessages = updatedConversation.messages.filter(msg => 
       msg.regulation && msg.regulation.answer
@@ -139,13 +196,20 @@ export async function POST(request) {
       averageConfidence: regulationMessages.length > 0 ? 
         regulationMessages.reduce((sum, msg) => sum + (msg.regulation.confidence || 0), 0) / regulationMessages.length : null,
       lastQuery: regulationMessages.length > 0 ? 
-        regulationMessages[regulationMessages.length - 1].regulation.queryMetadata : null
+        regulationMessages[regulationMessages.length - 1].regulation.queryMetadata : null,
+      // ✅ Add query_type tracking to stats
+      queryTypes: regulationMessages.reduce((types, msg) => {
+        const queryType = msg.regulation?.query_type || 'unknown';
+        types[queryType] = (types[queryType] || 0) + 1;
+        return types;
+      }, {})
     };
     
     console.log('✅ Message added to regulation conversation:', {
       newMessageCount: updatedConversation.messages.length,
       role: messageData.role,
       addedRegulationData: !!regulation,
+      preservedQueryType: regulation?.query_type,
       regulationStats: stats
     });
     
@@ -159,7 +223,8 @@ export async function POST(request) {
         role: messageData.role,
         contentLength: messageData.content.length,
         hasRegulationData: !!regulation,
-        timestamp: messageData.timestamp
+        timestamp: messageData.timestamp,
+        preservedQueryType: regulation?.query_type // ✅ Include in response for verification
       },
       regulationStats: stats
     });
@@ -192,7 +257,8 @@ export async function POST(request) {
 // GET endpoint to retrieve message addition history/stats
 export async function GET(request) {
   try {
-    const currentUser = getCurrentUser();
+    // Change from cookie-based to JWT-based authentication
+    const currentUser = await getAuthenticatedUser();
     
     if (!currentUser) {
       return NextResponse.json(
@@ -243,6 +309,8 @@ export async function GET(request) {
       // Topic analysis
       topicBreakdown: {},
       codeTypeBreakdown: {},
+      // ✅ Add query_type analytics
+      queryTypeBreakdown: {},
       
       // Timeline
       firstMessage: messages.length > 0 ? messages[0].timestamp : null,
@@ -251,9 +319,10 @@ export async function GET(request) {
         regulationMessages[regulationMessages.length - 1].timestamp : null
     };
     
-    // Analyze topics and code types
+    // Analyze topics, code types, and query types
     regulationMessages.forEach(msg => {
       const metadata = msg.regulation.queryMetadata || {};
+      const queryType = msg.regulation.query_type || 'unknown';
       
       // Building type breakdown
       if (metadata.buildingType && metadata.buildingType !== 'general') {
@@ -266,6 +335,10 @@ export async function GET(request) {
         analytics.codeTypeBreakdown[metadata.codeType] = 
           (analytics.codeTypeBreakdown[metadata.codeType] || 0) + 1;
       }
+      
+      // ✅ Query type breakdown
+      analytics.queryTypeBreakdown[queryType] = 
+        (analytics.queryTypeBreakdown[queryType] || 0) + 1;
     });
     
     console.log('📊 Retrieved regulation conversation analytics:', {
@@ -273,7 +346,8 @@ export async function GET(request) {
       totalMessages: analytics.totalMessages,
       regulationAnswers: analytics.regulationAnswers,
       averageConfidence: analytics.averageConfidence?.toFixed(2),
-      topTopics: Object.keys(analytics.topicBreakdown).slice(0, 3)
+      topTopics: Object.keys(analytics.topicBreakdown).slice(0, 3),
+      queryTypes: analytics.queryTypeBreakdown // ✅ Log query type distribution
     });
     
     return NextResponse.json({
@@ -282,6 +356,7 @@ export async function GET(request) {
         role: msg.role,
         timestamp: msg.timestamp,
         hasRegulationData: !!(msg.regulation),
+        queryType: msg.regulation?.query_type || 'none', // ✅ Include query_type in response
         contentPreview: msg.content.substring(0, 100) + (msg.content.length > 100 ? '...' : '')
       }))
     });
