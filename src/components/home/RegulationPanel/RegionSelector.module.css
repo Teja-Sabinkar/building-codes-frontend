@@ -1,0 +1,158 @@
+.modalOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.modalContent {
+  background: white;
+  border-radius: 12px;
+  padding: 24px;
+  width: 90%;
+  max-width: 500px;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+}
+
+.modalHeader {
+  margin-bottom: 24px;
+}
+
+.modalHeader h3 {
+  margin: 0 0 8px 0;
+  color: #059669;
+  font-size: 1.25rem;
+  font-weight: 600;
+}
+
+.modalHeader p {
+  margin: 0;
+  color: #6b7280;
+  font-size: 0.875rem;
+}
+
+.regionSelector {
+  margin-bottom: 24px;
+}
+
+.selectLabel {
+  display: block;
+  margin-bottom: 8px;
+  color: #374151;
+  font-weight: 500;
+  font-size: 0.875rem;
+}
+
+.regionDropdown {
+  width: 100%;
+  padding: 12px 16px;
+  border: 2px solid #e5e7eb;
+  border-radius: 8px;
+  font-size: 1rem;
+  background: white;
+  cursor: pointer;
+  transition: border-color 0.2s;
+}
+
+.regionDropdown:focus {
+  outline: none;
+  border-color: #059669;
+  box-shadow: 0 0 0 3px rgba(5, 150, 105, 0.1);
+}
+
+.regionDetails {
+  margin-top: 16px;
+  padding: 16px;
+  background: #f0fdf4;
+  border-radius: 8px;
+  border: 1px solid #bbf7d0;
+}
+
+.regionInfo h4 {
+  margin: 0 0 8px 0;
+  color: #059669;
+  font-size: 1.1rem;
+}
+
+.regionInfo p {
+  margin: 0 0 12px 0;
+  color: #374151;
+  font-size: 0.875rem;
+}
+
+.regionStats {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.chunks, .documents {
+  font-size: 0.75rem;
+  color: #6b7280;
+}
+
+.modalActions {
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+}
+
+.cancelButton {
+  padding: 10px 20px;
+  border: 2px solid #e5e7eb;
+  background: white;
+  color: #374151;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: all 0.2s;
+}
+
+.cancelButton:hover {
+  background: #f9fafb;
+  border-color: #d1d5db;
+}
+
+.createButton {
+  padding: 10px 20px;
+  border: 2px solid #059669;
+  background: #059669;
+  color: white;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: all 0.2s;
+}
+
+.createButton:hover:not(:disabled) {
+  background: #047857;
+  border-color: #047857;
+}
+
+.createButton:disabled {
+  background: #d1d5db;
+  border-color: #d1d5db;
+  cursor: not-allowed;
+}
+
+/* Mobile responsiveness */
+@media (max-width: 640px) {
+  .modalContent {
+    width: 95%;
+    padding: 20px;
+  }
+  
+  .modalActions {
+    flex-direction: column;
+  }
+  
+  .cancelButton, .createButton {
+    width: 100%;
+  }
+}

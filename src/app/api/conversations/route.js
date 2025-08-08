@@ -136,18 +136,32 @@ export async function POST(request) {
     // Connect to the database
     await connectToDatabase();
 
-    // Parse the request body
-    const { title, initialMessage } = await request.json();
+    // Parse the request body - 🆕 ADD REGION FIELDS
+    const { title, initialMessage, region, regionDisplayName } = await request.json();
 
-    // Create a new regulation conversation
-    const conversation = await Conversation.createNew(     
-      currentUser.id,
-      title || 'New Regulation Query'
-    );
+    // Create a new regulation conversation with region support - 🆕 USE DIRECT CREATE INSTEAD OF createNew
+    const conversation = await Conversation.create({
+      userId: currentUser.id,
+      title: title || 'New Regulation Query',
+      region: region || 'India',  // 🆕 ADD REGION
+      regionDisplayName: regionDisplayName || '🇮🇳 Indian Building Codes',  // 🆕 ADD REGION DISPLAY
+      messages: [],
+      metadata: {
+        totalQueries: 0,
+        isArchived: false,
+        tags: [],
+        focusAreas: new Map(),
+        buildingTypes: [],
+        occupancyGroups: [],
+        codeTypes: []
+      }
+    });
 
     console.log('✅ Created new regulation conversation:', {
       id: conversation._id,
       title: conversation.title,
+      region: conversation.region,  // 🆕 ADD REGION TO LOG
+      regionDisplayName: conversation.regionDisplayName,  // 🆕 ADD REGION DISPLAY TO LOG
       userId: currentUser.id
     });
 
@@ -222,8 +236,8 @@ export async function PATCH(request) {
       currentTitle: conversation.title
     });
 
-    // Apply allowed updates for regulation conversations  
-    const allowedUpdates = ['title', 'metadata'];
+    // Apply allowed updates for regulation conversations - 🆕 ADD REGION FIELDS
+    const allowedUpdates = ['title', 'metadata', 'region', 'regionDisplayName'];
     Object.keys(updates).forEach(key => {
       if (allowedUpdates.includes(key)) {
         if (key === 'metadata') {
@@ -237,6 +251,18 @@ export async function PATCH(request) {
           const newTitle = updates.title.trim();
           if (newTitle.length > 0 && newTitle.length <= 100) {
             conversation.title = newTitle;
+          }
+        } else if (key === 'region') {  // 🆕 ADD REGION VALIDATION
+          // Validate region is one of the allowed values
+          const allowedRegions = ['India', 'Scotland'];
+          if (allowedRegions.includes(updates.region)) {
+            conversation.region = updates.region;
+          }
+        } else if (key === 'regionDisplayName') {  // 🆕 ADD REGION DISPLAY VALIDATION
+          // Basic validation for regionDisplayName
+          const newRegionDisplayName = updates.regionDisplayName.trim();
+          if (newRegionDisplayName.length > 0 && newRegionDisplayName.length <= 50) {
+            conversation.regionDisplayName = newRegionDisplayName;
           }
         } else {
           conversation[key] = updates[key];
@@ -314,6 +340,7 @@ export async function DELETE(request) {
     console.log('🗑️ Deleting regulation conversation:', {
       conversationId,
       title: conversation.title,
+      region: conversation.region,  // 🆕 ADD REGION TO DELETE LOG
       messageCount: conversation.messages.length,
       regulationCount,
       permanent

@@ -196,7 +196,7 @@ export default function HomePage() {
         });
 
         // 🆕 DELETION TRACKING: Filter out user-deleted conversations from sidebar display
-        const nonDeletedConversations = conversationsWithRegulationData.filter(c => 
+        const nonDeletedConversations = conversationsWithRegulationData.filter(c =>
           !deletedIds.has(c._id)
         );
 
@@ -290,19 +290,30 @@ export default function HomePage() {
     }
   };
 
-  const createNewConversation = async () => {
+  const createNewConversation = async (regionData = null) => {
     try {
-      console.log('🆕 Creating new conversation...');
+      console.log('🆕 Creating new conversation with region:', regionData?.code || 'default');
       const token = localStorage.getItem('authToken');
+
+      // Prepare conversation data with region information
+      const conversationData = {
+        title: 'New Regulation Query',
+      };
+
+      // Add region information if provided
+      if (regionData) {
+        conversationData.region = regionData.code;
+        conversationData.regionDisplayName = `${regionData.flag} ${regionData.name}`;
+        conversationData.title = `New ${regionData.name} Query`;
+      }
+
       const response = await fetch('/api/conversations', {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          title: 'New Regulation Query',
-        }),
+        body: JSON.stringify(conversationData),
       });
 
       if (response.ok) {
@@ -316,9 +327,10 @@ export default function HomePage() {
         // Save new conversation as current
         localStorage.setItem('currentConversationId', newConversation._id);
 
-        console.log('✅ New conversation created and set as current:', {
+        console.log('✅ New conversation created with region:', {
           id: newConversation._id,
-          title: newConversation.title
+          title: newConversation.title,
+          region: newConversation.region || 'default'
         });
 
         return newConversation;
@@ -384,6 +396,7 @@ export default function HomePage() {
         body: JSON.stringify({
           question: message,
           conversationId: conversation._id,
+          region: conversation.region || 'India',  // 🆕 ADD THIS LINE
           maxResults: 10  // Request 10 results to get chunks 1-3 + 4-8 for references
         }),
       });
@@ -720,13 +733,13 @@ export default function HomePage() {
               // CRITICAL FIX 1: Preserve the conversation title from the first user message
               // Don't let the backend override it
               const preservedTitle = getConversationDisplayTitle(currentConversation);
-              
+
               // CRITICAL FIX 2: Process the updated conversation while preserving title
               const updatedConversationFromBackend = regenerationData.conversation;
-              
+
               // Override backend title with preserved title
               updatedConversationFromBackend.title = preservedTitle;
-              
+
               // CRITICAL FIX 3: Ensure the assistant message gets proper regulation data AND database ID
               const enhancedMessages = updatedConversationFromBackend.messages.map((msg, index) => {
                 if (msg.role === 'assistant' && index === updatedConversationFromBackend.messages.length - 1) {
@@ -768,27 +781,27 @@ export default function HomePage() {
                   conv._id === currentConversation._id ? finalConversation : conv
                 )
               );
-              
+
               setCurrentConversation(finalConversation);
-              
+
               // Save to localStorage with preserved title
               localStorage.setItem('currentConversationId', finalConversation._id);
-              
+
               console.log('✅ Regeneration completed with preserved title and proper IDs');
 
               // CRITICAL FIX: Save the regenerated assistant message to database to get proper ID
               if (finalConversation && finalConversation.messages.length > 0) {
                 const latestMessage = finalConversation.messages[finalConversation.messages.length - 1];
-                
+
                 if (latestMessage.role === 'assistant' && !latestMessage._id) {
                   console.log('💾 Saving regenerated message to database...');
-                  
+
                   try {
                     const saveResponse = await fetch('/api/messages/add', {
                       method: 'POST',
-                      headers: { 
+                      headers: {
                         'Authorization': `Bearer ${token}`,
-                        'Content-Type': 'application/json' 
+                        'Content-Type': 'application/json'
                       },
                       body: JSON.stringify({
                         conversationId: finalConversation._id,
@@ -801,11 +814,11 @@ export default function HomePage() {
                       })
                     });
                     console.log('💾 Saving with preserved query_type:', latestMessage.regulation.query_type);
-                    
+
                     if (saveResponse.ok) {
                       const savedData = await saveResponse.json();
                       console.log('✅ Regenerated message saved with ID:', savedData.conversation?.messages?.slice(-1)[0]?._id);
-                      
+
                       // Update the conversation with the message that now has an ID
                       if (savedData.conversation) {
                         setCurrentConversation(savedData.conversation);

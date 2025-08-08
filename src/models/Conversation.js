@@ -87,6 +87,17 @@ const ConversationSchema = new mongoose.Schema({
     required: true,
     default: 'New Regulation Query'
   },
+  region: {
+    type: String,
+    required: true,
+    enum: ['India', 'Scotland'],
+    default: 'India'
+  },
+  regionDisplayName: {
+    type: String,
+    required: true,
+    default: '🇮🇳 Indian Building Codes'
+  },
   // REMOVED: units (not needed for building codes)
   messages: [MessageSchema],
   metadata: {
@@ -189,8 +200,8 @@ ConversationSchema.virtual('conversationStats').get(function () {
     .map(r => r.regulation.confidence)
     .filter(c => c !== null && c !== undefined);
 
-  const avgConfidence = confidences.length > 0 
-    ? confidences.reduce((sum, conf) => sum + conf, 0) / confidences.length 
+  const avgConfidence = confidences.length > 0
+    ? confidences.reduce((sum, conf) => sum + conf, 0) / confidences.length
     : null;
 
   // Extract focus areas from regulations
@@ -239,7 +250,7 @@ ConversationSchema.methods.categorizeQuery = function (queryText) {
   };
 
   const queryLower = queryText.toLowerCase();
-  
+
   // Determine building type
   let buildingType = 'general';
   for (const [type, keywords] of Object.entries(buildingTypes)) {
@@ -297,17 +308,17 @@ ConversationSchema.methods.addMessage = function (messageData) {
       if (messageData.regulation.queryMetadata) {
         const focusAreas = this.metadata.focusAreas || new Map();
         const { buildingType, codeType } = messageData.regulation.queryMetadata;
-        
+
         if (buildingType && buildingType !== 'general') {
           const count = focusAreas.get(buildingType) || 0;
           focusAreas.set(buildingType, count + 1);
         }
-        
+
         if (codeType && codeType !== 'general') {
           const count = focusAreas.get(codeType) || 0;
           focusAreas.set(codeType, count + 1);
         }
-        
+
         this.metadata.focusAreas = focusAreas;
       }
 
@@ -315,9 +326,9 @@ ConversationSchema.methods.addMessage = function (messageData) {
       const allRegulations = this.messages
         .filter(msg => msg.regulation && msg.regulation.confidence !== null)
         .map(msg => msg.regulation.confidence);
-      
+
       allRegulations.push(messageData.regulation.confidence);
-      
+
       const avgConfidence = allRegulations.reduce((sum, conf) => sum + conf, 0) / allRegulations.length;
       this.metadata.averageConfidence = avgConfidence;
     }
@@ -494,7 +505,7 @@ ConversationSchema.methods.getRegulationStatistics = function () {
 
   regulations.forEach(regulationItem => {
     const regulation = regulationItem.regulation;
-    
+
     // Track confidence
     if (regulation.confidence !== null && regulation.confidence !== undefined) {
       totalConfidence += regulation.confidence;
@@ -504,12 +515,12 @@ ConversationSchema.methods.getRegulationStatistics = function () {
     // Track code types and building types
     if (regulation.queryMetadata) {
       const { codeType, buildingType } = regulation.queryMetadata;
-      
+
       if (codeType && codeType !== 'general') {
         const currentCount = stats.codeTypeBreakdown.get(codeType) || 0;
         stats.codeTypeBreakdown.set(codeType, currentCount + 1);
       }
-      
+
       if (buildingType && buildingType !== 'general') {
         const currentCount = stats.buildingTypeBreakdown.get(buildingType) || 0;
         stats.buildingTypeBreakdown.set(buildingType, currentCount + 1);

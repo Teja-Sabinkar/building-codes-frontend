@@ -7,6 +7,7 @@ import ConversationList from './ConversationList';
 import MessageList from './MessageList';
 import MessageInput from './MessageInput';
 import TitleEditModal from './TitleEditModal';
+import RegionSelector from './RegionSelector';
 import styles from './RegulationPanel.module.css';
 
 export default function RegulationPanel({
@@ -27,6 +28,7 @@ export default function RegulationPanel({
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [isTitleEditOpen, setIsTitleEditOpen] = useState(false);
   const [isUpdatingTitle, setIsUpdatingTitle] = useState(false);
+  const [showRegionSelector, setShowRegionSelector] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(isSidebarOpen);
   const router = useRouter();
 
@@ -38,12 +40,12 @@ export default function RegulationPanel({
   // Helper function to get the display title for a conversation
   const getConversationDisplayTitle = (conversation) => {
     if (!conversation) return 'Building Codes Assistant';
-    
+
     // 🔧 FIX: Always use database title if it exists and is not empty
     if (conversation.title && conversation.title.trim() && conversation.title !== 'New Regulation Query') {
       return conversation.title;
     }
-    
+
     // Fallback: Use first user message if no database title
     if (conversation.messages && conversation.messages.length > 0) {
       const firstUserMessage = conversation.messages.find(msg => msg.role === 'user');
@@ -55,7 +57,7 @@ export default function RegulationPanel({
         return content;
       }
     }
-    
+
     // Final fallback
     return 'New Regulation Query';
   };
@@ -131,7 +133,7 @@ export default function RegulationPanel({
       });
 
       const authToken = localStorage.getItem('authToken');
-      
+
       if (!authToken) {
         throw new Error('No authentication token found');
       }
@@ -173,6 +175,20 @@ export default function RegulationPanel({
     }
   };
 
+  const handleRegionSelected = async (regionData) => {
+    console.log('🌍 Region selected:', regionData);
+    setShowRegionSelector(false);
+
+    // Call the parent component's function to create conversation with region
+    if (onNewConversation) {
+      await onNewConversation(regionData);
+    }
+  };
+
+  const handleRegionCancel = () => {
+    setShowRegionSelector(false);
+  };
+
   const toggleSidebar = () => {
     const newState = !sidebarOpen;
     setSidebarOpen(newState);
@@ -183,7 +199,7 @@ export default function RegulationPanel({
 
   // Get the current display title
   const displayTitle = getConversationDisplayTitle(currentConversation);
-  
+
   // Determine if the title is editable (show edit icon)
   const isTitleEditable = currentConversation && currentConversation.messages && currentConversation.messages.length > 0;
 
@@ -230,7 +246,7 @@ export default function RegulationPanel({
           <>
             <div className={styles.sidebarTitleSection}>
               <button
-                onClick={onNewConversation}
+                onClick={() => setShowRegionSelector(true)}
                 className={styles.newConversationBtn}
                 title="Start new regulation query"
               >
@@ -403,6 +419,12 @@ export default function RegulationPanel({
         onSave={handleTitleEdit}
         onCancel={() => setIsTitleEditOpen(false)}
         isLoading={isUpdatingTitle}
+      />
+      {/* Region Selector Modal */}
+      <RegionSelector
+        isOpen={showRegionSelector}
+        onRegionSelect={handleRegionSelected}
+        onCancel={handleRegionCancel}
       />
     </div>
   );
