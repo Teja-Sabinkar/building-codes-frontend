@@ -1,7 +1,7 @@
-// components/auth/ForgotPasswordForm.js
+// components/auth/ForgotPasswordForm.js - Fixed Overlapping Elements and Consistent Styling
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import styles from '@/components/auth/AuthCommon.module.css';
 
@@ -10,6 +10,34 @@ export default function ForgotPasswordForm() {
   const [errors, setErrors] = useState({});
   const [isLoading, setIsLoading] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
+
+  // 🆕 SMART PERSISTENCE: Apply guest theme on mount
+  useEffect(() => {
+    const applyGuestTheme = () => {
+      try {
+        // Check for guest theme preference (from previous logout)
+        const guestTheme = localStorage.getItem('regGPT-guestTheme') || 'dark';
+        const isDark = guestTheme === 'dark';
+        
+        console.log('🎨 Forgot Password page applying guest theme:', guestTheme);
+        
+        // Apply theme to document body
+        if (isDark) {
+          document.body.classList.add('dark-mode');
+        } else {
+          document.body.classList.remove('dark-mode');
+        }
+        
+        console.log('✅ Guest theme applied:', isDark ? 'dark' : 'light');
+      } catch (error) {
+        console.error('❌ Error applying guest theme:', error);
+        // Default to dark theme on error (since we changed default to dark)
+        document.body.classList.add('dark-mode');
+      }
+    };
+
+    applyGuestTheme();
+  }, []);
 
   const handleChange = (e) => {
     setEmail(e.target.value);
@@ -67,25 +95,60 @@ export default function ForgotPasswordForm() {
     }
   };
 
+  // Success state - using consistent CSS module styling
   if (isSubmitted) {
     return (
       <div className="w-full">
         <div className={styles.formContainer}>
-          <div className="text-center">
-            <svg className="mx-auto h-12 w-12 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <div style={{ textAlign: 'center' }}>
+            {/* Success Icon */}
+            <svg 
+              style={{ 
+                margin: '0 auto 1rem auto', 
+                width: '3rem', 
+                height: '3rem', 
+                color: '#059669' 
+              }} 
+              fill="none" 
+              stroke="currentColor" 
+              viewBox="0 0 24 24"
+            >
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
-            <h2 className="text-xl font-semibold mt-4 mb-2 text-gray-800">Check your email</h2>
-            <p className="text-gray-600 mb-6">
-              We've sent a password reset link to <span className="font-medium">{email}</span>
-            </p>
-            <p className="text-sm text-gray-500 mb-4">
+            
+            {/* Success Title */}
+            <h2 className={styles.formTitle}>Check your email</h2>
+            
+            {/* Success Message */}
+            <div className={styles.successMessage}>
+              We've sent a password reset link to <strong>{email}</strong>
+            </div>
+            
+            {/* Additional Info */}
+            <p style={{ 
+              fontSize: '0.875rem', 
+              color: '#6b7280', 
+              marginBottom: '1.5rem',
+              textAlign: 'center'
+            }}>
               Didn't receive the email? Check your spam folder or try again.
             </p>
-            <div className="flex justify-center space-x-4">
+            
+            {/* Action Buttons */}
+            <div style={{ 
+              display: 'flex', 
+              justifyContent: 'center', 
+              gap: '1rem',
+              flexWrap: 'wrap'
+            }}>
               <button
                 onClick={() => setIsSubmitted(false)}
                 className={styles.link}
+                style={{ 
+                  background: 'none',
+                  border: 'none',
+                  cursor: 'pointer'
+                }}
               >
                 Try again
               </button>
@@ -99,20 +162,25 @@ export default function ForgotPasswordForm() {
     );
   }
 
+  // Main form - using consistent CSS module styling
   return (
     <div className="w-full">
       <form onSubmit={handleSubmit} className={styles.formContainer}>
         <h2 className={styles.formTitle}>Reset Password</h2>
-        <p className="text-gray-600 text-center mb-6 text-sm">
+        
+        {/* Description */}
+        <p className={styles.subheading} style={{ marginBottom: '1.5rem' }}>
           Enter your email and we'll send you a link to reset your password
         </p>
         
+        {/* Form Error */}
         {errors.form && (
           <div className={styles.errorMessage}>
             {errors.form}
           </div>
         )}
         
+        {/* Email Field */}
         <div className={styles.formGroup}>
           <label className={styles.formLabel} htmlFor="email">
             Email
@@ -130,7 +198,8 @@ export default function ForgotPasswordForm() {
           )}
         </div>
         
-        <div className="flex items-center justify-center">
+        {/* Submit Button */}
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
           <button
             type="submit"
             className={styles.submitButton}
@@ -139,7 +208,7 @@ export default function ForgotPasswordForm() {
             {isLoading ? (
               <>
                 <div className={styles.loadingSpinner}></div>
-                <span className="ml-2">Sending...</span>
+                <span style={{ marginLeft: '0.5rem' }}>Sending...</span>
               </>
             ) : (
               'Send Reset Link'
@@ -148,6 +217,7 @@ export default function ForgotPasswordForm() {
         </div>
       </form>
       
+      {/* Footer */}
       <div className={styles.formFooter}>
         <Link href="/auth/login" className={styles.link}>
           Back to login

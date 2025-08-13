@@ -1,4 +1,4 @@
-// models/User.js
+// models/User.js - Enhanced with Theme Preference Support
 import mongoose from 'mongoose';
 import bcrypt from 'bcryptjs';
 import crypto from 'crypto';
@@ -36,7 +36,34 @@ const userSchema = new mongoose.Schema({
     default: Date.now,
   },
   lastLogin: Date,
-  // NEW: Building Codes Assistant specific fields
+
+  // 🆕 SOFT DELETION FIELDS
+  isDeleted: {
+    type: Boolean,
+    default: false,
+    index: true // Index for performance when filtering deleted users
+  },
+  deletedAt: {
+    type: Date,
+    default: null
+  },
+  originalEmail: {
+    type: String,
+    default: null,
+    trim: true
+  },
+  originalName: {
+    type: String,
+    default: null,
+    trim: true
+  },
+  deletionReason: {
+    type: String,
+    enum: ['user_requested', 'admin_action', 'policy_violation', 'data_cleanup'],
+    default: null
+  },
+
+  // Building Codes Assistant specific fields
   profile: {
     // Professional information for building codes context
     company: {
@@ -138,15 +165,25 @@ const userSchema = new mongoose.Schema({
     detailedReferences: {
       type: Boolean,
       default: true
+    },
+    // 🌙 THEME PREFERENCE FIELD
+    theme: {
+      type: String,
+      enum: ['light', 'dark'],
+      default: 'dark'   // 👈 NEW ACCOUNTS START WITH DARK
     }
   }
 }, { timestamps: true });
 
+// 🆕 INDEXES FOR SOFT DELETION PERFORMANCE
+userSchema.index({ email: 1, isDeleted: 1 });
+userSchema.index({ isDeleted: 1, deletedAt: 1 });
+
 // Hash the password before saving
-userSchema.pre('save', async function(next) {
+userSchema.pre('save', async function (next) {
   // Only hash the password if it's modified (or new)
   if (!this.isModified('password')) return next();
-  
+
   try {
     // Generate a salt
     const salt = await bcrypt.genSalt(10);
@@ -159,86 +196,176 @@ userSchema.pre('save', async function(next) {
 });
 
 // Method to check if password is correct
-userSchema.methods.comparePassword = async function(candidatePassword) {
+userSchema.methods.comparePassword = async function (candidatePassword) {
   return await bcrypt.compare(candidatePassword, this.password);
 };
 
 // Method to generate email verification token
-userSchema.methods.createEmailVerificationToken = function() {
+userSchema.methods.createEmailVerificationToken = function () {
   // Create a random token
   const verificationToken = crypto.randomBytes(32).toString('hex');
-  
+
   // Hash the token and set it to emailVerificationToken field
   this.emailVerificationToken = crypto
     .createHash('sha256')
     .update(verificationToken)
     .digest('hex');
-  
+
   // Set token expiry (24 hours)
   this.emailVerificationExpires = Date.now() + 24 * 60 * 60 * 1000;
-  
+
   return verificationToken;
 };
 
 // Method to generate password reset token
-userSchema.methods.createPasswordResetToken = function() {
+userSchema.methods.createPasswordResetToken = function () {
   // Create a random token
   const resetToken = crypto.randomBytes(32).toString('hex');
-  
+
   // Hash the token and set it to passwordResetToken field
   this.passwordResetToken = crypto
     .createHash('sha256')
     .update(resetToken)
     .digest('hex');
-  
+
   // Set token expiry (10 minutes)
   this.passwordResetExpires = Date.now() + 10 * 60 * 1000;
-  
+
   return resetToken;
 };
 
-// NEW: Method to update usage statistics
-userSchema.methods.updateUsageStats = function(regulationData) {
+// 🆕 THEME PREFERENCE METHODS
+userSchema.methods.updateThemePreference = function (theme) {
+  console.log(`🎨 Updating theme preference for user ${this._id}: ${theme}`);
+
+  if (!['light', 'dark'].includes(theme)) {
+    throw new Error('Invalid theme. Must be "light" or "dark"');
+  }
+
+  this.preferences.theme = theme;
+  return this.save();
+};
+
+userSchema.methods.getThemePreference = function () {
+  return this.preferences?.theme || 'light';
+};
+
+// 🆕 SOFT DELETION METHODS
+userSchema.methods.softDelete = function (reason = 'user_requested') {
+  console.log(`🗑️ Soft deleting user: ${this._id} - ${this.email}`);
+
+  this.isDeleted = true;
+  this.deletedAt = new Date();
+  this.deletionReason = reason;
+
+  // Preserve original data for recovery
+  this.originalEmail = this.email;
+  this.originalName = this.name;
+
+  // Anonymize email for privacy but keep account recoverable
+  this.email = `deleted_${this._id}@deleted.regGPT.local`;
+
+  return this.save();
+};
+
+userSchema.methods.restore = function () {
+  console.log(`🔄 Restoring user: ${this._id}`);
+
+  if (!this.isDeleted) {
+    throw new Error('User is not deleted');
+  }
+
+  // Restore original data
+  if (this.originalEmail) {
+    this.email = this.originalEmail;
+  }
+  if (this.originalName) {
+    this.name = this.originalName;
+  }
+
+  // Clear deletion markers
+  this.isDeleted = false;
+  this.deletedAt = null;
+  this.deletionReason = null;
+  this.originalEmail = null;
+  this.originalName = null;
+
+  return this.save();
+};
+
+userSchema.methods.isAccountDeleted = function () {
+  return this.isDeleted === true;
+};
+
+// 🆕 STATIC METHODS FOR ADMIN OPERATIONS
+userSchema.statics.findDeleted = function (options = {}) {
+  return this.find({
+    isDeleted: true,
+    includeDeleted: true
+  })
+    .sort({ deletedAt: -1 })
+    .limit(options.limit || 50)
+    .skip(options.skip || 0);
+};
+
+userSchema.statics.findByOriginalEmail = function (email) {
+  return this.findOne({
+    originalEmail: email,
+    isDeleted: true,
+    includeDeleted: true
+  });
+};
+
+userSchema.statics.getActiveUsersCount = function () {
+  return this.countDocuments({ isDeleted: { $ne: true } });
+};
+
+userSchema.statics.getDeletedUsersCount = function () {
+  return this.countDocuments({ isDeleted: true });
+};
+
+// Method to update usage statistics
+userSchema.methods.updateUsageStats = function (regulationData) {
   const stats = this.usageStats;
-  
+
   // Increment total queries
   stats.totalRegulationQueries = (stats.totalRegulationQueries || 0) + 1;
   stats.lastQueryDate = new Date();
-  
+
   // Update code type usage
   if (regulationData.queryMetadata && regulationData.queryMetadata.codeType) {
     const codeType = regulationData.queryMetadata.codeType;
     const codeTypeIndex = stats.mostUsedCodeTypes.findIndex(item => item.codeType === codeType);
-    
+
     if (codeTypeIndex >= 0) {
       stats.mostUsedCodeTypes[codeTypeIndex].count += 1;
     } else {
       stats.mostUsedCodeTypes.push({ codeType, count: 1 });
     }
-    
+
     // Sort by count (descending)
     stats.mostUsedCodeTypes.sort((a, b) => b.count - a.count);
     // Keep only top 10
     stats.mostUsedCodeTypes = stats.mostUsedCodeTypes.slice(0, 10);
   }
-  
+
   // Update building type usage
   if (regulationData.queryMetadata && regulationData.queryMetadata.buildingType) {
     const buildingType = regulationData.queryMetadata.buildingType;
     const buildingTypeIndex = stats.mostQueriedBuildingTypes.findIndex(item => item.buildingType === buildingType);
-    
+
     if (buildingTypeIndex >= 0) {
       stats.mostQueriedBuildingTypes[buildingTypeIndex].count += 1;
     } else {
       stats.mostQueriedBuildingTypes.push({ buildingType, count: 1 });
     }
-    
+
     // Sort by count (descending)
     stats.mostQueriedBuildingTypes.sort((a, b) => b.count - a.count);
     // Keep only top 10
     stats.mostQueriedBuildingTypes = stats.mostQueriedBuildingTypes.slice(0, 10);
   }
-  
+
   // Update average confidence score
   if (regulationData.confidence !== null && regulationData.confidence !== undefined) {
     if (stats.averageConfidenceScore === null) {
@@ -249,21 +376,21 @@ userSchema.methods.updateUsageStats = function(regulationData) {
       stats.averageConfidenceScore = ((stats.averageConfidenceScore * (totalQueries - 1)) + regulationData.confidence) / totalQueries;
     }
   }
-  
+
   // Update expertise level based on query count and diversity
   this._updateExpertiseLevel();
-  
+
   this.markModified('usageStats');
   return this.save();
 };
 
-// NEW: Method to update expertise level
-userSchema.methods._updateExpertiseLevel = function() {
+// Method to update expertise level
+userSchema.methods._updateExpertiseLevel = function () {
   const stats = this.usageStats;
   const queryCount = stats.totalRegulationQueries || 0;
   const codeTypeDiversity = stats.mostUsedCodeTypes.length;
   const buildingTypeDiversity = stats.mostQueriedBuildingTypes.length;
-  
+
   // Calculate expertise based on usage patterns
   if (queryCount >= 500 || (queryCount >= 200 && codeTypeDiversity >= 5 && buildingTypeDiversity >= 4)) {
     stats.expertiseLevel = 'expert';
@@ -276,11 +403,11 @@ userSchema.methods._updateExpertiseLevel = function() {
   }
 };
 
-// NEW: Method to get user's professional summary
-userSchema.methods.getProfessionalSummary = function() {
+// Method to get user's professional summary
+userSchema.methods.getProfessionalSummary = function () {
   const profile = this.profile || {};
   const stats = this.usageStats || {};
-  
+
   return {
     name: this.name,
     profession: profile.profession,
@@ -293,18 +420,19 @@ userSchema.methods.getProfessionalSummary = function() {
     mostUsedCode: stats.mostUsedCodeTypes[0]?.codeType || null,
     preferredBuildingType: stats.mostQueriedBuildingTypes[0]?.buildingType || null,
     joinedDate: this.createdAt,
-    lastActive: stats.lastQueryDate || this.lastLogin
+    lastActive: stats.lastQueryDate || this.lastLogin,
+    theme: this.preferences?.theme || 'light'
   };
 };
 
-// NEW: Method to get personalized recommendations
-userSchema.methods.getPersonalizedRecommendations = function() {
+// Method to get personalized recommendations
+userSchema.methods.getPersonalizedRecommendations = function () {
   const stats = this.usageStats || {};
   const profile = this.profile || {};
   const preferences = this.preferences || {};
-  
+
   const recommendations = [];
-  
+
   // Recommend based on profession
   if (profile.profession === 'architect' && !stats.mostUsedCodeTypes.find(item => item.codeType === 'ADA')) {
     recommendations.push({
@@ -314,7 +442,7 @@ userSchema.methods.getPersonalizedRecommendations = function() {
       suggestedQuery: 'ADA door width requirements for commercial buildings'
     });
   }
-  
+
   // Recommend based on usage patterns
   if (stats.expertiseLevel === 'beginner' && stats.totalRegulationQueries < 10) {
     recommendations.push({
@@ -324,7 +452,7 @@ userSchema.methods.getPersonalizedRecommendations = function() {
       suggestedQuery: 'What are the minimum ceiling heights for residential buildings?'
     });
   }
-  
+
   // Recommend based on specializations
   if (profile.specializations.includes('residential') && !stats.mostUsedCodeTypes.find(item => item.codeType === 'IRC')) {
     recommendations.push({
@@ -334,7 +462,7 @@ userSchema.methods.getPersonalizedRecommendations = function() {
       suggestedQuery: 'IRC bedroom window requirements for egress'
     });
   }
-  
+
   return recommendations.slice(0, 3); // Return top 3 recommendations
 };
 

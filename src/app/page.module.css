@@ -1,17 +1,29 @@
-/* app/page.module.css - Minimal REG-GPT Landing Page */
+/* app/page.module.css - REG-GPT Landing Page with Dark Mode Support */
 
 .container {
   min-height: 100vh;
   display: flex;
   flex-direction: column;
-  background-color: #fefefe;
+  background: linear-gradient(135deg, #f0fdf4 0%, #ecfdf5 50%, #d1fae5 100%);
+  transition: background-color 0.3s ease;
+}
+
+/* 🌙 Dark Mode Support - Claude's Gray Theme */
+:global(.dark-mode) .container {
+  background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 50%, #1a3a2e 100%);
 }
 
 /* Header */
 .header {
-  background-color: white;
+  background-color: transparent;
   border-bottom: 1px solid #e5e7eb;
   padding: 1rem 0;
+  transition: all 0.3s ease;
+}
+
+:global(.dark-mode) .header {
+  background-color: transparent;
+  border-bottom: 1px solid #444;
 }
 
 .headerContent {
@@ -37,6 +49,11 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  transition: background-color 0.3s ease;
+}
+
+:global(.dark-mode) .logo {
+  background-color: #10b981;
 }
 
 .logoIcon {
@@ -49,6 +66,11 @@
   font-size: 1.5rem;
   font-weight: 700;
   color: #1f2937;
+  transition: color 0.3s ease;
+}
+
+:global(.dark-mode) .brandText {
+  color: #e5e5e5;
 }
 
 .authButtons {
@@ -62,7 +84,7 @@
   border-radius: 0.375rem;
   font-weight: 500;
   text-decoration: none;
-  transition: all 0.2s ease;
+  transition: all 0.3s ease;
   font-size: 0.875rem;
 }
 
@@ -72,9 +94,21 @@
   border: 1px solid #059669;
 }
 
+:global(.dark-mode) .loginButton {
+  background-color: #10b981;
+  color: #1a1a1a;
+  border: 1px solid #10b981;
+}
+
 .loginButton:hover {
   background-color: #047857;
   border-color: #047857;
+}
+
+:global(.dark-mode) .loginButton:hover {
+  background-color: #059669;
+  border-color: #059669;
+  color: white;
 }
 
 .signupButton {
@@ -83,8 +117,18 @@
   border: 1px solid #059669;
 }
 
+:global(.dark-mode) .signupButton {
+  background-color: #2d2d2d;
+  color: #10b981;
+  border: 1px solid #10b981;
+}
+
 .signupButton:hover {
   background-color: #f0fdf4;
+}
+
+:global(.dark-mode) .signupButton:hover {
+  background-color: #1a3a2e;
 }
 
 /* Main Content */
@@ -108,6 +152,11 @@
   color: #1f2937;
   margin-bottom: 1.5rem;
   line-height: 1.2;
+  transition: color 0.3s ease;
+}
+
+:global(.dark-mode) .heroTitle {
+  color: #e5e5e5;
 }
 
 .heroDescription {
@@ -115,6 +164,11 @@
   color: #6b7280;
   margin-bottom: 2rem;
   line-height: 1.6;
+  transition: color 0.3s ease;
+}
+
+:global(.dark-mode) .heroDescription {
+  color: #9ca3af;
 }
 
 .heroButtons {
@@ -130,7 +184,7 @@
   border-radius: 0.5rem;
   font-weight: 600;
   text-decoration: none;
-  transition: all 0.2s ease;
+  transition: all 0.3s ease;
   text-align: center;
 }
 
@@ -140,10 +194,22 @@
   border: 2px solid #059669;
 }
 
+:global(.dark-mode) .primaryButton {
+  background-color: #10b981;
+  color: #1a1a1a;
+  border: 2px solid #10b981;
+}
+
 .primaryButton:hover {
   background-color: #047857;
   border-color: #047857;
   transform: translateY(-1px);
+}
+
+:global(.dark-mode) .primaryButton:hover {
+  background-color: #059669;
+  border-color: #059669;
+  color: white;
 }
 
 .secondaryButton {
@@ -152,9 +218,20 @@
   border: 2px solid #e5e7eb;
 }
 
+:global(.dark-mode) .secondaryButton {
+  background-color: #2d2d2d;
+  color: #9ca3af;
+  border: 2px solid #444;
+}
+
 .secondaryButton:hover {
   background-color: #f9fafb;
   border-color: #d1d5db;
+}
+
+:global(.dark-mode) .secondaryButton:hover {
+  background-color: #3d3d3d;
+  border-color: #555;
 }
 
 /* Example Card */
@@ -165,6 +242,12 @@
   padding: 1.5rem;
   max-width: 400px;
   margin: 0 auto;
+  transition: all 0.3s ease;
+}
+
+:global(.dark-mode) .exampleCard {
+  background-color: #2d2d2d;
+  border: 1px solid #444;
 }
 
 .exampleLabel {
@@ -172,19 +255,35 @@
   color: #6b7280;
   margin-bottom: 0.5rem;
   font-weight: 500;
+  transition: color 0.3s ease;
+}
+
+:global(.dark-mode) .exampleLabel {
+  color: #9ca3af;
 }
 
 .exampleQuery {
   color: #059669;
   font-style: italic;
   font-size: 0.875rem;
+  transition: color 0.3s ease;
+}
+
+:global(.dark-mode) .exampleQuery {
+  color: #10b981;
 }
 
 /* Footer */
 .footer {
-  background-color: white;
+  background-color: transparent;
   border-top: 1px solid #e5e7eb;
   padding: 1.5rem 0;
+  transition: all 0.3s ease;
+}
+
+:global(.dark-mode) .footer {
+  background-color: transparent;
+  border-top: 1px solid #444;
 }
 
 .footerContent {
@@ -197,6 +296,11 @@
 .footerText {
   font-size: 0.875rem;
   color: #6b7280;
+  transition: color 0.3s ease;
+}
+
+:global(.dark-mode) .footerText {
+  color: #9ca3af;
 }
 
 /* Responsive Design */
@@ -267,12 +371,59 @@
   outline-offset: 2px;
 }
 
+:global(.dark-mode) .loginButton:focus-visible,
+:global(.dark-mode) .signupButton:focus-visible,
+:global(.dark-mode) .primaryButton:focus-visible,
+:global(.dark-mode) .secondaryButton:focus-visible {
+  outline: 2px solid #10b981;
+}
+
+/* High contrast mode */
+@media (prefers-contrast: high) {
+  .loginButton {
+    background-color: #047857;
+  }
+  
+  :global(.dark-mode) .loginButton {
+    background-color: #059669;
+  }
+  
+  .logo {
+    background-color: #047857;
+  }
+  
+  :global(.dark-mode) .logo {
+    background-color: #059669;
+  }
+  
+  .primaryButton {
+    background-color: #047857;
+    border-color: #047857;
+  }
+  
+  :global(.dark-mode) .primaryButton {
+    background-color: #059669;
+    border-color: #059669;
+  }
+}
+
 /* Reduced motion */
 @media (prefers-reduced-motion: reduce) {
+  .container,
+  .header,
+  .logo,
+  .brandText,
   .loginButton,
   .signupButton,
+  .heroTitle,
+  .heroDescription,
   .primaryButton,
-  .secondaryButton {
+  .secondaryButton,
+  .exampleCard,
+  .exampleLabel,
+  .exampleQuery,
+  .footer,
+  .footerText {
     transition: none;
   }
   

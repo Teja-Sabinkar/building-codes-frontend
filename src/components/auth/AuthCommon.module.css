@@ -1,4 +1,4 @@
-/* components/auth/AuthCommon.module.css - REG-GPT Building Codes Theme */
+/* components/auth/AuthCommon.module.css - REG-GPT Building Codes Theme with Dark Mode */
 
 .authHeader {
     display: flex;
@@ -26,6 +26,11 @@
     justify-content: center;
     margin: 0 auto;
     color: white;
+    transition: background-color 0.3s ease;
+}
+
+:global(.dark-mode) .logoIcon {
+    background-color: #10b981;
 }
 
 .logoText {
@@ -33,6 +38,11 @@
     font-weight: 700;
     color: #1f2937;
     letter-spacing: -0.025em;
+    transition: color 0.3s ease;
+}
+
+:global(.dark-mode) .logoText {
+    color: #e5e5e5;
 }
 
 .heading {
@@ -41,6 +51,11 @@
     text-align: center;
     color: #1f2937;
     margin-bottom: 0.5rem;
+    transition: color 0.3s ease;
+}
+
+:global(.dark-mode) .heading {
+    color: #e5e5e5;
 }
 
 .subheading {
@@ -50,6 +65,11 @@
     max-width: 28rem;
     font-size: 0.875rem;
     line-height: 1.5;
+    transition: color 0.3s ease;
+}
+
+:global(.dark-mode) .subheading {
+    color: #9ca3af;
 }
 
 .formContainer {
@@ -61,6 +81,13 @@
     border-radius: 1rem;
     padding: 2rem;
     margin: 0 auto 1rem auto;
+    transition: all 0.3s ease;
+}
+
+:global(.dark-mode) .formContainer {
+    background-color: #2d2d2d;
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.4), 0 4px 6px -2px rgba(0, 0, 0, 0.3);
+    border: 2px solid #10b981;
 }
 
 .formTitle {
@@ -69,6 +96,11 @@
     margin-bottom: 1.5rem;
     text-align: center;
     color: #1f2937;
+    transition: color 0.3s ease;
+}
+
+:global(.dark-mode) .formTitle {
+    color: #e5e5e5;
 }
 
 .formGroup {
@@ -81,6 +113,11 @@
     font-size: 0.875rem;
     font-weight: 500;
     margin-bottom: 0.5rem;
+    transition: color 0.3s ease;
+}
+
+:global(.dark-mode) .formLabel {
+    color: #d1d5db;
 }
 
 .formInput {
@@ -91,7 +128,15 @@
     border-radius: 0.5rem;
     box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
     font-size: 0.875rem;
-    transition: all 0.2s ease;
+    transition: all 0.3s ease;
+    background-color: white;
+}
+
+:global(.dark-mode) .formInput {
+    background-color: #3d3d3d;
+    color: #e5e5e5;
+    border: 1px solid #555;
+    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.2);
 }
 
 .formInput:focus {
@@ -100,8 +145,18 @@
     box-shadow: 0 0 0 3px rgba(5, 150, 105, 0.1);
 }
 
+:global(.dark-mode) .formInput:focus {
+    border-color: #10b981;
+    box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.2);
+}
+
 .formInput::placeholder {
     color: #9ca3af;
+    transition: color 0.3s ease;
+}
+
+:global(.dark-mode) .formInput::placeholder {
+    color: #6b7280;
 }
 
 .formError {
@@ -109,6 +164,11 @@
     font-size: 0.75rem;
     margin-top: 0.25rem;
     font-weight: 500;
+    transition: color 0.3s ease;
+}
+
+:global(.dark-mode) .formError {
+    color: #f87171;
 }
 
 .submitButton {
@@ -120,7 +180,7 @@
     border-radius: 0.5rem;
     border: none;
     cursor: pointer;
-    transition: all 0.2s ease;
+    transition: all 0.3s ease;
     font-size: 0.875rem;
     display: flex;
     align-items: center;
@@ -129,10 +189,22 @@
     box-shadow: 0 2px 4px rgba(5, 150, 105, 0.2);
 }
 
+:global(.dark-mode) .submitButton {
+    background-color: #10b981;
+    color: #1a1a1a;
+    box-shadow: 0 2px 4px rgba(16, 185, 129, 0.3);
+}
+
 .submitButton:hover:not(:disabled) {
     background-color: #047857;
     transform: translateY(-2px);
     box-shadow: 0 4px 8px rgba(5, 150, 105, 0.3);
+}
+
+:global(.dark-mode) .submitButton:hover:not(:disabled) {
+    background-color: #059669;
+    color: white;
+    box-shadow: 0 4px 8px rgba(16, 185, 129, 0.4);
 }
 
 .submitButton:disabled {
@@ -146,18 +218,32 @@
     margin-top: 1.5rem;
     font-size: 0.875rem;
     color: #6b7280;
+    transition: color 0.3s ease;
+    margin-left: 80px;
+}
+
+:global(.dark-mode) .formFooter {
+    color: #9ca3af;
 }
 
 .link {
     color: #059669;
     font-weight: 500;
     text-decoration: none;
-    transition: color 0.2s;
+    transition: color 0.3s ease;
+}
+
+:global(.dark-mode) .link {
+    color: #10b981;
 }
 
 .link:hover {
     color: #047857;
     text-decoration: underline;
+}
+
+:global(.dark-mode) .link:hover {
+    color: #059669;
 }
 
 /* Success/Error Messages */
@@ -171,6 +257,13 @@
     font-size: 0.875rem;
     text-align: center;
     font-weight: 500;
+    transition: all 0.3s ease;
+}
+
+:global(.dark-mode) .successMessage {
+    background-color: #1a3a2e;
+    border: 1px solid #10b981;
+    color: #10b981;
 }
 
 .errorMessage {
@@ -183,6 +276,13 @@
     font-size: 0.875rem;
     text-align: center;
     font-weight: 500;
+    transition: all 0.3s ease;
+}
+
+:global(.dark-mode) .errorMessage {
+    background-color: #4a2626;
+    border: 1px solid #7f1d1d;
+    color: #f87171;
 }
 
 /* Checkbox and Terms */
@@ -200,11 +300,20 @@
     flex-shrink: 0;
 }
 
+:global(.dark-mode) .checkbox {
+    accent-color: #10b981;
+}
+
 .checkboxLabel {
     font-size: 0.875rem;
     color: #374151;
     line-height: 1.5;
     cursor: pointer;
+    transition: color 0.3s ease;
+}
+
+:global(.dark-mode) .checkboxLabel {
+    color: #d1d5db;
 }
 
 /* Loading Spinner */
@@ -215,6 +324,11 @@
     border-top-color: white;
     border-radius: 50%;
     animation: spin 1s linear infinite;
+}
+
+:global(.dark-mode) .loadingSpinner {
+    border: 2px solid rgba(26, 26, 26, 0.3);
+    border-top-color: #1a1a1a;
 }
 
 @keyframes spin {
@@ -254,25 +368,55 @@
     outline-offset: 2px;
 }
 
+:global(.dark-mode) .submitButton:focus-visible,
+:global(.dark-mode) .checkbox:focus-visible {
+    outline: 2px solid #10b981;
+}
+
 /* High contrast mode */
 @media (prefers-contrast: high) {
     .submitButton {
         background-color: #047857;
     }
     
+    :global(.dark-mode) .submitButton {
+        background-color: #059669;
+    }
+    
     .logoIcon {
         background-color: #047857;
+    }
+    
+    :global(.dark-mode) .logoIcon {
+        background-color: #059669;
     }
     
     .formInput:focus {
         border-color: #047857;
     }
+    
+    :global(.dark-mode) .formInput:focus {
+        border-color: #10b981;
+    }
 }
 
 /* Reduced motion */
 @media (prefers-reduced-motion: reduce) {
+    .logoIcon,
+    .logoText,
+    .heading,
+    .subheading,
+    .formContainer,
+    .formTitle,
+    .formLabel,
+    .formInput,
+    .formError,
     .submitButton,
-    .formInput {
+    .formFooter,
+    .link,
+    .successMessage,
+    .errorMessage,
+    .checkboxLabel {
         transition: none;
     }
     

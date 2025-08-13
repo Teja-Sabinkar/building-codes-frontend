@@ -1,4 +1,4 @@
-// app/auth/forgot-password/page.js
+// app/auth/forgot-password/page.js - Fixed Structure
 import ForgotPasswordForm from '@/components/auth/ForgotPasswordForm';
 import AuthHeader from '@/components/auth/AuthHeader';
 import styles from './ForgotPasswordPage.module.css';

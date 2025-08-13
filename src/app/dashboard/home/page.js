@@ -1,9 +1,10 @@
-// src/app/dashboard/home/page.js - Building Codes Assistant - FIXED CONVERSATION DELETION PERSISTENCE
+// src/app/dashboard/home/page.js - Building Codes Assistant - FIXED WITH THEME INITIALIZATION
 'use client';
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/hooks/useAuth';
+import { useTheme } from '@/hooks/useTheme'; // 🆕 ADD THEME HOOK
 import RegulationPanel from '@/components/home/RegulationPanel/RegulationPanel';
 import styles from './page.module.css';
 
@@ -11,17 +12,37 @@ export default function HomePage() {
   const { user, loading } = useAuth();
   const router = useRouter();
 
+  // 🆕 ADD THEME MANAGEMENT
+  const { theme, isDark, isLoading: isThemeLoading } = useTheme(user);
+
   // Core conversation state
   const [currentConversation, setCurrentConversation] = useState(null);
   const [conversations, setConversations] = useState([]);
   const [isGenerating, setIsGenerating] = useState(false);
   const [isLoadingConversations, setIsLoadingConversations] = useState(true);
 
-  // 🆕 DELETION TRACKING: Track conversations user has explicitly deleted
+  // DELETION TRACKING: Track conversations user has explicitly deleted
   const [deletedConversationIds, setDeletedConversationIds] = useState(new Set());
+  const [deletionInitialized, setDeletionInitialized] = useState(false);
 
   // Regulation query data
   const [currentRegulationResult, setCurrentRegulationResult] = useState(null);
+
+  // 🆕 THEME INITIALIZATION - Apply theme on mount and when user/theme changes
+  useEffect(() => {
+    if (!loading && !isThemeLoading && user) {
+      console.log('🎨 Home page theme initialization:', {
+        userTheme: user?.preferences?.theme,
+        currentTheme: theme,
+        isDark: isDark
+      });
+
+      // The useTheme hook already applies the theme to document.body
+      // This is just for logging/verification
+      const bodyHasDarkMode = document.body.classList.contains('dark-mode');
+      console.log('✅ Theme applied to body:', bodyHasDarkMode ? 'dark' : 'light');
+    }
+  }, [user, loading, isThemeLoading, theme, isDark]);
 
   // HELPER FUNCTION: Get conversation display title (prioritize first user message)
   const getConversationDisplayTitle = (conversation) => {
@@ -36,60 +57,64 @@ export default function HomePage() {
     return conversation?.title || 'New Regulation Query';
   };
 
-  // 🆕 DELETION TRACKING: Helper functions for managing deleted conversation IDs
+  // DELETION TRACKING: Helper functions for managing deleted conversation IDs
   const loadDeletedConversationIds = () => {
     try {
       const deletedIds = localStorage.getItem('deletedConversationIds');
+      console.log('📋 Raw localStorage deletedConversationIds:', deletedIds);
+
       if (deletedIds) {
         const parsed = JSON.parse(deletedIds);
-        setDeletedConversationIds(new Set(parsed));
-        console.log('📋 Loaded deleted conversation IDs:', parsed);
-        return new Set(parsed);
+        console.log('📋 Parsed deleted conversation IDs:', parsed);
+        const deletedSet = new Set(parsed);
+        setDeletedConversationIds(deletedSet);
+        console.log('✅ Loaded deleted conversation IDs into state:', Array.from(deletedSet));
+        return deletedSet;
+      } else {
+        console.log('📋 No deleted conversation IDs found in localStorage');
       }
     } catch (error) {
       console.error('❌ Error loading deleted conversation IDs:', error);
+      // Clear corrupted data
+      localStorage.removeItem('deletedConversationIds');
     }
-    return new Set();
+
+    const emptySet = new Set();
+    setDeletedConversationIds(emptySet);
+    console.log('📋 Initialized empty deleted conversations set');
+    return emptySet;
   };
 
   const saveDeletedConversationIds = (deletedIds) => {
     try {
       const idsArray = Array.from(deletedIds);
       localStorage.setItem('deletedConversationIds', JSON.stringify(idsArray));
-      console.log('💾 Saved deleted conversation IDs:', idsArray);
+      console.log('💾 Saved deleted conversation IDs to localStorage:', idsArray);
     } catch (error) {
       console.error('❌ Error saving deleted conversation IDs:', error);
     }
   };
 
   const addDeletedConversationId = (conversationId) => {
+    console.log('🗑️ Adding conversation to deleted list:', conversationId);
+
     setDeletedConversationIds(prev => {
       const newSet = new Set(prev);
       newSet.add(conversationId);
       saveDeletedConversationIds(newSet);
+      console.log('✅ Updated deleted conversation IDs:', Array.from(newSet));
       return newSet;
     });
   };
 
-  // 🆕 DELETION TRACKING: Check if a conversation should be skipped during restoration
-  const shouldSkipConversation = (conversation, deletedIds) => {
-    // Skip if user explicitly deleted this conversation
-    if (deletedIds.has(conversation._id)) {
-      console.log('⏭️ Skipping user-deleted conversation:', {
-        id: conversation._id,
-        title: conversation.title
-      });
-      return true;
-    }
-    return false;
-  };
-
-  // Initialize deleted conversation IDs on mount
+  // Initialize deletion tracking ONCE on mount
   useEffect(() => {
-    if (typeof window !== 'undefined') {
+    if (typeof window !== 'undefined' && !deletionInitialized) {
+      console.log('🔧 Initializing deletion tracking...');
       loadDeletedConversationIds();
+      setDeletionInitialized(true);
     }
-  }, []);
+  }, [deletionInitialized]);
 
   // Redirect to login if not authenticated
   useEffect(() => {
@@ -98,11 +123,10 @@ export default function HomePage() {
     }
   }, [user, loading, router]);
 
-  // Load conversations on mount - FIXED VERSION WITH DELETION TRACKING
+  // Load conversations on mount - ONLY after deletion tracking is initialized
   useEffect(() => {
-    if (user) {
-      // Add some debugging and localStorage test
-      console.log('🔍 User authenticated, loading conversations...');
+    if (user && deletionInitialized) {
+      console.log('🔍 User authenticated and deletion tracking initialized, loading conversations...');
 
       // Test localStorage functionality
       try {
@@ -114,10 +138,12 @@ export default function HomePage() {
         console.error('❌ localStorage is not working:', error);
       }
 
-      console.log('🔍 Current localStorage value:', localStorage.getItem('currentConversationId'));
+      console.log('🔍 Current localStorage currentConversationId:', localStorage.getItem('currentConversationId'));
+      console.log('🔍 Current deleted IDs state:', Array.from(deletedConversationIds));
+
       loadConversationsWithPersistence();
     }
-  }, [user]);
+  }, [user, deletionInitialized]); // Added deletionInitialized dependency
 
   // Update regulation result when conversation changes
   useEffect(() => {
@@ -135,51 +161,81 @@ export default function HomePage() {
     }
   }, [currentConversation]);
 
-  // FIXED: Load conversations with proper persistence logic, regulation data preservation, AND deletion tracking
+  // ENHANCED loadConversationsWithPersistence function - FIXED with double-filtering safety
   const loadConversationsWithPersistence = async () => {
     setIsLoadingConversations(true);
     try {
-      console.log('🔄 Loading conversations with persistence...');
+      console.log('🔄 Loading conversations with deletion persistence...');
 
-      // Get current deleted conversation IDs
-      const deletedIds = loadDeletedConversationIds();
+      // FIX: Always reload from localStorage to ensure we have the latest deleted IDs
+      const currentDeletedIds = loadDeletedConversationIds();
+      console.log('🗑️ Reloaded deleted conversations from localStorage:', Array.from(currentDeletedIds));
 
-      // Load ALL conversations (including archived for current session)
+      // 🔧 CRITICAL FIX: Load only NON-ARCHIVED conversations initially
+      // This prevents cleared conversations from showing up
       const token = localStorage.getItem('authToken');
-      const response = await fetch('/api/conversations?includeArchived=true', {
+      const response = await fetch('/api/conversations', {  // ← REMOVED includeArchived=true
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
         }
       });
+
       if (response.ok) {
         const data = await response.json();
         const allConversations = data.conversations || [];
 
-        console.log('📋 Loaded conversations:', {
+        console.log('📋 Active conversations from API:', {
           total: allConversations.length,
           archived: allConversations.filter(c => c.metadata?.isArchived).length,
-          active: allConversations.filter(c => !c.metadata?.isArchived).length,
-          deleted: allConversations.filter(c => deletedIds.has(c._id)).length
+          active: allConversations.filter(c => !c.metadata?.isArchived).length
         });
 
+        // Filter out user-deleted conversations FIRST
+        const nonDeletedConversations = allConversations.filter(conversation => {
+          const isDeleted = currentDeletedIds.has(conversation._id);
+          if (isDeleted) {
+            console.log('⭐ FILTERING OUT user-deleted conversation:', {
+              id: conversation._id,
+              title: conversation.title
+            });
+          }
+          return !isDeleted;
+        });
+
+        console.log('📋 After deletion filtering:', {
+          remaining: nonDeletedConversations.length,
+          filtered: allConversations.length - nonDeletedConversations.length,
+          deletedIds: Array.from(currentDeletedIds)
+        });
+
+        // 🆕 CRITICAL FIX: Handle zero conversations case properly
+        if (nonDeletedConversations.length === 0) {
+          console.log('🚫 ZERO CONVERSATIONS AFTER FILTERING - Showing empty state');
+
+          // Set empty state
+          setConversations([]);
+          setCurrentConversation(null);
+          setCurrentRegulationResult(null);
+
+          // Ensure no conversation is saved in localStorage
+          localStorage.removeItem('currentConversationId');
+
+          console.log('✅ Empty state activated - user must create new conversation');
+          setIsLoadingConversations(false);
+          return; // Exit early - don't try to restore any conversations
+        }
+
         // CRITICAL: Ensure all messages have their regulation data properly attached
-        const conversationsWithRegulationData = allConversations.map(conversation => {
+        const conversationsWithRegulationData = nonDeletedConversations.map(conversation => {
           if (conversation.messages && conversation.messages.length > 0) {
             const enhancedMessages = conversation.messages.map(message => {
               // Ensure assistant messages retain their regulation data
               if (message.role === 'assistant' && message.regulation) {
-                console.log('🔧 Preserving regulation data for message:', {
-                  hasAnswer: !!message.regulation.answer,
-                  hasReferences: !!message.regulation.references,
-                  referencesCount: message.regulation.references?.length || 0,
-                  queryType: message.regulation.query_type
-                });
                 return {
                   ...message,
                   regulation: {
                     ...message.regulation,
-                    // Ensure query_type is preserved
                     query_type: message.regulation.query_type || 'building_codes'
                   }
                 };
@@ -195,91 +251,63 @@ export default function HomePage() {
           return conversation;
         });
 
-        // 🆕 DELETION TRACKING: Filter out user-deleted conversations from sidebar display
-        const nonDeletedConversations = conversationsWithRegulationData.filter(c =>
-          !deletedIds.has(c._id)
-        );
+        // Set conversations (these are already non-archived)
+        setConversations(conversationsWithRegulationData);
 
-        // Filter conversations for sidebar display (only non-archived AND non-deleted)
-        const activeConversations = nonDeletedConversations.filter(c => !c.metadata?.isArchived);
-        setConversations(activeConversations);
+        console.log('📋 Conversations loaded for sidebar:', conversationsWithRegulationData.length);
 
-        // ENHANCED PERSISTENCE LOGIC WITH DELETION TRACKING: Try multiple approaches to restore conversation
+        // Enhanced conversation restoration logic
         let conversationToSet = null;
 
-        // Method 1: Try to get conversation ID from localStorage
+        // Method 1: Try to restore saved conversation (if not deleted)
         const savedConversationId = localStorage.getItem('currentConversationId');
         if (savedConversationId) {
           console.log('🔍 Trying to restore saved conversation:', savedConversationId);
 
-          // 🆕 DELETION TRACKING: Check if saved conversation was deleted by user
-          if (deletedIds.has(savedConversationId)) {
+          // Check if saved conversation was deleted by user
+          if (currentDeletedIds.has(savedConversationId)) {
             console.log('❌ Saved conversation was deleted by user, clearing localStorage');
             localStorage.removeItem('currentConversationId');
           } else {
-            // Look for the saved conversation in ALL conversations (including archived but not deleted)
-            conversationToSet = nonDeletedConversations.find(c => c._id === savedConversationId);
+            // Look for the saved conversation in available conversations
+            conversationToSet = conversationsWithRegulationData.find(c => c._id === savedConversationId);
 
             if (conversationToSet) {
-              console.log('✅ Restored saved conversation:', {
+              console.log('✅ Successfully restored saved conversation:', {
                 id: conversationToSet._id,
-                title: conversationToSet.title,
-                isArchived: conversationToSet.metadata?.isArchived,
-                messageCount: conversationToSet.messages?.length || 0,
-                firstMessage: conversationToSet.messages?.[0]?.content?.substring(0, 50) + '...',
-                regulationMessages: conversationToSet.messages?.filter(m => m.regulation && m.regulation.references?.length > 0).length || 0
+                title: conversationToSet.title
               });
             } else {
-              console.log('❌ Saved conversation not found in database');
-              // Clean up invalid localStorage entry
+              console.log('❌ Saved conversation not found in available conversations');
               localStorage.removeItem('currentConversationId');
             }
           }
         }
 
-        // Method 2: If no saved conversation or saved one not found, use most recent active (non-deleted) conversation
-        if (!conversationToSet && activeConversations.length > 0) {
-          conversationToSet = activeConversations[0]; // Most recent first (API sorts by updatedAt: -1)
-          console.log('🔄 Using most recent active (non-deleted) conversation:', {
+        // Method 2: If no saved conversation, use most recent available
+        if (!conversationToSet && conversationsWithRegulationData.length > 0) {
+          conversationToSet = conversationsWithRegulationData[0];
+          console.log('🔄 Using most recent available conversation:', {
             id: conversationToSet._id,
-            title: conversationToSet.title,
-            lastUpdated: conversationToSet.updatedAt
-          });
-        }
-
-        // Method 3: If still no conversation, check if there are any non-deleted conversations at all
-        if (!conversationToSet && nonDeletedConversations.length > 0) {
-          // Use the most recent non-deleted conversation even if archived
-          conversationToSet = nonDeletedConversations[0];
-          console.log('🔄 Using most recent non-deleted conversation (possibly archived):', {
-            id: conversationToSet._id,
-            title: conversationToSet.title,
-            isArchived: conversationToSet.metadata?.isArchived
+            title: conversationToSet.title
           });
         }
 
         // Set the current conversation and update localStorage
         if (conversationToSet) {
           setCurrentConversation(conversationToSet);
-          // Save to localStorage for future page loads
           localStorage.setItem('currentConversationId', conversationToSet._id);
 
           console.log('💾 Set current conversation and saved to localStorage:', {
             id: conversationToSet._id,
-            title: conversationToSet.title,
-            messagesWithRegulation: conversationToSet.messages?.filter(m => m.regulation && m.regulation.references?.length > 0).length || 0
+            title: conversationToSet.title
           });
-
-          // If the restored conversation is archived, add it to the conversations list temporarily
-          if (conversationToSet.metadata?.isArchived) {
-            console.log('📌 Adding archived conversation to active list for current session');
-            setConversations(prev => [conversationToSet, ...prev]);
-          }
         } else {
-          console.log('📝 No available conversations found (all may be deleted), user will need to create new one');
+          console.log('🔍 No available conversations found, user will need to create new one');
           localStorage.removeItem('currentConversationId');
           setCurrentConversation(null);
         }
+
       } else {
         console.error('❌ Failed to load conversations:', response.status, response.statusText);
       }
@@ -292,53 +320,77 @@ export default function HomePage() {
 
   const createNewConversation = async (regionData = null) => {
     try {
-      console.log('🆕 Creating new conversation with region:', regionData?.code || 'default');
-      const token = localStorage.getItem('authToken');
+      console.log('🔄 Creating new conversation with region data:', regionData);
 
-      // Prepare conversation data with region information
+      // Build conversation data with proper defaults
       const conversationData = {
         title: 'New Regulation Query',
       };
 
-      // Add region information if provided
-      if (regionData) {
+      if (regionData && regionData.code) {
+        // Valid region data provided
         conversationData.region = regionData.code;
-        conversationData.regionDisplayName = `${regionData.flag} ${regionData.name}`;
-        conversationData.title = `New ${regionData.name} Query`;
+
+        // 🔧 FIX: Safely construct regionDisplayName
+        const flag = regionData.flag || (regionData.code === 'Scotland' ? '🏴󠁧󠁢󠁳󠁣󠁴󠁿' : '🇮🇳');
+        const name = regionData.name || (regionData.code === 'Scotland' ? 'Scottish Building Standards' : 'Indian Building Codes');
+
+        conversationData.regionDisplayName = `${flag} ${name}`;
+        conversationData.title = `New ${name} Query`;
+
+        console.log('✅ Region data processed:', {
+          region: conversationData.region,
+          regionDisplayName: conversationData.regionDisplayName,
+          title: conversationData.title
+        });
+      } else {
+        // No region data or invalid region data - use defaults
+        conversationData.region = 'India';
+        conversationData.regionDisplayName = '🇮🇳 Indian Building Codes';
+        conversationData.title = 'New Indian Building Codes Query';
+
+        console.log('ℹ️ Using default region data (India)');
       }
 
+      // Get auth token
+      const token = localStorage.getItem('authToken') || localStorage.getItem('token');
+      if (!token) {
+        throw new Error('Authentication token not found');
+      }
+
+      console.log('🔄 Sending conversation creation request:', conversationData);
+
+      // Create conversation via API
       const response = await fetch('/api/conversations', {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
         },
-        body: JSON.stringify(conversationData),
+        body: JSON.stringify(conversationData)
       });
 
-      if (response.ok) {
-        const data = await response.json();
-        const newConversation = data.conversation;
-
-        setConversations(prev => [newConversation, ...prev]);
-        setCurrentConversation(newConversation);
-        setCurrentRegulationResult(null);
-
-        // Save new conversation as current
-        localStorage.setItem('currentConversationId', newConversation._id);
-
-        console.log('✅ New conversation created with region:', {
-          id: newConversation._id,
-          title: newConversation.title,
-          region: newConversation.region || 'default'
-        });
-
-        return newConversation;
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || `Failed to create conversation (${response.status})`);
       }
+
+      const data = await response.json();
+      console.log('✅ Conversation created:', data.conversation);
+
+      // Add to local state and select it
+      const newConversation = data.conversation;
+      setConversations(prev => [newConversation, ...prev]);
+
+      // Set as current conversation
+      await selectConversation(newConversation);
+
+      return newConversation;
+
     } catch (error) {
       console.error('❌ Error creating conversation:', error);
+      throw error;
     }
-    return null;
   };
 
   const sendMessage = async (message) => {
@@ -364,7 +416,7 @@ export default function HomePage() {
 
     try {
       // STEP 1: Add user message to conversation via Next.js API
-      console.log('📝 Step 1: Adding user message to conversation...');
+      console.log('🔍 Step 1: Adding user message to conversation...');
       const token = localStorage.getItem('authToken');
       const addMessageResponse = await fetch('/api/messages/add', {
         method: 'POST',
@@ -396,8 +448,8 @@ export default function HomePage() {
         body: JSON.stringify({
           question: message,
           conversationId: conversation._id,
-          region: conversation.region || 'India',  // 🆕 ADD THIS LINE
-          maxResults: 10  // Request 10 results to get chunks 1-3 + 4-8 for references
+          region: conversation.region || 'India',
+          maxResults: 10
         }),
       });
 
@@ -507,7 +559,7 @@ export default function HomePage() {
         setCurrentRegulationResult(aiData.regulation);
       }
 
-      // PERSISTENCE: Save current conversation (ENHANCED)
+      // PERSISTENCE: Save current conversation
       try {
         localStorage.setItem('currentConversationId', updatedConversation._id);
         console.log('💾 Message sent - saved conversation to localStorage:', updatedConversation._id);
@@ -567,7 +619,7 @@ export default function HomePage() {
 
     setCurrentConversation(conversationWithRegulationData);
 
-    // PERSISTENCE: Save selected conversation (ENHANCED)
+    // PERSISTENCE: Save selected conversation
     try {
       localStorage.setItem('currentConversationId', conversation._id);
       console.log('💾 Saved conversation to localStorage:', conversation._id);
@@ -593,11 +645,34 @@ export default function HomePage() {
     }
   };
 
-  // 🆕 DELETION TRACKING: Enhanced deleteConversation with deletion tracking
+  // ENHANCED deleteConversation with proper deletion tracking
   const deleteConversation = async (conversationId) => {
     try {
-      console.log('🗑️ Deleting conversation:', conversationId);
+      console.log('🗑️ Starting deletion process for conversation:', conversationId);
 
+      // 🔧 CRITICAL FIX: Add to deleted list FIRST and SYNCHRONOUSLY
+      // This must happen before any async operations or state changes
+      try {
+        const currentDeletedIds = localStorage.getItem('deletedConversationIds');
+        const deletedArray = currentDeletedIds ? JSON.parse(currentDeletedIds) : [];
+
+        if (!deletedArray.includes(conversationId)) {
+          deletedArray.push(conversationId);
+          localStorage.setItem('deletedConversationIds', JSON.stringify(deletedArray));
+          console.log('💾 IMMEDIATELY saved to localStorage. Total deleted:', deletedArray.length);
+
+          // Update React state as well
+          setDeletedConversationIds(new Set(deletedArray));
+          console.log('✅ Updated React state with deleted conversation');
+        } else {
+          console.log('⚠️ Conversation already in deleted list');
+        }
+      } catch (error) {
+        console.error('❌ CRITICAL ERROR: Failed to add to deleted list:', error);
+        // Still continue with deletion, but this is a serious issue
+      }
+
+      // Now proceed with the backend deletion
       const token = localStorage.getItem('authToken');
       const response = await fetch(`/api/conversations?id=${conversationId}`, {
         method: 'DELETE',
@@ -608,49 +683,44 @@ export default function HomePage() {
       });
 
       if (response.ok) {
-        // 🆕 CRITICAL: Track this conversation as deleted by user
-        addDeletedConversationId(conversationId);
+        console.log('✅ Backend deletion successful');
 
-        // Filter out the deleted conversation from UI
+        // Update UI state immediately
         const updatedConversations = conversations.filter(conv => conv._id !== conversationId);
         setConversations(updatedConversations);
 
-        // Check if the deleted conversation was the current one
-        if (currentConversation?._id === conversationId) {
-          console.log('🔄 Deleted conversation was current, selecting new one...');
+        // 🆕 CRITICAL: Handle last conversation deletion properly
+        if (updatedConversations.length === 0) {
+          console.log('🚫 LAST CONVERSATION DELETED - Setting empty state');
 
-          // Clear from localStorage
+          // Clear current conversation completely
+          setCurrentConversation(null);
+          setCurrentRegulationResult(null);
+
+          // 🔧 KEY FIX: Clear localStorage to prevent restoration
           localStorage.removeItem('currentConversationId');
 
-          // If there are other conversations, select the first one
-          if (updatedConversations.length > 0) {
+          console.log('✅ Empty state activated - will persist through page reloads');
+        } else {
+          // Handle non-last conversation deletion
+          if (currentConversation?._id === conversationId) {
+            console.log('🔄 Deleted conversation was current, selecting new one...');
             const newCurrent = updatedConversations[0];
             setCurrentConversation(newCurrent);
             localStorage.setItem('currentConversationId', newCurrent._id);
-
-            // Find latest regulation in new current conversation
-            if (newCurrent.messages && newCurrent.messages.length > 0) {
-              const latestRegulationMessage = newCurrent.messages
-                .slice().reverse()
-                .find(msg => msg.regulation && msg.regulation.answer);
-
-              setCurrentRegulationResult(latestRegulationMessage?.regulation || null);
-            } else {
-              setCurrentRegulationResult(null);
-            }
-          } else {
-            // If no more conversations, clear current
-            setCurrentConversation(null);
-            setCurrentRegulationResult(null);
+            console.log('✅ Selected new current conversation:', newCurrent._id);
           }
         }
 
-        console.log('✅ Conversation deleted and tracked as user-deleted:', {
-          deletedId: conversationId,
-          remainingConversations: updatedConversations.length
-        });
+        console.log('✅ Deletion completed and tracked. Conversation will NOT reappear on reload.');
+
+        // Verify the deletion was tracked
+        const verifyDeleted = JSON.parse(localStorage.getItem('deletedConversationIds') || '[]');
+        console.log('🔍 Verification - Total deleted conversations:', verifyDeleted.length);
+        console.log('🔍 Verification - Is deleted conversation in list?', verifyDeleted.includes(conversationId));
+
       } else {
-        throw new Error('Failed to delete conversation');
+        throw new Error('Failed to delete conversation from backend');
       }
     } catch (error) {
       console.error('❌ Error deleting conversation:', error);
@@ -721,7 +791,6 @@ export default function HomePage() {
 
           if (queryResponse.ok) {
             const regenerationData = await queryResponse.json();
-            console.log('✅ Regeneration completed:', regenerationData);
 
             // FIXED REGENERATION CODE - Apply the requested fixes
             if (regenerationData && regenerationData.conversation && regenerationData.regulation) {
@@ -731,7 +800,6 @@ export default function HomePage() {
               });
 
               // CRITICAL FIX 1: Preserve the conversation title from the first user message
-              // Don't let the backend override it
               const preservedTitle = getConversationDisplayTitle(currentConversation);
 
               // CRITICAL FIX 2: Process the updated conversation while preserving title
@@ -747,7 +815,7 @@ export default function HomePage() {
                   return {
                     ...msg,
                     _id: msg._id || msg.id, // Preserve database ID if it exists
-                    timestamp: new Date().toISOString(), // ✅ Keep the timestamp fix
+                    timestamp: new Date().toISOString(),
                     regulation: {
                       ...regenerationData.regulation,
                       query_type: regenerationData.regulation.query_type || 'building_codes'
@@ -765,7 +833,7 @@ export default function HomePage() {
               const finalConversation = {
                 ...updatedConversationFromBackend,
                 messages: enhancedMessages,
-                title: preservedTitle // ✅ Ensure title stays as user's query
+                title: preservedTitle
               };
 
               console.log('🔧 Final conversation processed:', {
@@ -788,53 +856,6 @@ export default function HomePage() {
               localStorage.setItem('currentConversationId', finalConversation._id);
 
               console.log('✅ Regeneration completed with preserved title and proper IDs');
-
-              // CRITICAL FIX: Save the regenerated assistant message to database to get proper ID
-              if (finalConversation && finalConversation.messages.length > 0) {
-                const latestMessage = finalConversation.messages[finalConversation.messages.length - 1];
-
-                if (latestMessage.role === 'assistant' && !latestMessage._id) {
-                  console.log('💾 Saving regenerated message to database...');
-
-                  try {
-                    const saveResponse = await fetch('/api/messages/add', {
-                      method: 'POST',
-                      headers: {
-                        'Authorization': `Bearer ${token}`,
-                        'Content-Type': 'application/json'
-                      },
-                      body: JSON.stringify({
-                        conversationId: finalConversation._id,
-                        role: 'assistant',
-                        content: latestMessage.content,
-                        regulation: {
-                          ...latestMessage.regulation,
-                          query_type: latestMessage.regulation.query_type || 'building_codes'  // ✅ Ensure query_type is preserved
-                        }
-                      })
-                    });
-                    console.log('💾 Saving with preserved query_type:', latestMessage.regulation.query_type);
-
-                    if (saveResponse.ok) {
-                      const savedData = await saveResponse.json();
-                      console.log('✅ Regenerated message saved with ID:', savedData.conversation?.messages?.slice(-1)[0]?._id);
-
-                      // Update the conversation with the message that now has an ID
-                      if (savedData.conversation) {
-                        setCurrentConversation(savedData.conversation);
-                        setConversations(prevConversations =>
-                          prevConversations.map(conv =>
-                            conv._id === savedData.conversation._id ? savedData.conversation : conv
-                          )
-                        );
-                      }
-                    }
-                  } catch (error) {
-                    console.log('⚠️ Failed to save regenerated message to database:', error);
-                    // Continue anyway - the message will still work, just without database ID
-                  }
-                }
-              }
 
               // Update current regulation result if a new one was generated
               if (regenerationData.regulation) {
@@ -880,27 +901,27 @@ export default function HomePage() {
     );
   };
 
-  // 🔍 DEBUG: Log what we're passing to RegulationPanel with query_type awareness
-  if (currentConversation?.messages) {
-    console.log('🔍 DEBUGGING: Messages being passed to MessageList (with query_type):');
-    currentConversation.messages.forEach((msg, index) => {
-      console.log(`Message ${index}:`, {
-        role: msg.role,
-        hasRegulation: !!msg.regulation,
-        queryType: msg.regulation?.query_type || 'none',
-        regulationKeys: msg.regulation ? Object.keys(msg.regulation) : 'none',
-        referencesCount: msg.regulation?.references?.length || 0,
-        contentPreview: msg.content.substring(0, 50) + '...'
-      });
-    });
+  // DEBUG function to check deletion tracking (remove in production)
+  const debugDeletionTracking = () => {
+    console.log('🔍 DELETION TRACKING DEBUG:');
+    console.log('localStorage raw value:', localStorage.getItem('deletedConversationIds'));
+    console.log('Current state:', Array.from(deletedConversationIds));
+    console.log('Current conversation:', currentConversation?._id);
+    console.log('Available conversations:', conversations.map(c => c._id));
+    console.log('Deletion initialized:', deletionInitialized);
+  };
+
+  // Make debug function available in console (remove in production)
+  if (typeof window !== 'undefined') {
+    window.debugDeletionTracking = debugDeletionTracking;
   }
 
   // Show loading while checking authentication or loading conversations
-  if (loading || isLoadingConversations) {
+  if (loading || isLoadingConversations || isThemeLoading) { // 🆕 ADD THEME LOADING
     return (
       <div className={styles.loading}>
         <div className={styles.loadingSpinner}></div>
-        <p>{loading ? 'Loading...' : 'Loading conversations...'}</p>
+        <p>{loading ? 'Loading...' : isThemeLoading ? 'Loading theme...' : 'Loading conversations...'}</p>
       </div>
     );
   }

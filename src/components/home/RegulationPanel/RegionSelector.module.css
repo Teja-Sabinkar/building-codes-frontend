@@ -1,3 +1,5 @@
+/* src/components/home/RegulationPanel/RegionSelector.module.css - Enhanced with Dark Mode Support */
+
 .modalOverlay {
   position: fixed;
   top: 0;
@@ -11,13 +13,25 @@
   z-index: 1000;
 }
 
+:global(.dark-mode) .modalOverlay {
+  background: rgba(0, 0, 0, 0.8);
+}
+
 .modalContent {
   background: white;
   border-radius: 12px;
   padding: 24px;
   width: 90%;
-  max-width: 500px;
+  max-width: 600px;
+  max-height: 80vh;
+  overflow-y: auto;
   box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+}
+
+:global(.dark-mode) .modalContent {
+  background: #2d2d2d;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.4);
 }
 
 .modalHeader {
@@ -29,12 +43,22 @@
   color: #059669;
   font-size: 1.25rem;
   font-weight: 600;
+  transition: color 0.3s ease;
+}
+
+:global(.dark-mode) .modalHeader h3 {
+  color: #10b981;
 }
 
 .modalHeader p {
   margin: 0;
   color: #6b7280;
   font-size: 0.875rem;
+  transition: color 0.3s ease;
+}
+
+:global(.dark-mode) .modalHeader p {
+  color: #9ca3af;
 }
 
 .regionSelector {
@@ -47,6 +71,11 @@
   color: #374151;
   font-weight: 500;
   font-size: 0.875rem;
+  transition: color 0.3s ease;
+}
+
+:global(.dark-mode) .selectLabel {
+  color: #d1d5db;
 }
 
 .regionDropdown {
@@ -57,7 +86,14 @@
   font-size: 1rem;
   background: white;
   cursor: pointer;
-  transition: border-color 0.2s;
+  transition: all 0.2s ease;
+  color: #1f2937;
+}
+
+:global(.dark-mode) .regionDropdown {
+  border: 2px solid #555;
+  background: #3d3d3d;
+  color: #e5e5e5;
 }
 
 .regionDropdown:focus {
@@ -66,35 +102,145 @@
   box-shadow: 0 0 0 3px rgba(5, 150, 105, 0.1);
 }
 
-.regionDetails {
-  margin-top: 16px;
-  padding: 16px;
-  background: #f0fdf4;
-  border-radius: 8px;
-  border: 1px solid #bbf7d0;
+:global(.dark-mode) .regionDropdown:focus {
+  border-color: #10b981;
+  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.2);
 }
 
-.regionInfo h4 {
-  margin: 0 0 8px 0;
+.regionDetails {
+  margin-top: 20px;
+  padding: 20px;
+  background: #f0fdf4;
+  border-radius: 12px;
+  border: 1px solid #bbf7d0;
+  transition: all 0.3s ease;
+}
+
+:global(.dark-mode) .regionDetails {
+  background: #1a3a2e;
+  border: 1px solid #10b981;
+}
+
+.regionDetails h4 {
+  margin: 0 0 16px 0;
   color: #059669;
   font-size: 1.1rem;
+  font-weight: 600;
+  transition: color 0.3s ease;
 }
 
-.regionInfo p {
-  margin: 0 0 12px 0;
-  color: #374151;
-  font-size: 0.875rem;
+:global(.dark-mode) .regionDetails h4 {
+  color: #10b981;
 }
 
-.regionStats {
+.codesContainer {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 16px;
 }
 
-.chunks, .documents {
+.codeCard {
+  background: white;
+  border: 2px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 16px;
+  transition: all 0.2s ease;
+}
+
+:global(.dark-mode) .codeCard {
+  background: #2d2d2d;
+  border: 2px solid #555;
+}
+
+.codeCard:hover {
+  border-color: #059669;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
+
+:global(.dark-mode) .codeCard:hover {
+  border-color: #10b981;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
+}
+
+.codeHeader h5 {
+  margin: 0 0 12px 0;
+  color: #059669;
+  font-size: 1rem;
+  font-weight: 600;
+  transition: color 0.3s ease;
+}
+
+:global(.dark-mode) .codeHeader h5 {
+  color: #10b981;
+}
+
+.codeStats {
+  margin-bottom: 12px;
+}
+
+.documentsSection {
+  margin-top: 8px;
+}
+
+.documentsLabel {
   font-size: 0.75rem;
+  color: #374151;
+  font-weight: 500;
+  display: block;
+  margin-bottom: 4px;
+  transition: color 0.3s ease;
+}
+
+:global(.dark-mode) .documentsLabel {
+  color: #d1d5db;
+}
+
+.documentsList {
+  margin: 0;
+  padding-left: 16px;
+  list-style-type: disc;
+}
+
+.documentItem {
+  font-size: 0.7rem;
   color: #6b7280;
+  margin-bottom: 2px;
+  line-height: 1.3;
+  transition: color 0.3s ease;
+}
+
+:global(.dark-mode) .documentItem {
+  color: #9ca3af;
+}
+
+.selectCodeButton {
+  width: 100%;
+  padding: 10px 16px;
+  border: 2px solid #059669;
+  background: #059669;
+  color: white;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 500;
+  font-size: 0.875rem;
+  transition: all 0.2s ease;
+}
+
+:global(.dark-mode) .selectCodeButton {
+  border: 2px solid #10b981;
+  background: #10b981;
+  color: #1a1a1a;
+}
+
+.selectCodeButton:hover {
+  background: #047857;
+  border-color: #047857;
+}
+
+:global(.dark-mode) .selectCodeButton:hover {
+  background: #059669;
+  border-color: #059669;
+  color: white;
 }
 
 .modalActions {
@@ -111,7 +257,13 @@
   border-radius: 6px;
   cursor: pointer;
   font-weight: 500;
-  transition: all 0.2s;
+  transition: all 0.2s ease;
+}
+
+:global(.dark-mode) .cancelButton {
+  border: 2px solid #555;
+  background: #3d3d3d;
+  color: #d1d5db;
 }
 
 .cancelButton:hover {
@@ -119,26 +271,9 @@
   border-color: #d1d5db;
 }
 
-.createButton {
-  padding: 10px 20px;
-  border: 2px solid #059669;
-  background: #059669;
-  color: white;
-  border-radius: 6px;
-  cursor: pointer;
-  font-weight: 500;
-  transition: all 0.2s;
-}
-
-.createButton:hover:not(:disabled) {
-  background: #047857;
-  border-color: #047857;
-}
-
-.createButton:disabled {
-  background: #d1d5db;
-  border-color: #d1d5db;
-  cursor: not-allowed;
+:global(.dark-mode) .cancelButton:hover {
+  background: #4a4a4a;
+  border-color: #666;
 }
 
 /* Mobile responsiveness */
@@ -146,13 +281,131 @@
   .modalContent {
     width: 95%;
     padding: 20px;
+    max-height: 90vh;
   }
   
   .modalActions {
     flex-direction: column;
   }
   
-  .cancelButton, .createButton {
+  .cancelButton {
     width: 100%;
+  }
+  
+  .codesContainer {
+    gap: 12px;
+  }
+  
+  .codeCard {
+    padding: 12px;
+  }
+
+  .modalHeader h3 {
+    font-size: 1.125rem;
+  }
+
+  .modalHeader p {
+    font-size: 0.8125rem;
+  }
+
+  .regionDetails h4 {
+    font-size: 1rem;
+  }
+
+  .selectLabel {
+    font-size: 0.8125rem;
+  }
+
+  .regionDropdown {
+    font-size: 0.9375rem;
+    padding: 10px 14px;
+  }
+
+  .documentsLabel {
+    font-size: 0.6875rem;
+  }
+
+  .documentItem {
+    font-size: 0.65rem;
+  }
+
+  .selectCodeButton {
+    font-size: 0.8125rem;
+    padding: 9px 14px;
+  }
+
+  .cancelButton {
+    font-size: 0.8125rem;
+    padding: 9px 18px;
+  }
+}
+
+/* Focus styles for accessibility */
+.regionDropdown:focus-visible,
+.selectCodeButton:focus-visible,
+.cancelButton:focus-visible {
+  outline: 2px solid #059669;
+  outline-offset: 2px;
+}
+
+:global(.dark-mode) .regionDropdown:focus-visible,
+:global(.dark-mode) .selectCodeButton:focus-visible,
+:global(.dark-mode) .cancelButton:focus-visible {
+  outline: 2px solid #10b981;
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+  .modalContent {
+    border: 2px solid #000;
+  }
+
+  :global(.dark-mode) .modalContent {
+    border: 2px solid #fff;
+  }
+
+  .regionDropdown {
+    border-width: 2px;
+  }
+
+  .codeCard {
+    border-width: 2px;
+  }
+
+  .selectCodeButton {
+    background: #047857;
+    border-color: #047857;
+  }
+
+  :global(.dark-mode) .selectCodeButton {
+    background: #059669;
+    border-color: #059669;
+  }
+
+  .cancelButton {
+    border-color: #000;
+  }
+
+  :global(.dark-mode) .cancelButton {
+    border-color: #fff;
+  }
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  .modalContent,
+  .modalHeader h3,
+  .modalHeader p,
+  .selectLabel,
+  .regionDropdown,
+  .regionDetails,
+  .regionDetails h4,
+  .codeCard,
+  .codeHeader h5,
+  .documentsLabel,
+  .documentItem,
+  .selectCodeButton,
+  .cancelButton {
+    transition: none;
   }
 }

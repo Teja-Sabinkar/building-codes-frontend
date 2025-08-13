@@ -1,4 +1,4 @@
-/* src/app/dashboard/home/page.module.css - Building Codes Layout */
+/* src/app/dashboard/home/page.module.css - Building Codes Layout with Dark Mode Support */
 
 .container {
   height: 100vh;
@@ -6,6 +6,11 @@
   flex-direction: column;
   background: #f8f9fa;
   overflow: hidden;
+  transition: background-color 0.3s ease;
+}
+
+:global(.dark-mode) .container {
+  background: #1a1a1a;
 }
 
 .mainContent {
@@ -24,6 +29,11 @@
   min-width: 0;
   background: white;
   display: flex;
+  transition: background-color 0.3s ease;
+}
+
+:global(.dark-mode) .mainContent > *:first-child {
+  background: #2d2d2d;
 }
 
 /* Hide any potential second child (canvas/other panels) */
@@ -40,6 +50,11 @@
   height: 100vh;
   gap: 20px;
   background: #ffffff;
+  transition: background-color 0.3s ease;
+}
+
+:global(.dark-mode) .loading {
+  background: #1a1a1a;
 }
 
 .loadingSpinner {
@@ -49,6 +64,12 @@
   border-top: 4px solid #059669;
   border-radius: 50%;
   animation: spin 1s linear infinite;
+  transition: border-color 0.3s ease;
+}
+
+:global(.dark-mode) .loadingSpinner {
+  border: 4px solid #444;
+  border-top: 4px solid #10b981;
 }
 
 @keyframes spin {
@@ -61,6 +82,11 @@
   font-size: 16px;
   margin: 0;
   font-weight: 500;
+  transition: color 0.3s ease;
+}
+
+:global(.dark-mode) .loading p {
+  color: #9ca3af;
 }
 
 /* Responsive Design */
@@ -92,5 +118,172 @@
     width: 32px;
     height: 32px;
     border-width: 3px;
+  }
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+  .loadingSpinner {
+    border-color: #000;
+    border-top-color: #059669;
+  }
+  
+  :global(.dark-mode) .loadingSpinner {
+    border-color: #fff;
+    border-top-color: #10b981;
+  }
+  
+  .loading {
+    border: 2px solid #000;
+  }
+  
+  :global(.dark-mode) .loading {
+    border: 2px solid #fff;
+  }
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  .container,
+  .mainContent > *:first-child,
+  .loading,
+  .loadingSpinner,
+  .loading p {
+    transition: none;
+  }
+  
+  .loadingSpinner {
+    animation: none;
+  }
+}
+
+/* Focus management for accessibility */
+.container:focus-within {
+  outline: none;
+}
+
+/* Enhanced loading states */
+.loading::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(135deg, transparent, rgba(5, 150, 105, 0.05), transparent);
+  pointer-events: none;
+  opacity: 0;
+  animation: shimmer 2s infinite;
+}
+
+:global(.dark-mode) .loading::before {
+  background: linear-gradient(135deg, transparent, rgba(16, 185, 129, 0.1), transparent);
+}
+
+@keyframes shimmer {
+  0%, 100% {
+    opacity: 0;
+    transform: translateX(-100%);
+  }
+  50% {
+    opacity: 1;
+    transform: translateX(100%);
+  }
+}
+
+/* Error state styling (if needed for future enhancements) */
+.error {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+  gap: 20px;
+  background: #ffffff;
+  color: #dc2626;
+  transition: all 0.3s ease;
+}
+
+:global(.dark-mode) .error {
+  background: #1a1a1a;
+  color: #f87171;
+}
+
+.errorIcon {
+  width: 48px;
+  height: 48px;
+  color: #dc2626;
+  transition: color 0.3s ease;
+}
+
+:global(.dark-mode) .errorIcon {
+  color: #f87171;
+}
+
+.errorMessage {
+  font-size: 18px;
+  font-weight: 600;
+  text-align: center;
+  max-width: 400px;
+  transition: color 0.3s ease;
+}
+
+.errorSubMessage {
+  font-size: 14px;
+  font-weight: 400;
+  text-align: center;
+  color: #6b7280;
+  max-width: 300px;
+  transition: color 0.3s ease;
+}
+
+:global(.dark-mode) .errorSubMessage {
+  color: #9ca3af;
+}
+
+/* Success state styling (if needed for future enhancements) */
+.success {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+  gap: 20px;
+  background: #ffffff;
+  color: #059669;
+  transition: all 0.3s ease;
+}
+
+:global(.dark-mode) .success {
+  background: #1a1a1a;
+  color: #10b981;
+}
+
+.successIcon {
+  width: 48px;
+  height: 48px;
+  color: #059669;
+  transition: color 0.3s ease;
+}
+
+:global(.dark-mode) .successIcon {
+  color: #10b981;
+}
+
+/* Print styles */
+@media print {
+  .container {
+    background: white !important;
+    color: black !important;
+  }
+  
+  .loading,
+  .error,
+  .success {
+    display: none !important;
+  }
+  
+  .loadingSpinner {
+    display: none !important;
   }
 }

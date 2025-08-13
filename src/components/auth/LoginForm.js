@@ -1,7 +1,7 @@
-// components/auth/LoginForm.js
+// components/auth/LoginForm.js - With Smart Persistence Theme Logic and Updated Layout
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useAuth } from '@/hooks/useAuth';
@@ -18,6 +18,34 @@ export default function LoginForm() {
   });
   const [errors, setErrors] = useState({});
   const [isLoading, setIsLoading] = useState(false);
+
+  // 🆕 SMART PERSISTENCE: Apply guest theme on mount
+  useEffect(() => {
+    const applyGuestTheme = () => {
+      try {
+        // Check for guest theme preference (from previous logout)
+        const guestTheme = localStorage.getItem('regGPT-guestTheme') || 'dark';
+        const isDark = guestTheme === 'dark';
+        
+        console.log('🎨 Login page applying guest theme:', guestTheme);
+        
+        // Apply theme to document body
+        if (isDark) {
+          document.body.classList.add('dark-mode');
+        } else {
+          document.body.classList.remove('dark-mode');
+        }
+        
+        console.log('✅ Guest theme applied:', isDark ? 'dark' : 'light');
+      } catch (error) {
+        console.error('❌ Error applying guest theme:', error);
+        // Default to dark theme on error (since we changed default to dark)
+        document.body.classList.add('dark-mode');
+      }
+    };
+
+    applyGuestTheme();
+  }, []);
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -65,6 +93,10 @@ export default function LoginForm() {
       const result = await login(formData.email, formData.password);
       
       if (result.success) {
+        // 🆕 SMART PERSISTENCE: Clear guest theme on successful login
+        localStorage.removeItem('regGPT-guestTheme');
+        console.log('🧹 Cleared guest theme - account preference will take over');
+        
         router.push('/dashboard/home');
       } else {
         setErrors({ 
@@ -111,17 +143,9 @@ export default function LoginForm() {
         </div>
         
         <div className={styles.formGroup}>
-          <div className="flex justify-between items-center mb-2">
-            <label className={styles.formLabel} htmlFor="password">
-              Password
-            </label>
-            <Link 
-              href="/auth/forgot-password" 
-              className={styles.link}
-            >
-              Forgot password?
-            </Link>
-          </div>
+          <label className={styles.formLabel} htmlFor="password">
+            Password
+          </label>
           <input
             id="password"
             name="password"
@@ -136,17 +160,26 @@ export default function LoginForm() {
           )}
         </div>
         
+        {/* 🆕 UPDATED: Remember me and Forgot password on same line */}
         <div className={styles.formGroup}>
-          <label className={styles.checkboxGroup}>
-            <input
-              type="checkbox"
-              name="rememberMe"
-              checked={formData.rememberMe}
-              onChange={handleChange}
-              className={styles.checkbox}
-            />
-            <span className={styles.checkboxLabel}>Remember me</span>
-          </label>
+          <div className="flex justify-between items-center">
+            <label className={styles.checkboxGroup}>
+              <input
+                type="checkbox"
+                name="rememberMe"
+                checked={formData.rememberMe}
+                onChange={handleChange}
+                className={styles.checkbox}
+              />
+              <span className={styles.checkboxLabel}>Remember me</span>
+            </label>
+            <Link 
+              href="/auth/forgot-password" 
+              className={styles.link}
+            >
+              Forgot password?
+            </Link>
+          </div>
         </div>
         
         <div className="flex items-center justify-center">

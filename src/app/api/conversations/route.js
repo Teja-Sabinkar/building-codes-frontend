@@ -11,18 +11,18 @@ async function getAuthenticatedUser() {
   try {
     const headersList = headers();
     const authorization = headersList.get('authorization');
-    
+
     if (!authorization || !authorization.startsWith('Bearer ')) {
       return null;
     }
-    
+
     const token = authorization.substring(7);
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    
+
     await connectToDatabase();
     const userId = decoded.userId || decoded.id;
     const user = await User.findById(userId);
-    
+
     return user ? { id: user._id, email: user.email, name: user.name } : null;
   } catch (error) {
     return null;
@@ -33,7 +33,7 @@ export async function GET(request) {
   try {
     // Get the current user from JWT token
     const currentUser = await getAuthenticatedUser();
-    
+
     if (!currentUser) {
       return NextResponse.json(
         { error: 'Not authenticated' },
@@ -47,17 +47,17 @@ export async function GET(request) {
     // Parse query parameters
     const { searchParams } = new URL(request.url);
     const limit = parseInt(searchParams.get('limit')) || 50;
-    const skip = parseInt(searchParams.get('skip')) || 0;  
+    const skip = parseInt(searchParams.get('skip')) || 0;
     const includeArchived = searchParams.get('includeArchived') === 'true';
 
     // Build query
     const query = { userId: currentUser.id };
     if (!includeArchived) {
-      query['metadata.isArchived'] = { $ne: true };        
+      query['metadata.isArchived'] = { $ne: true };
     }
 
     // Find regulation conversations for the user
-    const conversations = await Conversation.find(query)   
+    const conversations = await Conversation.find(query)
       .sort({ updatedAt: -1 })
       .limit(limit)
       .skip(skip)
@@ -69,11 +69,11 @@ export async function GET(request) {
     // Add regulation-specific statistics to each conversation
     const conversationsWithStats = conversations.map(conversation => {
       // Count regulation queries in this conversation     
-      const regulationCount = conversation.messages ?      
+      const regulationCount = conversation.messages ?
         conversation.messages.filter(msg => msg.regulation && msg.regulation.answer).length : 0;
-      
+
       // Calculate average confidence for this conversation
-      const regulationMessages = conversation.messages ?   
+      const regulationMessages = conversation.messages ?
         conversation.messages.filter(msg => msg.regulation && msg.regulation.confidence !== null) : [];
 
       const averageConfidence = regulationMessages.length > 0 ?
@@ -101,12 +101,12 @@ export async function GET(request) {
         total: totalCount,
         limit,
         skip,
-        hasMore: skip + conversations.length < totalCount  
+        hasMore: skip + conversations.length < totalCount
       },
       summary: {
         totalConversations: totalCount,
         totalRegulationQueries: conversationsWithStats.reduce((sum, conv) => sum + conv.regulationCount, 0),
-        averageQueriesPerConversation: totalCount > 0 ?    
+        averageQueriesPerConversation: totalCount > 0 ?
           conversationsWithStats.reduce((sum, conv) => sum + conv.regulationCount, 0) / totalCount : 0
       }
     });
@@ -136,15 +136,36 @@ export async function POST(request) {
     // Connect to the database
     await connectToDatabase();
 
-    // Parse the request body - 🆕 ADD REGION FIELDS
+    // Parse the request body
     const { title, initialMessage, region, regionDisplayName } = await request.json();
 
-    // Create a new regulation conversation with region support - 🆕 USE DIRECT CREATE INSTEAD OF createNew
-    const conversation = await Conversation.create({
+    console.log('🔧 Creating conversation with region data:', {
+      title,
+      region,
+      regionDisplayName,
+      hasInitialMessage: !!initialMessage
+    });
+
+    // 🔧 FIX: Handle region display name properly
+    let finalRegionDisplayName;
+
+    if (regionDisplayName && regionDisplayName !== 'undefined' && regionDisplayName.trim()) {
+      finalRegionDisplayName = regionDisplayName.trim();
+    } else {
+      // Fallback based on region
+      if (region === 'Scotland') {
+        finalRegionDisplayName = '🏴󠁧󠁢󠁳󠁣󠁴󠁿 Scottish Building Standards';
+      } else {
+        finalRegionDisplayName = '🇮🇳 Indian Building Codes';
+      }
+    }
+
+    // Create conversation data object
+    const conversationData = {
       userId: currentUser.id,
       title: title || 'New Regulation Query',
-      region: region || 'India',  // 🆕 ADD REGION
-      regionDisplayName: regionDisplayName || '🇮🇳 Indian Building Codes',  // 🆕 ADD REGION DISPLAY
+      region: region || 'India',
+      regionDisplayName: finalRegionDisplayName,
       messages: [],
       metadata: {
         totalQueries: 0,
@@ -155,13 +176,22 @@ export async function POST(request) {
         occupancyGroups: [],
         codeTypes: []
       }
+    };
+
+    console.log('🔧 Final conversation data before creation:', {
+      region: conversationData.region,
+      regionDisplayName: conversationData.regionDisplayName,
+      title: conversationData.title
     });
+
+    // Create the conversation
+    const conversation = await Conversation.create(conversationData);
 
     console.log('✅ Created new regulation conversation:', {
       id: conversation._id,
       title: conversation.title,
-      region: conversation.region,  // 🆕 ADD REGION TO LOG
-      regionDisplayName: conversation.regionDisplayName,  // 🆕 ADD REGION DISPLAY TO LOG
+      region: conversation.region,
+      regionDisplayName: conversation.regionDisplayName,
       userId: currentUser.id
     });
 
@@ -183,7 +213,7 @@ export async function POST(request) {
     }, { status: 201 });
 
   } catch (error) {
-    console.error('Create regulation conversation error:', error);
+    console.error('❌ Create regulation conversation error:', error);
 
     return NextResponse.json(
       { error: 'An error occurred while creating the regulation conversation' },
@@ -218,14 +248,14 @@ export async function PATCH(request) {
     }
 
     // Find and update the conversation
-    const conversation = await Conversation.findOne({      
+    const conversation = await Conversation.findOne({
       _id: conversationId,
       userId: currentUser.id
     });
 
     if (!conversation) {
       return NextResponse.json(
-        { error: 'Regulation conversation not found' },    
+        { error: 'Regulation conversation not found' },
         { status: 404 }
       );
     }
@@ -272,7 +302,7 @@ export async function PATCH(request) {
 
     await conversation.save();
 
-    console.log('✅ Regulation conversation updated:', {  
+    console.log('✅ Regulation conversation updated:', {
       newTitle: conversation.title,
       messageCount: conversation.messages.length
     });
@@ -320,7 +350,7 @@ export async function DELETE(request) {
     }
 
     // Find the regulation conversation
-    const conversation = await Conversation.findOne({      
+    const conversation = await Conversation.findOne({
       _id: conversationId,
       userId: currentUser.id
     });

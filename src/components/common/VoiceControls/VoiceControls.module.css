@@ -1,4 +1,4 @@
-/* src/components/common/VoiceControls/VoiceControls.module.css - Building Codes Theme */
+/* src/components/common/VoiceControls/VoiceControls.module.css - Building Codes Theme with Dark Mode */
 
 .voiceControls {
   display: flex;
@@ -12,6 +12,13 @@
   background-color: #fef3c7;
   border: 1px solid #f59e0b;
   border-radius: 8px;
+  transition: all 0.3s ease;
+}
+
+/* 🌙 Dark Mode Support for Unsupported */
+:global(.dark-mode) .unsupported {
+  background-color: #4a3728;
+  border: 1px solid #fbbf24;
 }
 
 .unsupportedMessage {
@@ -20,6 +27,11 @@
   gap: 8px;
   color: #92400e;
   font-size: 14px;
+  transition: color 0.3s ease;
+}
+
+:global(.dark-mode) .unsupportedMessage {
+  color: #fbbf24;
 }
 
 .warningIcon {
@@ -36,7 +48,7 @@
   gap: 8px;
 }
 
-/* Microphone Button - Building Codes Theme */
+/* Microphone Button - Building Codes Theme with Dark Mode */
 .microphoneButton {
   position: relative;
   width: 48px;
@@ -45,16 +57,26 @@
   border: 2px solid #e5e7eb;
   background-color: #ffffff;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all 0.3s ease;
   display: flex;
   align-items: center;
   justify-content: center;
   overflow: hidden;
 }
 
+:global(.dark-mode) .microphoneButton {
+  border: 2px solid #555;
+  background-color: #2d2d2d;
+}
+
 .microphoneButton:hover:not(:disabled) {
   border-color: #059669;
   background-color: #f0fdf4;
+}
+
+:global(.dark-mode) .microphoneButton:hover:not(:disabled) {
+  border-color: #10b981;
+  background-color: #1a3a2e;
 }
 
 .microphoneButton:disabled {
@@ -63,10 +85,19 @@
   background-color: #f9fafb;
 }
 
-/* Button States - Building Codes Colors */
+:global(.dark-mode) .microphoneButton:disabled {
+  background-color: #1a1a1a;
+}
+
+/* Button States - Building Codes Colors with Dark Mode */
 .microphoneButton.idle {
   border-color: #6b7280;
   background-color: #ffffff;
+}
+
+:global(.dark-mode) .microphoneButton.idle {
+  border-color: #9ca3af;
+  background-color: #2d2d2d;
 }
 
 .microphoneButton.listening {
@@ -75,10 +106,22 @@
   animation: pulseListening 2s infinite;
 }
 
+:global(.dark-mode) .microphoneButton.listening {
+  border-color: #10b981;
+  background-color: #1a3a2e;
+  animation: pulseListeningDark 2s infinite;
+}
+
 .microphoneButton.speaking {
   border-color: #10b981;
   background-color: #ecfdf5;
   animation: pulseSpeaking 1.5s infinite;
+}
+
+:global(.dark-mode) .microphoneButton.speaking {
+  border-color: #10b981;
+  background-color: #1a3a2e;
+  animation: pulseSpeakingDark 1.5s infinite;
 }
 
 .microphoneButton.error {
@@ -86,25 +129,47 @@
   background-color: #fef2f2;
 }
 
+:global(.dark-mode) .microphoneButton.error {
+  border-color: #f87171;
+  background-color: #4a2626;
+}
+
 .microphoneButton.disabled {
   border-color: #d1d5db;
   background-color: #f9fafb;
 }
 
-/* Microphone Icon */
+:global(.dark-mode) .microphoneButton.disabled {
+  border-color: #4a4a4a;
+  background-color: #1a1a1a;
+}
+
+/* Microphone Icon with Dark Mode */
 .micIcon {
   width: 20px;
   height: 20px;
   color: #6b7280;
-  transition: color 0.2s ease;
+  transition: color 0.3s ease;
   z-index: 2;
+}
+
+:global(.dark-mode) .micIcon {
+  color: #9ca3af;
 }
 
 .microphoneButton.listening .micIcon {
   color: #059669;
 }
 
+:global(.dark-mode) .microphoneButton.listening .micIcon {
+  color: #10b981;
+}
+
 .microphoneButton.speaking .micIcon {
+  color: #10b981;
+}
+
+:global(.dark-mode) .microphoneButton.speaking .micIcon {
   color: #10b981;
 }
 
@@ -112,7 +177,11 @@
   color: #ef4444;
 }
 
-/* Listening Animation - Green Theme */
+:global(.dark-mode) .microphoneButton.error .micIcon {
+  color: #f87171;
+}
+
+/* Listening Animation - Green Theme with Dark Mode */
 .listeningAnimation {
   position: absolute;
   top: 50%;
@@ -133,6 +202,11 @@
   background-color: rgba(5, 150, 105, 0.2);
   transform: translate(-50%, -50%);
   animation: pulse 1.5s infinite;
+  transition: background-color 0.3s ease;
+}
+
+:global(.dark-mode) .pulse {
+  background-color: rgba(16, 185, 129, 0.3);
 }
 
 .pulse:nth-child(2) {
@@ -143,7 +217,7 @@
   animation-delay: 1s;
 }
 
-/* Speaking Animation - Green Theme */
+/* Speaking Animation - Green Theme with Dark Mode */
 .speakingAnimation {
   position: absolute;
   top: 50%;
@@ -160,6 +234,11 @@
   background-color: rgba(16, 185, 129, 0.6);
   border-radius: 1px;
   animation: soundWave 0.8s infinite ease-in-out;
+  transition: background-color 0.3s ease;
+}
+
+:global(.dark-mode) .soundWave {
+  background-color: rgba(16, 185, 129, 0.8);
 }
 
 .soundWave:nth-child(2) {
@@ -170,7 +249,7 @@
   animation-delay: 0.4s;
 }
 
-/* Status Indicator */
+/* Status Indicator with Dark Mode */
 .statusIndicator {
   min-height: 20px;
   display: flex;
@@ -183,6 +262,11 @@
   font-size: 12px;
   color: #059669;
   font-weight: 500;
+  transition: color 0.3s ease;
+}
+
+:global(.dark-mode) .statusText {
+  color: #10b981;
 }
 
 .speakingStatus {
@@ -201,6 +285,11 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  transition: color 0.3s ease;
+}
+
+:global(.dark-mode) .stopSpeakingButton {
+  color: #f87171;
 }
 
 .stopIcon {
@@ -214,15 +303,26 @@
   font-weight: 500;
   text-align: center;
   max-width: 200px;
+  transition: color 0.3s ease;
 }
 
-/* Transcript Container - Building Codes Theme */
+:global(.dark-mode) .errorText {
+  color: #f87171;
+}
+
+/* Transcript Container - Building Codes Theme with Dark Mode */
 .transcriptContainer {
   background-color: #f0fdf4;
   border: 1px solid #bbf7d0;
   border-radius: 8px;
   padding: 12px;
   margin-top: 8px;
+  transition: all 0.3s ease;
+}
+
+:global(.dark-mode) .transcriptContainer {
+  background-color: #1a1a1a;
+  border: 1px solid #10b981;
 }
 
 .transcriptHeader {
@@ -236,6 +336,11 @@
   font-size: 12px;
   font-weight: 600;
   color: #059669;
+  transition: color 0.3s ease;
+}
+
+:global(.dark-mode) .transcriptLabel {
+  color: #10b981;
 }
 
 .transcriptActions {
@@ -254,12 +359,21 @@
   align-items: center;
   justify-content: center;
   border-radius: 4px;
-  transition: all 0.2s ease;
+  transition: all 0.3s ease;
+}
+
+:global(.dark-mode) .transcriptAction {
+  color: #10b981;
 }
 
 .transcriptAction:hover {
   background-color: #dcfce7;
   color: #047857;
+}
+
+:global(.dark-mode) .transcriptAction:hover {
+  background-color: #1a3a2e;
+  color: #34d399;
 }
 
 .actionIcon {
@@ -274,27 +388,37 @@
   min-height: 20px;
   white-space: pre-wrap;
   word-wrap: break-word;
+  transition: color 0.3s ease;
+}
+
+:global(.dark-mode) .transcriptText {
+  color: #e5e5e5;
 }
 
 .interimText {
   color: #6b7280;
   font-style: italic;
+  transition: color 0.3s ease;
+}
+
+:global(.dark-mode) .interimText {
+  color: #9ca3af;
 }
 
 .listeningPrompt {
   color: #059669;
   font-style: italic;
   animation: blink 1.5s infinite;
+  transition: color 0.3s ease;
+  margin-left: 8px;
 }
 
-/* Voice Tips for Building Codes */
-.voiceTips {
-  margin-top: 12px;
-  padding: 12px;
-  background-color: #ffffff;
-  border: 1px solid #d1fae5;
-  border-radius: 6px;
+:global(.dark-mode) .listeningPrompt {
+  color: #10b981;
 }
+
+/* Voice Tips for Building Codes with Dark Mode */
+
 
 .tipsHeader {
   display: flex;
@@ -307,12 +431,22 @@
   width: 14px;
   height: 14px;
   color: #059669;
+  transition: color 0.3s ease;
+}
+
+:global(.dark-mode) .tipsIcon {
+  color: #10b981;
 }
 
 .tipsLabel {
   font-size: 11px;
   font-weight: 600;
   color: #059669;
+  transition: color 0.3s ease;
+}
+
+:global(.dark-mode) .tipsLabel {
+  color: #10b981;
 }
 
 .tipsList {
@@ -328,9 +462,16 @@
   background-color: #f9fafb;
   border-radius: 4px;
   border-left: 2px solid #10b981;
+  transition: all 0.3s ease;
 }
 
-/* Animations - Green Theme */
+:global(.dark-mode) .tip {
+  color: #9ca3af;
+  background-color: #3d3d3d;
+  border-left: 2px solid #10b981;
+}
+
+/* Animations - Green Theme with Dark Mode Variants */
 @keyframes pulseListening {
   0%, 100% {
     box-shadow: 0 0 0 0 rgba(5, 150, 105, 0.4);
@@ -340,9 +481,27 @@
   }
 }
 
+@keyframes pulseListeningDark {
+  0%, 100% {
+    box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.4);
+  }
+  50% {
+    box-shadow: 0 0 0 8px rgba(16, 185, 129, 0);
+  }
+}
+
 @keyframes pulseSpeaking {
   0%, 100% {
     box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.4);
+  }
+  50% {
+    box-shadow: 0 0 0 8px rgba(16, 185, 129, 0);
+  }
+}
+
+@keyframes pulseSpeakingDark {
+  0%, 100% {
+    box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.5);
   }
   50% {
     box-shadow: 0 0 0 8px rgba(16, 185, 129, 0);
@@ -397,17 +556,14 @@
   .transcriptText {
     font-size: 13px;
   }
-  
-  .voiceTips {
-    padding: 10px;
-  }
+
   
   .tip {
     font-size: 10px;
   }
 }
 
-/* Accessibility */
+/* Accessibility and Reduced Motion */
 @media (prefers-reduced-motion: reduce) {
   .microphoneButton.listening,
   .microphoneButton.speaking {
@@ -425,16 +581,52 @@
     border-color: #059669;
   }
   
+  :global(.dark-mode) .microphoneButton.listening {
+    background-color: #1a3a2e;
+    border-color: #10b981;
+  }
+  
   .microphoneButton.speaking {
     background-color: #ecfdf5;
     border-color: #10b981;
   }
+  
+  :global(.dark-mode) .microphoneButton.speaking {
+    background-color: #1a3a2e;
+    border-color: #10b981;
+  }
+  
+  /* Remove all transitions for reduced motion */
+  .microphoneButton,
+  .micIcon,
+  .statusText,
+  .stopSpeakingButton,
+  .errorText,
+  .transcriptContainer,
+  .transcriptLabel,
+  .transcriptAction,
+  .transcriptText,
+  .interimText,
+  .listeningPrompt,
+  .tipsIcon,
+  .tipsLabel,
+  .tip,
+  .unsupported,
+  .unsupportedMessage,
+  .pulse,
+  .soundWave {
+    transition: none;
+  }
 }
 
-/* Focus styles for accessibility */
+/* Focus styles for accessibility with Dark Mode */
 .microphoneButton:focus-visible {
   outline: 2px solid #059669;
   outline-offset: 2px;
+}
+
+:global(.dark-mode) .microphoneButton:focus-visible {
+  outline: 2px solid #10b981;
 }
 
 .transcriptAction:focus-visible {
@@ -442,7 +634,50 @@
   outline-offset: 1px;
 }
 
+:global(.dark-mode) .transcriptAction:focus-visible {
+  outline: 2px solid #10b981;
+}
+
 .stopSpeakingButton:focus-visible {
   outline: 2px solid #059669;
   outline-offset: 1px;
+}
+
+:global(.dark-mode) .stopSpeakingButton:focus-visible {
+  outline: 2px solid #10b981;
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+  .microphoneButton.listening {
+    border-color: #047857;
+  }
+  
+  :global(.dark-mode) .microphoneButton.listening {
+    border-color: #059669;
+  }
+  
+  .microphoneButton.speaking {
+    border-color: #047857;
+  }
+  
+  :global(.dark-mode) .microphoneButton.speaking {
+    border-color: #059669;
+  }
+  
+  .statusText {
+    color: #047857;
+  }
+  
+  :global(.dark-mode) .statusText {
+    color: #059669;
+  }
+  
+  .transcriptLabel {
+    color: #047857;
+  }
+  
+  :global(.dark-mode) .transcriptLabel {
+    color: #059669;
+  }
 }

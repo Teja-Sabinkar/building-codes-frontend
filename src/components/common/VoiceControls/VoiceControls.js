@@ -227,22 +227,6 @@ export default function VoiceControls({
                         )}
                     </div>
 
-                    {/* Voice Tips for Building Codes */}
-                    {isListening && (
-                        <div className={styles.voiceTips}>
-                            <div className={styles.tipsHeader}>
-                                <svg xmlns="http://www.w3.org/2000/svg" className={styles.tipsIcon} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                </svg>
-                                <span className={styles.tipsLabel}>Voice Tips:</span>
-                            </div>
-                            <div className={styles.tipsList}>
-                                <div className={styles.tip}>Try: "What are minimum ceiling heights for residential?"</div>
-                                <div className={styles.tip}>Try: "Fire escape requirements for three story buildings"</div>
-                                <div className={styles.tip}>Try: "ADA door width requirements"</div>
-                            </div>
-                        </div>
-                    )}
                 </div>
             )}
         </div>

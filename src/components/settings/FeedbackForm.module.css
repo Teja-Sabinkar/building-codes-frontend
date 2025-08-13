@@ -1,4 +1,4 @@
-/* src/components/settings/FeedbackForm.module.css */
+/* src/components/settings/FeedbackForm.module.css - REG-GPT Theme with Dark Mode Support */
 
 .feedbackForm {
   display: flex;
@@ -10,15 +10,211 @@
   font-weight: 700;
   color: #111827;
   margin-bottom: 0.5rem;
+  transition: color 0.3s ease;
+}
+
+:global(.dark-mode) .mainHeading {
+  color: #e5e5e5;
 }
 
 .description {
-  font-size: 0.875rem;
-  color: #6b7280;
   margin-bottom: 1.5rem;
-  line-height: 1.5;
+  padding: 0.75rem;
+  background-color: #f0fdf4;
+  border: 1px solid #bbf7d0;
+  border-radius: 0.375rem;
+  color: #059669;
+  font-size: 0.85rem;
+  transition: all 0.3s ease;
 }
 
+:global(.dark-mode) .description {
+  background-color: #1a3a2e;
+  border: 1px solid #10b981;
+  color: #10b981;
+}
+
+/* SUCCESS MESSAGE STYLES */
+.successMessage {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  background-color: #f0fdf4;
+  border: 1px solid #bbf7d0;
+  border-radius: 0.5rem;
+  padding: 1rem;
+  margin-bottom: 1.5rem;
+  transition: all 0.3s ease;
+}
+
+:global(.dark-mode) .successMessage {
+  background-color: #1a3a2e;
+  border: 1px solid #10b981;
+}
+
+.successContent {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  flex: 1;
+}
+
+.successIcon {
+  width: 1.25rem;
+  height: 1.25rem;
+  color: #059669;
+  flex-shrink: 0;
+  margin-top: 0.125rem;
+  transition: color 0.3s ease;
+}
+
+:global(.dark-mode) .successIcon {
+  color: #10b981;
+}
+
+.successTitle {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #059669;
+  margin: 0 0 0.25rem 0;
+  transition: color 0.3s ease;
+}
+
+:global(.dark-mode) .successTitle {
+  color: #10b981;
+}
+
+.successText {
+  font-size: 0.8125rem;
+  color: #047857;
+  margin: 0;
+  line-height: 1.4;
+  transition: color 0.3s ease;
+}
+
+:global(.dark-mode) .successText {
+  color: #34d399;
+}
+
+.successDismiss {
+  background: none;
+  border: none;
+  color: #6b7280;
+  cursor: pointer;
+  padding: 0.25rem;
+  border-radius: 0.25rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+  flex-shrink: 0;
+}
+
+:global(.dark-mode) .successDismiss {
+  color: #9ca3af;
+}
+
+.successDismiss:hover {
+  background-color: #dcfce7;
+  color: #059669;
+}
+
+:global(.dark-mode) .successDismiss:hover {
+  background-color: #2a4a3e;
+  color: #10b981;
+}
+
+/* ERROR MESSAGE STYLES */
+.errorMessage {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  background-color: #fef2f2;
+  border: 1px solid #fecaca;
+  border-radius: 0.5rem;
+  padding: 1rem;
+  margin-bottom: 1.5rem;
+  transition: all 0.3s ease;
+}
+
+:global(.dark-mode) .errorMessage {
+  background-color: #2d1a1a;
+  border: 1px solid #7f1d1d;
+}
+
+.errorContent {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  flex: 1;
+}
+
+.errorIcon {
+  width: 1.25rem;
+  height: 1.25rem;
+  color: #dc2626;
+  flex-shrink: 0;
+  margin-top: 0.125rem;
+  transition: color 0.3s ease;
+}
+
+:global(.dark-mode) .errorIcon {
+  color: #f87171;
+}
+
+.errorTitle {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #dc2626;
+  margin: 0 0 0.25rem 0;
+  transition: color 0.3s ease;
+}
+
+:global(.dark-mode) .errorTitle {
+  color: #f87171;
+}
+
+.errorText {
+  font-size: 0.8125rem;
+  color: #b91c1c;
+  margin: 0;
+  line-height: 1.4;
+  transition: color 0.3s ease;
+}
+
+:global(.dark-mode) .errorText {
+  color: #fca5a5;
+}
+
+.errorDismiss {
+  background: none;
+  border: none;
+  color: #6b7280;
+  cursor: pointer;
+  padding: 0.25rem;
+  border-radius: 0.25rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+  flex-shrink: 0;
+}
+
+:global(.dark-mode) .errorDismiss {
+  color: #9ca3af;
+}
+
+.errorDismiss:hover {
+  background-color: #fee2e2;
+  color: #dc2626;
+}
+
+:global(.dark-mode) .errorDismiss:hover {
+  background-color: #3d2a2a;
+  color: #f87171;
+}
+
+/* FORM STYLES */
 .formGroup {
   margin-bottom: 1.5rem;
 }
@@ -28,10 +224,20 @@
   font-weight: 500;
   color: #374151;
   margin-bottom: 0.5rem;
+  transition: color 0.3s ease;
+}
+
+:global(.dark-mode) .label {
+  color: #d1d5db;
 }
 
 .required {
   color: #dc2626;
+  transition: color 0.3s ease;
+}
+
+:global(.dark-mode) .required {
+  color: #f87171;
 }
 
 .input, .textarea {
@@ -42,13 +248,38 @@
   background-color: #f9fafb;
   color: #1f2937;
   font-size: 0.875rem;
-  transition: border-color 0.2s, box-shadow 0.2s;
+  transition: all 0.2s ease;
+}
+
+:global(.dark-mode) .input,
+:global(.dark-mode) .textarea {
+  border: 1px solid #555;
+  background-color: #3d3d3d;
+  color: #e5e5e5;
 }
 
 .input:focus, .textarea:focus {
   outline: none;
-  border-color: #2563eb;
-  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+  border-color: #059669;
+  box-shadow: 0 0 0 3px rgba(5, 150, 105, 0.1);
+}
+
+:global(.dark-mode) .input:focus,
+:global(.dark-mode) .textarea:focus {
+  border-color: #10b981;
+  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.2);
+}
+
+.input:disabled, .textarea:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  background-color: #f3f4f6;
+}
+
+:global(.dark-mode) .input:disabled,
+:global(.dark-mode) .textarea:disabled {
+  background-color: #2a2a2a;
+  color: #9ca3af;
 }
 
 .textarea {
@@ -63,6 +294,11 @@
   margin-top: 0.25rem;
   font-size: 0.75rem;
   color: #6b7280;
+  transition: color 0.3s ease;
+}
+
+:global(.dark-mode) .helpText {
+  color: #9ca3af;
 }
 
 .fileUpload {
@@ -99,9 +335,27 @@
   width: fit-content;
 }
 
-.fileButton:hover {
-  background-color: #e5e7eb;
-  border-color: #9ca3af;
+:global(.dark-mode) .fileButton {
+  background-color: #3d3d3d;
+  color: #d1d5db;
+  border: 1px solid #555;
+}
+
+.fileButton:hover:not(.fileButtonDisabled) {
+  background-color: #f0fdf4;
+  border-color: #bbf7d0;
+  color: #059669;
+}
+
+:global(.dark-mode) .fileButton:hover:not(.fileButtonDisabled) {
+  background-color: #1a3a2e;
+  border-color: #10b981;
+  color: #10b981;
+}
+
+.fileButtonDisabled {
+  opacity: 0.6;
+  cursor: not-allowed;
 }
 
 .fileList {
@@ -114,6 +368,11 @@
   font-size: 0.875rem;
   color: #059669;
   font-weight: 500;
+  transition: color 0.3s ease;
+}
+
+:global(.dark-mode) .fileCount {
+  color: #10b981;
 }
 
 .selectedFiles {
@@ -127,15 +386,26 @@
   align-items: center;
   justify-content: space-between;
   padding: 0.5rem 0.75rem;
-  background-color: #f0f9ff;
-  border: 1px solid #bae6fd;
+  background-color: #f0fdf4;
+  border: 1px solid #bbf7d0;
   border-radius: 0.375rem;
+  transition: all 0.3s ease;
+}
+
+:global(.dark-mode) .fileItem {
+  background-color: #1a3a2e;
+  border: 1px solid #10b981;
 }
 
 .fileName {
   font-size: 0.8125rem;
-  color: #0c4a6e;
+  color: #059669;
   flex: 1;
+  transition: color 0.3s ease;
+}
+
+:global(.dark-mode) .fileName {
+  color: #10b981;
 }
 
 .removeFile {
@@ -148,11 +418,24 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: background-color 0.2s;
+  transition: all 0.2s ease;
 }
 
-.removeFile:hover {
+:global(.dark-mode) .removeFile {
+  color: #f87171;
+}
+
+.removeFile:hover:not(:disabled) {
   background-color: #fee2e2;
+}
+
+:global(.dark-mode) .removeFile:hover:not(:disabled) {
+  background-color: #3d2a2a;
+}
+
+.removeFile:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
 }
 
 .checkboxContainer {
@@ -164,33 +447,39 @@
 
 .checkbox {
   margin-top: 0.25rem;
-  accent-color: #2563eb;
+  accent-color: #059669;
+  transition: all 0.3s ease;
+}
+
+:global(.dark-mode) .checkbox {
+  accent-color: #10b981;
+}
+
+.checkbox:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
 }
 
 .checkboxLabel {
   font-size: 0.875rem;
   color: #4b5563;
   line-height: 1.4;
+  cursor: pointer;
+  transition: color 0.3s ease;
 }
 
-.privacyInfo {
-  margin-bottom: 1.5rem;
-  padding: 0.75rem;
-  background-color: #f0f9ff;
-  border: 1px solid #bae6fd;
-  border-radius: 0.375rem;
-}
-
-.privacyText {
-  font-size: 0.75rem;
-  color: #0c4a6e;
-  line-height: 1.5;
-  margin: 0;
+:global(.dark-mode) .checkboxLabel {
+  color: #b0b0b0;
 }
 
 .link {
-  color: #2563eb;
+  color: #059669;
   text-decoration: none;
+  transition: color 0.3s ease;
+}
+
+:global(.dark-mode) .link {
+  color: #10b981;
 }
 
 .link:hover {
@@ -207,7 +496,7 @@
   align-items: center;
   gap: 0.5rem;
   padding: 0.75rem 1.5rem;
-  background-color: #2563eb;
+  background-color: #059669;
   color: white;
   border: none;
   border-radius: 0.375rem;
@@ -219,14 +508,26 @@
   justify-content: center;
 }
 
+:global(.dark-mode) .submitButton {
+  background-color: #10b981;
+}
+
 .submitButton:hover:not(:disabled) {
-  background-color: #1d4ed8;
+  background-color: #047857;
+}
+
+:global(.dark-mode) .submitButton:hover:not(:disabled) {
+  background-color: #059669;
 }
 
 .submitButton:disabled {
   opacity: 0.6;
   cursor: not-allowed;
   background-color: #9ca3af;
+}
+
+:global(.dark-mode) .submitButton:disabled {
+  background-color: #6b7280;
 }
 
 .loadingSpinner {
@@ -240,6 +541,18 @@
   to {
     transform: rotate(360deg);
   }
+}
+
+/* Focus styles for accessibility */
+.submitButton:focus-visible,
+.fileButton:focus-visible {
+  outline: 2px solid #059669;
+  outline-offset: 2px;
+}
+
+:global(.dark-mode) .submitButton:focus-visible,
+:global(.dark-mode) .fileButton:focus-visible {
+  outline: 2px solid #10b981;
 }
 
 /* Responsive Design */
@@ -260,5 +573,71 @@
   
   .submitButton {
     width: 100%;
+  }
+  
+  .successMessage, .errorMessage {
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+  
+  .successDismiss, .errorDismiss {
+    align-self: flex-end;
+  }
+
+  .mainHeading {
+    font-size: 1.25rem;
+  }
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+  .input,
+  .textarea {
+    border-width: 2px;
+  }
+  
+  .fileButton,
+  .submitButton {
+    border-width: 2px;
+  }
+  
+  :global(.dark-mode) .input,
+  :global(.dark-mode) .textarea {
+    border: 2px solid #fff;
+  }
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  .mainHeading,
+  .description,
+  .successMessage,
+  .successIcon,
+  .successTitle,
+  .successText,
+  .successDismiss,
+  .errorMessage,
+  .errorIcon,
+  .errorTitle,
+  .errorText,
+  .errorDismiss,
+  .label,
+  .required,
+  .input,
+  .textarea,
+  .helpText,
+  .fileButton,
+  .fileCount,
+  .fileItem,
+  .fileName,
+  .removeFile,
+  .checkboxLabel,
+  .link,
+  .checkbox {
+    transition: none;
+  }
+  
+  .loadingSpinner {
+    animation: none;
   }
 }

@@ -475,12 +475,28 @@ ConversationSchema.methods.getRegulationByIndex = function (regulationIndex) {
 };
 
 ConversationSchema.methods.archive = function () {
+  // Check if already archived to avoid redundant operations
+  if (this.metadata?.isArchived === true) {
+    console.log(`⏭️ Conversation ${this._id} already archived, skipping`);
+    return Promise.resolve(this); // Return resolved promise without save
+  }
+
+  console.log(`📦 Archiving conversation: ${this._id} - "${this.title}"`);
   this.metadata.isArchived = true;
+  this.markModified('metadata');
   return this.save();
 };
 
 ConversationSchema.methods.unarchive = function () {
+  // Check if already unarchived
+  if (this.metadata?.isArchived !== true) {
+    console.log(`⏭️ Conversation ${this._id} already active, skipping unarchive`);
+    return Promise.resolve(this);
+  }
+
+  console.log(`📂 Unarchiving conversation: ${this._id} - "${this.title}"`);
   this.metadata.isArchived = false;
+  this.markModified('metadata');
   return this.save();
 };
 

@@ -1,3 +1,5 @@
+/* app/auth/signup/SignupPage.module.css - REG-GPT Theme with Dark Mode Support */
+
 .container {
     display: flex;
     flex-direction: column;
@@ -7,6 +9,12 @@
     align-items: center;
     justify-content: center;
     padding: 2rem 1.5rem;
+    transition: background 0.3s ease;
+}
+
+/* 🌙 Dark Mode Support - Claude's Gray Theme */
+:global(.dark-mode) .container {
+    background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 50%, #1a3a2e 100%);
 }
 
 .wrapper {

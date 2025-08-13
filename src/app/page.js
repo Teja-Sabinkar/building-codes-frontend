@@ -1,8 +1,39 @@
-// app/page.js
+// app/page.js - REG-GPT Landing Page with Smart Persistence Theme Logic
+'use client';
+
+import { useEffect } from 'react';
 import Link from 'next/link';
 import styles from './page.module.css';
 
 export default function Home() {
+  // 🆕 SMART PERSISTENCE: Apply guest theme on mount
+  useEffect(() => {
+    const applyGuestTheme = () => {
+      try {
+        // Check for guest theme preference (from previous logout)
+        const guestTheme = localStorage.getItem('regGPT-guestTheme') || 'dark';
+        const isDark = guestTheme === 'dark';
+        
+        console.log('🎨 Landing page applying guest theme:', guestTheme);
+        
+        // Apply theme to document body
+        if (isDark) {
+          document.body.classList.add('dark-mode');
+        } else {
+          document.body.classList.remove('dark-mode');
+        }
+        
+        console.log('✅ Guest theme applied to landing page:', isDark ? 'dark' : 'light');
+      } catch (error) {
+        console.error('❌ Error applying guest theme to landing page:', error);
+        // Default to light theme on error
+        document.body.classList.remove('dark-mode');
+      }
+    };
+
+    applyGuestTheme();
+  }, []);
+
   return (
     <div className={styles.container}>
       {/* Header */}
@@ -14,7 +45,7 @@ export default function Home() {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
               </svg>
             </div>
-            <span className={styles.brandText}>REG-GPT</span>
+            <span className={styles.brandText}>RegGPT</span>
           </div>
           <div className={styles.authButtons}>
             <Link href="/auth/login" className={styles.loginButton}>

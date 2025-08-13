@@ -1,4 +1,4 @@
-/* src/components/home/RegulationPanel/DeleteModal.module.css - Building Codes Theme */
+/* src/components/home/RegulationPanel/DeleteModal.module.css - Building Codes Theme with Dark Mode */
 
 .modalOverlay {
     position: fixed;
@@ -12,6 +12,10 @@
     justify-content: center;
     z-index: 1000;
     animation: fadeIn 0.2s ease-out;
+}
+
+:global(.dark-mode) .modalOverlay {
+    background-color: rgba(0, 0, 0, 0.8);
 }
 
 @keyframes fadeIn {
@@ -33,6 +37,13 @@
     overflow: hidden;
     animation: slideIn 0.2s ease-out;
     border: 1px solid #f3f4f6;
+    transition: all 0.3s ease;
+}
+
+:global(.dark-mode) .modalContent {
+    background-color: #2d2d2d;
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.4), 0 10px 10px -5px rgba(0, 0, 0, 0.3);
+    border: 1px solid #444;
 }
 
 @keyframes slideIn {
@@ -52,6 +63,11 @@
     padding: 1.5rem;
     align-items: flex-start;
     background-color: #fefefe;
+    transition: background-color 0.3s ease;
+}
+
+:global(.dark-mode) .modalHeader {
+    background-color: #2d2d2d;
 }
 
 .modalIcon {
@@ -64,12 +80,23 @@
     align-items: center;
     justify-content: center;
     flex-shrink: 0;
+    transition: all 0.3s ease;
+}
+
+:global(.dark-mode) .modalIcon {
+    background-color: #4a2626;
+    border: 2px solid #7f1d1d;
 }
 
 .warningIcon {
     width: 1.5rem;
     height: 1.5rem;
     color: #ef4444;
+    transition: color 0.3s ease;
+}
+
+:global(.dark-mode) .warningIcon {
+    color: #f87171;
 }
 
 .modalText {
@@ -81,6 +108,11 @@
     font-weight: 600;
     color: #1f2937;
     margin: 0 0 0.5rem 0;
+    transition: color 0.3s ease;
+}
+
+:global(.dark-mode) .modalTitle {
+    color: #e5e5e5;
 }
 
 .modalDescription {
@@ -88,6 +120,11 @@
     color: #6b7280;
     line-height: 1.5;
     margin: 0;
+    transition: color 0.3s ease;
+}
+
+:global(.dark-mode) .modalDescription {
+    color: #9ca3af;
 }
 
 .modalActions {
@@ -96,6 +133,11 @@
     padding: 0 1.5rem 1.5rem 1.5rem;
     justify-content: flex-end;
     background-color: #fefefe;
+    transition: background-color 0.3s ease;
+}
+
+:global(.dark-mode) .modalActions {
+    background-color: #2d2d2d;
 }
 
 .cancelButton {
@@ -110,10 +152,22 @@
     transition: all 0.2s ease;
 }
 
+:global(.dark-mode) .cancelButton {
+    background-color: #3d3d3d;
+    border: 1px solid #555;
+    color: #d1d5db;
+}
+
 .cancelButton:hover:not(:disabled) {
     background-color: #f9fafb;
     border-color: #9ca3af;
     color: #1f2937;
+}
+
+:global(.dark-mode) .cancelButton:hover:not(:disabled) {
+    background-color: #4a4a4a;
+    border-color: #666;
+    color: #e5e5e5;
 }
 
 .cancelButton:disabled {
@@ -191,18 +245,35 @@
     outline-offset: 2px;
 }
 
+:global(.dark-mode) .cancelButton:focus-visible,
+:global(.dark-mode) .deleteButton:focus-visible {
+    outline: 2px solid #10b981;
+}
+
 /* High contrast mode support */
 @media (prefers-contrast: high) {
     .modalContent {
         border: 2px solid #000000;
     }
     
+    :global(.dark-mode) .modalContent {
+        border: 2px solid #fff;
+    }
+    
     .modalIcon {
         border-color: #ef4444;
     }
     
+    :global(.dark-mode) .modalIcon {
+        border-color: #f87171;
+    }
+    
     .cancelButton {
         border-color: #000000;
+    }
+    
+    :global(.dark-mode) .cancelButton {
+        border-color: #fff;
     }
     
     .deleteButton {
@@ -214,16 +285,20 @@
 /* Reduced motion support */
 @media (prefers-reduced-motion: reduce) {
     .modalOverlay,
-    .modalContent {
+    .modalContent,
+    .modalHeader,
+    .modalIcon,
+    .warningIcon,
+    .modalTitle,
+    .modalDescription,
+    .modalActions,
+    .cancelButton,
+    .deleteButton {
         animation: none;
+        transition: none;
     }
     
     .loadingSpinner {
         animation: none;
-    }
-    
-    .cancelButton,
-    .deleteButton {
-        transition: none;
     }
 }

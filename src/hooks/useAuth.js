@@ -3,6 +3,7 @@
 
 import { createContext, useContext, useEffect, useState } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
+import { saveThemeOnLogout } from '@/hooks/useGuestTheme';
 
 const AuthContext = createContext({});
 
@@ -122,10 +123,14 @@ export function AuthProvider({ children }) {
 
   const logout = async () => {
     try {
-      // Remove token from localStorage
-      localStorage.removeItem('authToken');
+      // 🆕 Save current theme as guest preference BEFORE logout
+      console.log('🎨 Saving theme preference before logout...');
+      saveThemeOnLogout();
       
-      // Optional: Call logout endpoint if you have server-side cleanup
+      // Clear authentication state
+      setUser(null);
+      
+      // Call logout API
       const token = localStorage.getItem('authToken');
       if (token) {
         await fetch('/api/auth/logout', {
@@ -135,11 +140,17 @@ export function AuthProvider({ children }) {
           }
         });
       }
+      
+      // Clear tokens
+      localStorage.removeItem('authToken');
+      localStorage.removeItem('token');
+      sessionStorage.removeItem('authToken');
+      
+      // Redirect to login
+      router.push('/auth/login');
     } catch (error) {
       console.error('Logout error:', error);
-    } finally {
-      setUser(null);
-      router.push('/auth/login');
+      throw error;
     }
   };
 

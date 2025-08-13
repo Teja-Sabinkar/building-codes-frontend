@@ -8,6 +8,7 @@ import MessageList from './MessageList';
 import MessageInput from './MessageInput';
 import TitleEditModal from './TitleEditModal';
 import RegionSelector from './RegionSelector';
+import { saveThemeOnLogout } from '@/hooks/useGuestTheme';
 import styles from './RegulationPanel.module.css';
 
 export default function RegulationPanel({
@@ -64,6 +65,11 @@ export default function RegulationPanel({
 
   const handleLogout = async () => {
     try {
+      // 🆕 Save current theme as guest preference BEFORE logout
+      console.log('🎨 Saving theme preference before logout...');
+      saveThemeOnLogout();
+      
+      // Existing logout logic
       await fetch('/api/auth/logout', {
         method: 'POST',
       });
@@ -203,7 +209,7 @@ export default function RegulationPanel({
   // Determine if the title is editable (show edit icon)
   const isTitleEditable = currentConversation && currentConversation.messages && currentConversation.messages.length > 0;
 
-  console.log('🔍 RegulationPanel - Title Display:', {
+  console.log('📋 RegulationPanel - Title Display:', {
     conversationId: currentConversation?._id,
     storedTitle: currentConversation?.title,
     displayTitle,
@@ -224,7 +230,7 @@ export default function RegulationPanel({
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                 </svg>
               </div>
-              <span className={styles.brandText}>REG-GPT</span>
+              <span className={styles.brandText}>RegGPT</span>
             </div>
           )}
           <button
@@ -354,7 +360,7 @@ export default function RegulationPanel({
                 )}
               </div>
             ) : (
-              <h2>Building Codes Assistant</h2>
+              <h2></h2>
             )}
           </div>
         </div>
@@ -367,19 +373,13 @@ export default function RegulationPanel({
               isGenerating={isGenerating}
               onEditMessage={handleEditMessage}
               user={user}
-              enableTTS={true}
             />
           ) : (
             <div className={styles.emptyState}>
-              <div className={styles.emptyIcon}>
-                <svg xmlns="http://www.w3.org/2000/svg" className={styles.emptyIconSvg} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                </svg>
+              <div className={styles.welcomeMessage}>
+                <h3>Welcome to REG-GPT!</h3>
+                <p>Get instant, professional building code compliance reports with AI-powered analysis and precise citations.</p>
               </div>
-              <h3 className={styles.emptyTitle}>Start a new regulation query</h3>
-              <p className={styles.emptyDescription}>
-                Ask about building codes, regulations, and compliance requirements to get instant answers with references.
-              </p>
               <div className={styles.examplePrompts}>
                 <p className={styles.exampleTitle}>Try asking:</p>
                 <ul className={styles.exampleList}>
@@ -394,22 +394,22 @@ export default function RegulationPanel({
           )}
         </div>
 
-        {/* Message Input */}
-        <div className={styles.inputContainer}>
-          <MessageInput
-            onSendMessage={handleSendMessage}
-            isGenerating={isGenerating}
-            disabled={!canSendMessages()}
-            placeholder={
-              !currentConversation
-                ? "Start a new conversation first..."
-                : isGenerating
+        {/* FIXED: Only show MessageInput when there's a current conversation */}
+        {currentConversation && (
+          <div className={styles.inputContainer}>
+            <MessageInput
+              onSendMessage={handleSendMessage}
+              isGenerating={isGenerating}
+              disabled={!canSendMessages()}
+              placeholder={
+                isGenerating
                   ? "Searching regulations..."
                   : "Ask about building codes, regulations, or compliance requirements..."
-            }
-            enableVoice={true}
-          />
-        </div>
+              }
+              enableVoice={true}
+            />
+          </div>
+        )}
       </div>
 
       {/* Title Edit Modal */}

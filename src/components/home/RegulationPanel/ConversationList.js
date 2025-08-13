@@ -29,7 +29,7 @@ export default function ConversationList({
     const now = new Date();
     const diffInMs = now - date;
     const diffInDays = Math.floor(diffInMs / (1000 * 60 * 60 * 24));
-    
+
     if (diffInDays === 0) {
       return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
     } else if (diffInDays === 1) {
@@ -53,7 +53,7 @@ export default function ConversationList({
 
   const handleDeleteConfirm = async () => {
     if (!deleteModal.conversation || !onDeleteConversation) return;
-    
+
     setIsDeleting(true);
     try {
       await onDeleteConversation(deleteModal.conversation._id);
@@ -81,7 +81,7 @@ export default function ConversationList({
   // 🔧 FIX: Updated to match RegulationPanel logic - Database title first
   const getConversationDisplayTitle = (conversation) => {
     if (!conversation) return 'New Regulation Query';
-    
+
     // 🔧 FIX: Always use database title if it exists and is not empty
     if (conversation.title && conversation.title.trim() && conversation.title !== 'New Regulation Query') {
       // Truncate for sidebar display
@@ -91,7 +91,7 @@ export default function ConversationList({
       }
       return title;
     }
-    
+
     // Fallback: Use first user message if no database title
     if (conversation.messages && conversation.messages.length > 0) {
       const firstUserMessage = conversation.messages.find(msg => msg.role === 'user');
@@ -104,7 +104,7 @@ export default function ConversationList({
         return content;
       }
     }
-    
+
     // Final fallback
     return 'New Regulation Query';
   };
@@ -112,20 +112,29 @@ export default function ConversationList({
   // Helper function to count regulation queries in conversation
   const getRegulationCount = (conversation) => {
     if (!conversation.messages) return 0;
-    return conversation.messages.filter(msg => 
+    return conversation.messages.filter(msg =>
       msg.role === 'assistant' && msg.regulation && msg.regulation.answer
     ).length;
   };
 
   // Helper function to check if conversation is active
   const isActiveConversation = (conversation) => {
-    const isActive = currentConversation?._id === conversation._id;
+    if (!currentConversation || !conversation) return false;
+
+    // Convert both IDs to strings for consistent comparison
+    const currentId = String(currentConversation._id);
+    const conversationId = String(conversation._id);
+
+    const isActive = currentId === conversationId;
+
     if (isActive) {
       console.log('✅ Active conversation found in list:', {
-        id: conversation._id,
+        currentId,
+        conversationId,
         title: conversation.title
       });
     }
+
     return isActive;
   };
 
@@ -156,13 +165,12 @@ export default function ConversationList({
         {conversations.map((conversation) => {
           const isActive = isActiveConversation(conversation);
           const displayTitle = getConversationDisplayTitle(conversation);
-          
+
           return (
             <div
               key={conversation._id}
-              className={`${styles.conversationItem} ${
-                isActive ? styles.active : ''
-              }`}
+              className={`${styles.conversationItem} ${isActive ? styles.active : ''
+                }`}
               onClick={() => handleConversationClick(conversation)}
               onMouseEnter={() => setHoveredConversation(conversation._id)}
               onMouseLeave={() => setHoveredConversation(null)}

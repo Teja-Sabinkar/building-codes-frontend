@@ -1,4 +1,4 @@
-// components/auth/ResetPasswordForm.js
+// components/auth/ResetPasswordForm.js - With Smart Persistence Theme Logic
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -18,6 +18,34 @@ export default function ResetPasswordForm() {
   const [errors, setErrors] = useState({});
   const [isLoading, setIsLoading] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
+
+  // 🆕 SMART PERSISTENCE: Apply guest theme on mount
+  useEffect(() => {
+    const applyGuestTheme = () => {
+      try {
+        // Check for guest theme preference (from previous logout)
+        const guestTheme = localStorage.getItem('regGPT-guestTheme') || 'dark';
+        const isDark = guestTheme === 'dark';
+        
+        console.log('🎨 Reset Password page applying guest theme:', guestTheme);
+        
+        // Apply theme to document body
+        if (isDark) {
+          document.body.classList.add('dark-mode');
+        } else {
+          document.body.classList.remove('dark-mode');
+        }
+        
+        console.log('✅ Guest theme applied:', isDark ? 'dark' : 'light');
+      } catch (error) {
+        console.error('❌ Error applying guest theme:', error);
+        // Default to light theme on error
+        document.body.classList.remove('dark-mode');
+      }
+    };
+
+    applyGuestTheme();
+  }, []);
 
   useEffect(() => {
     // Get token from URL

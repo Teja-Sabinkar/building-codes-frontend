@@ -1,7 +1,7 @@
-// components/auth/SignupForm.js
+// components/auth/SignupForm.js - With Smart Persistence Theme Logic
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useAuth } from '@/hooks/useAuth';
@@ -21,6 +21,34 @@ export default function SignupForm() {
   const [isLoading, setIsLoading] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
   const [successMessage, setSuccessMessage] = useState('');
+
+  // 🆕 SMART PERSISTENCE: Apply guest theme on mount
+  useEffect(() => {
+    const applyGuestTheme = () => {
+      try {
+        // Check for guest theme preference (from previous logout)
+        const guestTheme = localStorage.getItem('regGPT-guestTheme') || 'dark';
+        const isDark = guestTheme === 'dark';
+        
+        console.log('🎨 Signup page applying guest theme:', guestTheme);
+        
+        // Apply theme to document body
+        if (isDark) {
+          document.body.classList.add('dark-mode');
+        } else {
+          document.body.classList.remove('dark-mode');
+        }
+        
+        console.log('✅ Guest theme applied:', isDark ? 'dark' : 'light');
+      } catch (error) {
+        console.error('❌ Error applying guest theme:', error);
+        // Default to light theme on error
+        document.body.classList.remove('dark-mode');
+      }
+    };
+
+    applyGuestTheme();
+  }, []);
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -84,6 +112,11 @@ export default function SignupForm() {
       if (result.success) {
         setIsSuccess(true);
         setSuccessMessage(result.message);
+        
+        // 🆕 SMART PERSISTENCE: Clear guest theme on successful signup
+        localStorage.removeItem('regGPT-guestTheme');
+        console.log('🧹 Cleared guest theme - new account will start with light theme');
+        
         // Redirect to verification page
         setTimeout(() => {
           router.push('/auth/verify-email');

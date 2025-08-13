@@ -1,4 +1,4 @@
-/* src/components/settings/SettingsLayout.module.css */
+/* src/components/settings/SettingsLayout.module.css - Enhanced with Dark Mode Support */
 
 .settingsLayout {
   display: flex;
@@ -9,6 +9,15 @@
   max-width: 800px;
   margin: 0 auto;
   height: fit-content;
+  transition: all 0.3s ease;
+  border: 1px solid #e5e7eb;
+}
+
+/* 🌙 Dark Mode Support - Claude's Gray Theme with REG-GPT Green Accents */
+:global(.dark-mode) .settingsLayout {
+  background-color: #2d2d2d;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+  border-color: #444;
 }
 
 .contentContainer {
@@ -21,6 +30,12 @@
     margin: 0;
     border-radius: 0;
     box-shadow: none;
+    border-left: none;
+    border-right: none;
+  }
+  
+  :global(.dark-mode) .settingsLayout {
+    box-shadow: none;
   }
   
   .contentContainer {
@@ -31,5 +46,12 @@
 @media (max-width: 480px) {
   .contentContainer {
     padding: 0.75rem;
+  }
+}
+
+/* Accessibility */
+@media (prefers-reduced-motion: reduce) {
+  .settingsLayout {
+    transition: none;
   }
 }

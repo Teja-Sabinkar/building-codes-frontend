@@ -1,4 +1,4 @@
-/* src/components/settings/GeneralSettings.module.css */
+/* src/components/settings/GeneralSettings.module.css - REG-GPT Theme with Dark Mode Support */
 
 .generalSettings {
   display: flex;
@@ -10,6 +10,12 @@
   font-weight: 700;
   color: #111827;
   margin-bottom: 1.5rem;
+  transition: color 0.3s ease;
+}
+
+/* 🌙 Dark Mode Support - Claude's Gray Theme */
+:global(.dark-mode) .mainHeading {
+  color: #e5e5e5;
 }
 
 .section {
@@ -17,6 +23,13 @@
   background-color: #f9fafb;
   border-radius: 0.375rem;
   overflow: hidden;
+  transition: background-color 0.3s ease;
+  border: 1px solid #e5e7eb;
+}
+
+:global(.dark-mode) .section {
+  background-color: #2d2d2d;
+  border-color: #444;
 }
 
 .sectionHeading {
@@ -25,6 +38,11 @@
   color: #111827;
   margin-bottom: 0.5rem;
   padding: 0.75rem 1rem;
+  transition: color 0.3s ease;
+}
+
+:global(.dark-mode) .sectionHeading {
+  color: #e5e5e5;
 }
 
 .settingItem {
@@ -33,31 +51,49 @@
   align-items: center;
   padding: 1rem;
   border-top: 1px solid #e5e7eb;
+  transition: border-color 0.3s ease;
+}
+
+:global(.dark-mode) .settingItem {
+  border-top: 1px solid #444;
 }
 
 .settingLabel {
   font-weight: 500;
   color: #374151;
   margin-bottom: 0.25rem;
+  transition: color 0.3s ease;
+}
+
+:global(.dark-mode) .settingLabel {
+  color: #d1d5db;
 }
 
 .settingDescription {
   font-size: 0.875rem;
   color: #6b7280;
+  transition: color 0.3s ease;
+}
+
+:global(.dark-mode) .settingDescription {
+  color: #9ca3af;
 }
 
 .settingValue {
   color: #4b5563;
+  transition: color 0.3s ease;
 }
 
-/* NEW: Setting value with action button */
+:global(.dark-mode) .settingValue {
+  color: #b0b0b0;
+}
+
 .settingValueWithAction {
   display: flex;
   align-items: center;
   gap: 1rem;
 }
 
-/* NEW: Status badge styling */
 .statusBadge {
   padding: 0.25rem 0.5rem;
   border-radius: 0.25rem;
@@ -70,12 +106,21 @@
   color: #166534;
 }
 
+:global(.dark-mode) .statusBadge.verified {
+  background-color: #1a3a2e;
+  color: #10b981;
+}
+
 .statusBadge.unverified {
   background-color: #fef3c7;
   color: #92400e;
 }
 
-/* NEW: Select input styling */
+:global(.dark-mode) .statusBadge.unverified {
+  background-color: #4a3728;
+  color: #fbbf24;
+}
+
 .selectInput {
   padding: 0.5rem;
   border: 1px solid #d1d5db;
@@ -84,6 +129,14 @@
   font-size: 0.875rem;
   min-width: 180px;
   cursor: pointer;
+  transition: all 0.3s ease;
+  color: #1f2937;
+}
+
+:global(.dark-mode) .selectInput {
+  background-color: #3d3d3d;
+  border-color: #555;
+  color: #e5e5e5;
 }
 
 .selectInput:disabled {
@@ -92,26 +145,43 @@
   background-color: #f3f4f6;
 }
 
+:global(.dark-mode) .selectInput:disabled {
+  background-color: #2a2a2a;
+}
+
 .selectInput:focus {
   outline: none;
-  border-color: #2563eb;
-  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+  border-color: #059669;
+  box-shadow: 0 0 0 3px rgba(5, 150, 105, 0.1);
+}
+
+:global(.dark-mode) .selectInput:focus {
+  border-color: #10b981;
+  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.2);
 }
 
 .linkButton {
-  color: #2563eb;
+  color: #059669;
   background: none;
   border: none;
   font-size: 0.875rem;
   cursor: pointer;
   padding: 0.25rem 0.5rem;
   border-radius: 0.25rem;
-  transition: background-color 0.2s;
+  transition: all 0.3s ease;
+}
+
+:global(.dark-mode) .linkButton {
+  color: #10b981;
 }
 
 .linkButton:hover {
-  background-color: #eff6ff;
+  background-color: #f0fdf4;
   text-decoration: underline;
+}
+
+:global(.dark-mode) .linkButton:hover {
+  background-color: #1a3a2e;
 }
 
 .secondaryButton {
@@ -123,12 +193,25 @@
   font-size: 0.875rem;
   font-weight: 500;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: all 0.3s ease;
+}
+
+:global(.dark-mode) .secondaryButton {
+  background-color: #3d3d3d;
+  color: #d1d5db;
+  border-color: #555;
 }
 
 .secondaryButton:hover:not(:disabled) {
-  background-color: #e5e7eb;
-  border-color: #9ca3af;
+  background-color: #f0fdf4;
+  border-color: #bbf7d0;
+  color: #059669;
+}
+
+:global(.dark-mode) .secondaryButton:hover:not(:disabled) {
+  background-color: #1a3a2e;
+  border-color: #10b981;
+  color: #10b981;
 }
 
 .secondaryButton:disabled {
@@ -145,12 +228,23 @@
   font-size: 0.875rem;
   font-weight: 500;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: all 0.3s ease;
+}
+
+:global(.dark-mode) .deleteButton {
+  background-color: #4a2626;
+  color: #f87171;
+  border-color: #7f1d1d;
 }
 
 .deleteButton:hover:not(:disabled) {
   background-color: #fecaca;
   border-color: #f87171;
+}
+
+:global(.dark-mode) .deleteButton:hover:not(:disabled) {
+  background-color: #5a2d2d;
+  border-color: #dc2626;
 }
 
 .deleteButton:disabled {
@@ -161,6 +255,7 @@
 .toggleContainer {
   display: flex;
   align-items: center;
+  gap: 0.75rem;
 }
 
 .toggle {
@@ -185,7 +280,11 @@
   bottom: 0;
   background-color: #e5e7eb;
   border-radius: 24px;
-  transition: 0.4s;
+  transition: all 0.4s ease;
+}
+
+:global(.dark-mode) .slider {
+  background-color: #4a4a4a;
 }
 
 .slider:before {
@@ -197,11 +296,20 @@
   bottom: 2px;
   background-color: white;
   border-radius: 50%;
-  transition: 0.4s;
+  transition: all 0.4s ease;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+:global(.dark-mode) .slider:before {
+  background-color: #e5e5e5;
 }
 
 input:checked + .slider {
-  background-color: #2563eb;
+  background-color: #059669;
+}
+
+:global(.dark-mode) input:checked + .slider {
+  background-color: #10b981;
 }
 
 input:checked + .slider:before {
@@ -213,13 +321,48 @@ input:disabled + .slider {
   cursor: not-allowed;
 }
 
-/* NEW: Danger section styling */
+.toggleLabel {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #374151;
+  transition: color 0.3s ease;
+  min-width: 60px;
+}
+
+:global(.dark-mode) .toggleLabel {
+  color: #d1d5db;
+}
+
+/* 🆕 Error text styling for theme errors */
+.errorText {
+  font-size: 0.75rem;
+  color: #dc2626;
+  margin-top: 0.25rem;
+  font-weight: 500;
+  transition: color 0.3s ease;
+}
+
+:global(.dark-mode) .errorText {
+  color: #f87171;
+}
+
+/* Danger section styling */
 .dangerSection {
   border: 1px solid #fecaca;
+  background-color: #fef2f2;
+}
+
+:global(.dark-mode) .dangerSection {
+  border: 1px solid #7f1d1d;
+  background-color: #2d1a1a;
 }
 
 .dangerSection .sectionHeading {
   color: #dc2626;
+}
+
+:global(.dark-mode) .dangerSection .sectionHeading {
+  color: #f87171;
 }
 
 /* Responsive Design */
@@ -244,5 +387,57 @@ input:disabled + .slider {
   
   .toggleContainer {
     justify-content: flex-start;
+    width: 100%;
   }
+
+  .mainHeading {
+    font-size: 1.25rem;
+  }
+
+  .sectionHeading {
+    font-size: 1rem;
+  }
+}
+
+/* Accessibility */
+@media (prefers-reduced-motion: reduce) {
+  .mainHeading,
+  .section,
+  .sectionHeading,
+  .settingItem,
+  .settingLabel,
+  .settingDescription,
+  .settingValue,
+  .selectInput,
+  .linkButton,
+  .secondaryButton,
+  .deleteButton,
+  .slider,
+  .slider:before,
+  .toggleLabel {
+    transition: none;
+  }
+}
+
+/* Focus styles for accessibility */
+.secondaryButton:focus-visible,
+.deleteButton:focus-visible,
+.linkButton:focus-visible {
+  outline: 2px solid #059669;
+  outline-offset: 2px;
+}
+
+:global(.dark-mode) .secondaryButton:focus-visible,
+:global(.dark-mode) .deleteButton:focus-visible,
+:global(.dark-mode) .linkButton:focus-visible {
+  outline: 2px solid #10b981;
+}
+
+.toggle input:focus-visible + .slider {
+  outline: 2px solid #059669;
+  outline-offset: 2px;
+}
+
+:global(.dark-mode) .toggle input:focus-visible + .slider {
+  outline: 2px solid #10b981;
 }

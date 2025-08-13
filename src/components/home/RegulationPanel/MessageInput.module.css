@@ -1,4 +1,4 @@
-/* src/components/home/RegulationPanel/MessageInput.module.css - Building Codes Theme */
+/* src/components/home/RegulationPanel/MessageInput.module.css - Building Codes Theme with Dark Mode */
 
 .inputContainer {
   display: flex;
@@ -7,6 +7,12 @@
   padding: 16px;
   background-color: #ffffff;
   border-top: 1px solid #e5e7eb;
+  transition: all 0.3s ease;
+}
+
+:global(.dark-mode) .inputContainer {
+  background-color: transparent;
+  border-top: 1px solid #44444400;
 }
 
 /* Voice Section */
@@ -18,9 +24,19 @@
   transition: all 0.2s ease;
 }
 
+:global(.dark-mode) .voiceSection {
+  background-color: #1a3a2e;
+  border: 1px solid #10b981;
+}
+
 .voiceSection:hover {
   border-color: #86efac;
   background-color: #ecfdf5;
+}
+
+:global(.dark-mode) .voiceSection:hover {
+  border-color: #34d399;
+  background-color: #2a4a3e;
 }
 
 .voiceControls {
@@ -46,16 +62,32 @@
   position: relative;
 }
 
+:global(.dark-mode) .inputWrapper {
+  background-color: #2d2d2d;
+  border: 2px solid #555;
+}
+
 .inputWrapper.focused {
   border-color: #059669;
   box-shadow: 0 0 0 3px rgba(5, 150, 105, 0.1);
   background-color: #fefefe;
 }
 
+:global(.dark-mode) .inputWrapper.focused {
+  border-color: #10b981;
+  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.2);
+  background-color: #4a4a4a;
+}
+
 .inputWrapper.disabled {
   background-color: #f9fafb;
   border-color: #d1d5db;
   opacity: 0.8;
+}
+
+:global(.dark-mode) .inputWrapper.disabled {
+  background-color: #2a2a2a;
+  border-color: #444;
 }
 
 /* Textarea */
@@ -71,15 +103,30 @@
   min-height: 24px;
   max-height: 120px;
   font-family: inherit;
+  scrollbar-width: none;
+  transition: color 0.3s ease;
+}
+
+:global(.dark-mode) .textarea {
+  color: #e5e5e5;
 }
 
 .textarea::placeholder {
   color: #9ca3af;
+  transition: color 0.3s ease;
+}
+
+:global(.dark-mode) .textarea::placeholder {
+  color: #6b7280;
 }
 
 .textarea:disabled {
   color: #6b7280;
   cursor: not-allowed;
+}
+
+:global(.dark-mode) .textarea:disabled {
+  color: #9ca3af;
 }
 
 /* Input Actions */
@@ -104,9 +151,18 @@
   transition: all 0.2s ease;
 }
 
+:global(.dark-mode) .voiceButton {
+  color: #9ca3af;
+}
+
 .voiceButton:hover:not(:disabled) {
   background-color: #059669;
   color: white;
+}
+
+:global(.dark-mode) .voiceButton:hover:not(:disabled) {
+  background-color: #10b981;
+  color: #1a1a1a;
 }
 
 .voiceButton:disabled {
@@ -117,6 +173,11 @@
 .voiceButton.voiceButtonActive {
   background-color: #dcfce7;
   color: #059669;
+}
+
+:global(.dark-mode) .voiceButton.voiceButtonActive {
+  background-color: #1a3a2e;
+  color: #10b981;
 }
 
 .voiceIcon {
@@ -131,6 +192,11 @@
   font-weight: 500;
   min-width: 20px;
   text-align: center;
+  transition: color 0.3s ease;
+}
+
+:global(.dark-mode) .characterCount {
+  color: #9ca3af;
 }
 
 /* Send Button - Building Codes Theme */
@@ -148,6 +214,11 @@
   transition: all 0.2s ease;
 }
 
+:global(.dark-mode) .sendButton {
+  background-color: #444;
+  color: #6b7280;
+}
+
 .sendButton:disabled {
   cursor: not-allowed;
   opacity: 0.5;
@@ -158,8 +229,17 @@
   color: #ffffff;
 }
 
+:global(.dark-mode) .sendButtonActive {
+  background-color: #10b981;
+  color: #1a1a1a;
+}
+
 .sendButtonActive:hover:not(:disabled) {
   background-color: #047857;
+}
+
+:global(.dark-mode) .sendButtonActive:hover:not(:disabled) {
+  background-color: #059669;
 }
 
 .sendIcon {
@@ -179,12 +259,18 @@
   height: 16px;
   animation: spin 1s linear infinite;
   color: #059669;
+  transition: color 0.3s ease;
+}
+
+:global(.dark-mode) .spinnerIcon {
+  color: #10b981;
 }
 
 @keyframes spin {
   from {
     transform: rotate(0deg);
   }
+
   to {
     transform: rotate(360deg);
   }
@@ -198,6 +284,11 @@
   font-size: 12px;
   color: #6b7280;
   padding: 0 4px;
+  transition: color 0.3s ease;
+}
+
+:global(.dark-mode) .helperText {
+  color: #9ca3af;
 }
 
 .tipsContainer {
@@ -217,6 +308,11 @@
 .tip strong {
   color: #059669;
   font-weight: 600;
+  transition: color 0.3s ease;
+}
+
+:global(.dark-mode) .tip strong {
+  color: #10b981;
 }
 
 .disabledTip {
@@ -225,9 +321,12 @@
   display: flex;
   align-items: center;
   gap: 4px;
+  transition: color 0.3s ease;
 }
 
-/* REMOVED: Quick Examples Styles - No longer needed */
+:global(.dark-mode) .disabledTip {
+  color: #fbbf24;
+}
 
 /* Responsive Design */
 @media (max-width: 768px) {
@@ -293,12 +392,24 @@
   outline-offset: 2px;
 }
 
+:global(.dark-mode) .voiceButton:focus-visible,
+:global(.dark-mode) .sendButton:focus-visible {
+  outline: 2px solid #10b981;
+}
+
 /* Reduced motion */
 @media (prefers-reduced-motion: reduce) {
+  .inputContainer,
   .inputWrapper,
   .voiceButton,
   .sendButton,
-  .voiceSection {
+  .voiceSection,
+  .textarea,
+  .characterCount,
+  .helperText,
+  .tip strong,
+  .disabledTip,
+  .spinnerIcon {
     transition: none;
   }
 
@@ -314,16 +425,34 @@
     box-shadow: 0 0 0 3px rgba(4, 120, 87, 0.2);
   }
 
+  :global(.dark-mode) .inputWrapper.focused {
+    border-color: #10b981;
+    box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.3);
+  }
+
   .voiceSection {
     border-color: #059669;
+  }
+
+  :global(.dark-mode) .voiceSection {
+    border-color: #10b981;
   }
 
   .sendButtonActive {
     background-color: #047857;
   }
 
+  :global(.dark-mode) .sendButtonActive {
+    background-color: #059669;
+  }
+
   .voiceButton.voiceButtonActive {
     background-color: #bbf7d0;
     color: #047857;
+  }
+
+  :global(.dark-mode) .voiceButton.voiceButtonActive {
+    background-color: #2a4a3e;
+    color: #34d399;
   }
 }

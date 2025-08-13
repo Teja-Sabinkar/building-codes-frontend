@@ -1,4 +1,4 @@
-/* src/components/home/RegulationPanel/ConversationList.module.css - FIXED ACTIVE STATE STYLING */
+/* src/components/home/RegulationPanel/ConversationList.module.css - FIXED ACTIVE STATE STYLING with Dark Mode */
 
 .conversationList {
   display: flex;
@@ -20,9 +20,20 @@
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
+:global(.dark-mode) .conversationItem {
+  border: 2px solid #444;
+  background: #2d2d2d;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+}
+
 .conversationItem:hover {
   border-color: #d1d5db;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+:global(.dark-mode) .conversationItem:hover {
+  border-color: #555;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.4);
 }
 
 /* FIXED: Active conversation styling */
@@ -35,9 +46,20 @@
   border-width: 2px;
 }
 
+:global(.dark-mode) .conversationItem.active {
+  border-color: #10b981 !important;
+  background: linear-gradient(135deg, #1a3a2e 0%, #2a4a3e 100%);
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.25);
+}
+
 .conversationItem.active:hover {
   border-color: #047857 !important;
   box-shadow: 0 6px 16px rgba(5, 150, 105, 0.2);
+}
+
+:global(.dark-mode) .conversationItem.active:hover {
+  border-color: #059669 !important;
+  box-shadow: 0 6px 16px rgba(16, 185, 129, 0.3);
 }
 
 .conversationHeader {
@@ -60,6 +82,11 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  transition: color 0.3s ease;
+}
+
+:global(.dark-mode) .conversationTitle {
+  color: #e5e5e5;
 }
 
 /* Active conversation title styling */
@@ -68,17 +95,30 @@
   font-weight: 700;
 }
 
+:global(.dark-mode) .conversationItem.active .conversationTitle {
+  color: #10b981;
+}
+
 .conversationDate {
   font-size: 0.75rem;
   color: #6b7280;
   white-space: nowrap;
   flex-shrink: 0;
+  transition: color 0.3s ease;
+}
+
+:global(.dark-mode) .conversationDate {
+  color: #9ca3af;
 }
 
 /* Active conversation date styling */
 .conversationItem.active .conversationDate {
   color: #059669;
   font-weight: 500;
+}
+
+:global(.dark-mode) .conversationItem.active .conversationDate {
+  color: #10b981;
 }
 
 .conversationMeta {
@@ -98,12 +138,21 @@
   gap: 0.25rem;
   font-size: 0.75rem;
   color: #6b7280;
+  transition: color 0.3s ease;
+}
+
+:global(.dark-mode) .messageCount {
+  color: #9ca3af;
 }
 
 /* Active conversation stats styling */
 .conversationItem.active .messageCount {
   color: #059669;
   font-weight: 500;
+}
+
+:global(.dark-mode) .conversationItem.active .messageCount {
+  color: #10b981;
 }
 
 .statIcon {
@@ -143,8 +192,16 @@
   color: #6b7280;
 }
 
+:global(.dark-mode) .optionButton {
+  color: #9ca3af;
+}
+
 .optionButton:hover {
   color: #ef4444;
+}
+
+:global(.dark-mode) .optionButton:hover {
+  color: #f87171;
 }
 
 .optionIcon {
@@ -161,6 +218,11 @@
   padding: 3rem 1rem;
   text-align: center;
   color: #6b7280;
+  transition: color 0.3s ease;
+}
+
+:global(.dark-mode) .emptyConversations {
+  color: #9ca3af;
 }
 
 .emptyIcon {
@@ -171,6 +233,11 @@
   width: 3rem;
   height: 3rem;
   color: #d1d5db;
+  transition: color 0.3s ease;
+}
+
+:global(.dark-mode) .emptyIconSvg {
+  color: #6b7280;
 }
 
 .emptyText {
@@ -178,14 +245,24 @@
   font-weight: 500;
   color: #374151;
   margin-bottom: 0.5rem;
+  transition: color 0.3s ease;
+}
+
+:global(.dark-mode) .emptyText {
+  color: #d1d5db;
 }
 
 .emptySubtext {
   font-size: 0.875rem;
   color: #6b7280;
+  transition: color 0.3s ease;
 }
 
-  /* Mobile responsiveness */
+:global(.dark-mode) .emptySubtext {
+  color: #9ca3af;
+}
+
+/* Mobile responsiveness */
 @media (max-width: 768px) {
   .conversationList {
     padding: 0.5rem 0;
@@ -226,14 +303,31 @@
     background: #ffffff;
   }
 
+  :global(.dark-mode) .conversationItem.active {
+    border-color: #10b981;
+    background: #1a3a2e;
+  }
+
   .conversationItem.active .conversationTitle {
     color: #000000;
+  }
+
+  :global(.dark-mode) .conversationItem.active .conversationTitle {
+    color: #10b981;
   }
 }
 
 /* Reduced motion support */
 @media (prefers-reduced-motion: reduce) {
-  .conversationItem {
+  .conversationItem,
+  .conversationTitle,
+  .conversationDate,
+  .messageCount,
+  .emptyConversations,
+  .emptyIconSvg,
+  .emptyText,
+  .emptySubtext,
+  .optionButton {
     transition: none;
   }
 
@@ -241,4 +335,16 @@
   .conversationItem.active {
     transform: none;
   }
+}
+
+/* Focus styles for accessibility */
+.conversationItem:focus-visible,
+.optionButton:focus-visible {
+  outline: 2px solid #059669;
+  outline-offset: 2px;
+}
+
+:global(.dark-mode) .conversationItem:focus-visible,
+:global(.dark-mode) .optionButton:focus-visible {
+  outline: 2px solid #10b981;
 }

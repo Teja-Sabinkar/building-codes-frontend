@@ -1,4 +1,4 @@
-// src/components/settings/FeedbackForm.js
+// src/components/settings/FeedbackForm.js - REG-GPT Theme with API Integration
 import { useState } from 'react';
 import styles from './FeedbackForm.module.css';
 
@@ -10,6 +10,7 @@ export default function FeedbackForm() {
   });
   const [files, setFiles] = useState([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitStatus, setSubmitStatus] = useState(null); // 'success', 'error', or null
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -28,6 +29,7 @@ export default function FeedbackForm() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsSubmitting(true);
+    setSubmitStatus(null);
     
     try {
       // Create FormData for file upload
@@ -41,18 +43,22 @@ export default function FeedbackForm() {
         submitData.append(`file_${index}`, file);
       });
 
-      // TODO: Replace with actual API endpoint
-      // const response = await fetch('/api/feedback', {
-      //   method: 'POST',
-      //   body: submitData,
-      // });
+      // Submit to API endpoint
+      const response = await fetch('/api/feedback', {
+        method: 'POST',
+        body: submitData,
+      });
 
-      // Simulate API call for now
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.message || 'Failed to submit feedback');
+      }
       
-      console.log('Feedback submitted:', {
+      console.log('✅ Feedback submitted successfully:', {
         ...formData,
-        files: files.map(f => ({ name: f.name, size: f.size, type: f.type }))
+        files: files.map(f => ({ name: f.name, size: f.size, type: f.type })),
+        timestamp: result.timestamp
       });
       
       // Reset form after successful submission
@@ -67,11 +73,11 @@ export default function FeedbackForm() {
       const fileInput = document.getElementById('file_upload');
       if (fileInput) fileInput.value = '';
       
-      alert('Thank you for your feedback! We\'ll review it and get back to you if needed.');
+      setSubmitStatus('success');
       
     } catch (error) {
-      console.error('Error submitting feedback:', error);
-      alert('There was an error submitting your feedback. Please try again.');
+      console.error('❌ Error submitting feedback:', error);
+      setSubmitStatus('error');
     } finally {
       setIsSubmitting(false);
     }
@@ -81,12 +87,69 @@ export default function FeedbackForm() {
     setFiles(files.filter((_, index) => index !== indexToRemove));
   };
 
+  const resetStatus = () => {
+    setSubmitStatus(null);
+  };
+
   return (
     <div className={styles.feedbackForm}>
       <h2 className={styles.mainHeading}>Send Feedback</h2>
       <p className={styles.description}>
-        Help us improve AI CAD by sharing your thoughts, reporting bugs, or suggesting new features.
+        Help us improve REG-GPT by sharing your thoughts, reporting bugs, or suggesting new features for building code assistance.
       </p>
+      
+      {/* Success Message */}
+      {submitStatus === 'success' && (
+        <div className={styles.successMessage}>
+          <div className={styles.successContent}>
+            <svg xmlns="http://www.w3.org/2000/svg" className={styles.successIcon} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <div>
+              <h3 className={styles.successTitle}>Feedback Submitted Successfully!</h3>
+              <p className={styles.successText}>
+                Thank you for your feedback! We've received your submission and will review it carefully.
+                {formData.allowContact && " We may contact you for follow-up questions."}
+              </p>
+            </div>
+          </div>
+          <button 
+            onClick={resetStatus}
+            className={styles.successDismiss}
+            title="Dismiss message"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+      )}
+
+      {/* Error Message */}
+      {submitStatus === 'error' && (
+        <div className={styles.errorMessage}>
+          <div className={styles.errorContent}>
+            <svg xmlns="http://www.w3.org/2000/svg" className={styles.errorIcon} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
+            </svg>
+            <div>
+              <h3 className={styles.errorTitle}>Submission Failed</h3>
+              <p className={styles.errorText}>
+                There was an error submitting your feedback. Please check your connection and try again.
+              </p>
+            </div>
+          </div>
+          <button 
+            onClick={resetStatus}
+            className={styles.errorDismiss}
+            title="Dismiss message"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+      )}
       
       <form onSubmit={handleSubmit}>
         <div className={styles.formGroup}>
@@ -103,6 +166,7 @@ export default function FeedbackForm() {
             className={styles.input}
             required
             maxLength={100}
+            disabled={isSubmitting}
           />
           <small className={styles.helpText}>
             {formData.title.length}/100 characters
@@ -116,13 +180,14 @@ export default function FeedbackForm() {
           <textarea
             id="description"
             name="description"
-            placeholder="Please describe your feedback, bug report, or feature request in detail. Include steps to reproduce if reporting a bug."
+            placeholder="Please describe your feedback, bug report, or feature request in detail. Include steps to reproduce if reporting a bug with building code queries."
             value={formData.description}
             onChange={handleChange}
             className={styles.textarea}
             rows="6"
             required
             maxLength={2000}
+            disabled={isSubmitting}
           ></textarea>
           <small className={styles.helpText}>
             {formData.description.length}/2000 characters
@@ -139,8 +204,9 @@ export default function FeedbackForm() {
               multiple
               accept=".jpg,.jpeg,.png,.gif,.pdf,.txt,.doc,.docx,.svg"
               className={styles.fileInput}
+              disabled={isSubmitting}
             />
-            <label htmlFor="file_upload" className={styles.fileButton}>
+            <label htmlFor="file_upload" className={`${styles.fileButton} ${isSubmitting ? styles.fileButtonDisabled : ''}`}>
               {/* Upload SVG Icon */}
               <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
@@ -163,6 +229,7 @@ export default function FeedbackForm() {
                         onClick={() => removeFile(index)}
                         className={styles.removeFile}
                         title="Remove file"
+                        disabled={isSubmitting}
                       >
                         <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -187,20 +254,14 @@ export default function FeedbackForm() {
               checked={formData.allowContact}
               onChange={handleChange}
               className={styles.checkbox}
+              disabled={isSubmitting}
             />
             <span className={styles.checkboxLabel}>
               I agree to be contacted for follow-up questions about this feedback
             </span>
           </label>
         </div>
-        
-        <div className={styles.privacyInfo}>
-          <p className={styles.privacyText}>
-            Your feedback helps us improve AI CAD. We may use your input to enhance our features and fix bugs. 
-            If you've opted in above, we may contact you for clarification. We respect your privacy and handle 
-            all feedback according to our Privacy Policy.
-          </p>
-        </div>
+      
         
         <div className={styles.submitContainer}>
           <button 

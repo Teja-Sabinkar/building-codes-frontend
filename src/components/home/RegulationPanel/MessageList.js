@@ -2,31 +2,18 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import { useSpeech } from '@/hooks/useSpeech';
 import styles from './MessageList.module.css';
 
 export default function MessageList({
   messages,
   isGenerating,
   onEditMessage,
-  user,
-  enableTTS = true
+  user
 }) {
   const messagesEndRef = useRef(null);
   const [editingMessageIndex, setEditingMessageIndex] = useState(null);
   const [editContent, setEditContent] = useState('');
   const [isEditing, setIsEditing] = useState(false);
-  const [speakingMessageIndex, setSpeakingMessageIndex] = useState(null);
-  // Track previous message count to detect truly new messages
-  const [previousMessageCount, setPreviousMessageCount] = useState(0);
-  const [isInitialLoad, setIsInitialLoad] = useState(true);
-
-  const {
-    speak,
-    stopSpeaking,
-    isSpeaking,
-    isSupported: isTTSSupported
-  } = useSpeech();
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -35,45 +22,6 @@ export default function MessageList({
   useEffect(() => {
     scrollToBottom();
   }, [messages, isGenerating]);
-
-  // Handle initial load detection
-  useEffect(() => {
-    if (messages.length > 0 && isInitialLoad) {
-      setPreviousMessageCount(messages.length);
-      setIsInitialLoad(false);
-    }
-  }, [messages, isInitialLoad]);
-
-  // Reset initial load state when conversation changes
-  useEffect(() => {
-    if (previousMessageCount > 0 && messages.length === 0) {
-      setIsInitialLoad(true);
-      setPreviousMessageCount(0);
-    }
-  }, [messages.length, previousMessageCount]);
-
-  // Auto-speak new assistant messages
-  useEffect(() => {
-    if (!enableTTS || !isTTSSupported || isInitialLoad) return;
-
-    const messageCountIncreased = messages.length > previousMessageCount;
-    if (!messageCountIncreased) return;
-
-    const lastMessage = messages[messages.length - 1];
-    if (lastMessage &&
-      lastMessage.role === 'assistant' &&
-      !isGenerating) {
-
-      const textContent = processMessageContent(lastMessage.content);
-      if (textContent.trim()) {
-        setTimeout(() => {
-          handleSpeakMessage(messages.length - 1, textContent);
-        }, 500);
-      }
-    }
-
-    setPreviousMessageCount(messages.length);
-  }, [messages, isGenerating, enableTTS, isTTSSupported, previousMessageCount, isInitialLoad]);
 
   const formatTime = (timestamp) => {
     if (!timestamp) return 'Just now';
@@ -137,49 +85,13 @@ export default function MessageList({
     }
   };
 
-  // Text-to-Speech Functions
-  const handleSpeakMessage = async (messageIndex, textContent = null) => {
-    if (!enableTTS || !isTTSSupported) return;
-
-    const message = messages[messageIndex];
-    if (!message) return;
-
-    // Stop any current speech
-    if (isSpeaking) {
-      stopSpeaking();
-      setSpeakingMessageIndex(null);
-      return;
-    }
-
-    const content = textContent || processMessageContent(message.content);
-    if (!content.trim()) return;
-
-    try {
-      setSpeakingMessageIndex(messageIndex);
-      await speak(content, {
-        rate: 0.9,
-        pitch: 1.0,
-        volume: 0.8
-      });
-    } catch (error) {
-      console.error('TTS Error:', error);
-    } finally {
-      setSpeakingMessageIndex(null);
-    }
-  };
-
-  const handleStopSpeaking = () => {
-    stopSpeaking();
-    setSpeakingMessageIndex(null);
-  };
-
   // Get user initials for avatar
   const getUserInitial = () => {
     if (!user || !user.name) return 'U';
     return user.name.charAt(0).toUpperCase();
   };
 
-  // Process message content to clean for TTS and remove unwanted content
+  // Process message content to clean for display
   const processMessageContent = (content) => {
     // Remove code blocks and technical formatting
     let processedContent = content
@@ -261,39 +173,90 @@ export default function MessageList({
     );
   };
 
-  // Function to format references in green
-  const formatReferences = (text) => {
-    // Pattern to match (Reference: ...) text
-    const referencePattern = /(\(Reference:[^)]+\))/g;
-
-    const parts = text.split(referencePattern);
-
-    return parts.map((part, index) => {
-      if (part.match(referencePattern)) {
-        return (
-          <span key={index} className={styles.referenceText}>
-            {part}
-          </span>
-        );
-      }
-      return part;
-    });
-  };
-
-  // Function to parse bold markdown and format text
+  // Function to parse bold markdown and format text - FIXED VERSION
   const parseBoldMarkdown = (text) => {
-    // Pattern to match **bold text**
-    const boldPattern = /(\*\*[^*]+\*\*)/g;
+    // Debug logging - remove these console.log statements after fixing
+    if (text.includes('Reference') || text.includes('Source')) {
+      console.log('🔍 Processing text with reference:', text);
+    }
 
+    // Multiple reference patterns to support different formats
+    const referencePatterns = [
+      {
+        regex: /(\*\*Reference:[^*]+\*\*)/g,
+        name: 'Standard format'
+      },
+      {
+        regex: /(\(Reference:[^)]+\))/g,
+        name: 'Parentheses format'
+      },
+      {
+        regex: /(\*\*Source:[^*]+\*\*)/g,
+        name: 'Source format'
+      }
+    ];
+
+    // Try each pattern until we find a match
+    for (const { regex, name } of referencePatterns) {
+      const matches = text.match(regex);
+      if (matches) {
+        console.log(`✅ Found ${name} references:`, matches);
+
+        const parts = text.split(regex);
+
+        return parts.map((part, index) => {
+          if (part.match(regex)) {
+            // FIXED: Remove asterisks from display text
+            const cleanReferenceText = part.replace(/\*\*/g, '').replace(/[()]/g, '');
+            
+            // Apply reference styling with clean text
+            return (
+              <span
+                key={index}
+                className={styles.referenceText}
+                style={{
+                  color: '#059669',
+                  fontWeight: '600',
+                  backgroundColor: 'rgba(5, 150, 105, 0.1)',
+                  padding: '0.125rem 0.25rem',
+                  borderRadius: '0.25rem',
+                  fontSize: '0.85rem',
+                  border: '1px solid rgba(5, 150, 105, 0.2)',
+                  display: 'inline',
+                  margin: '0 0.125rem'
+                }}
+                data-reference="true"
+              >
+                {cleanReferenceText}
+              </span>
+            );
+          } else {
+            // Process non-reference text for bold formatting
+            const boldPattern = /(\*\*(?!Reference:)(?!Source:)[^*]+\*\*)/g;
+            const boldParts = part.split(boldPattern);
+
+            return boldParts.map((boldPart, boldIndex) => {
+              if (boldPart.match(boldPattern)) {
+                const boldText = boldPart.replace(/\*\*/g, '');
+                return <strong key={`${index}-${boldIndex}`}>{boldText}</strong>;
+              }
+              return boldPart;
+            });
+          }
+        });
+      }
+    }
+
+    // No references found - process normally for bold text only
+    const boldPattern = /(\*\*[^*]+\*\*)/g;
     const parts = text.split(boldPattern);
 
     return parts.map((part, index) => {
       if (part.match(boldPattern)) {
-        // Remove the ** markers and make it bold
         const boldText = part.replace(/\*\*/g, '');
         return <strong key={index}>{boldText}</strong>;
       }
-      return formatReferences(part);
+      return part;
     });
   };
 
@@ -324,8 +287,13 @@ export default function MessageList({
 
       if (trimmedLine === '') return;
 
+      // Log lines that might contain references for debugging
+      if (trimmedLine.includes('Reference') || trimmedLine.includes('Source')) {
+        console.log(`📋 Line ${index} might contain reference:`, trimmedLine);
+      }
+
       // Check for bold headers (like **CLEAR FLOOR SPACE**)
-      if (trimmedLine.match(/^\*\*[^*]+\*\*$/)) {
+      if (trimmedLine.match(/^\*\*[^*]+\*\*$/) && !trimmedLine.includes('Reference')) {
         flushBullets();
         const headerText = trimmedLine.replace(/\*\*/g, '');
         elements.push(
@@ -358,7 +326,6 @@ export default function MessageList({
       // Bullet points
       if (trimmedLine.startsWith('- ') || trimmedLine.startsWith('• ')) {
         const bulletText = trimmedLine.substring(2).trim();
-        // Parse both bold markdown and references
         const formattedBulletText = parseBoldMarkdown(bulletText);
         bullets.push(formattedBulletText);
         return;
@@ -396,7 +363,7 @@ export default function MessageList({
         return;
       }
 
-      // Regular content
+      // Regular content - this is where most references will be processed
       flushBullets();
       const formattedContent = parseBoldMarkdown(trimmedLine);
       elements.push(
@@ -455,24 +422,6 @@ export default function MessageList({
     // Only render if we have references to show
     console.log(`✅ Rendering regulation container with ${regulation.references.length} references`);
 
-
-
-
-    // Replace the existing debug with this more detailed version
-    console.log('🕐 Message timestamp debug:', {
-      messageId: message._id || 'no-id',
-      timestamp: message.timestamp,
-      timestampType: typeof message.timestamp,
-      timestampString: String(message.timestamp),
-      isValidDate: message.timestamp ? !isNaN(new Date(message.timestamp).getTime()) : false,
-      formattedTime: message.timestamp ? formatTime(message.timestamp) : 'NO TIMESTAMP',
-      actualDateObject: message.timestamp ? new Date(message.timestamp) : 'NO TIMESTAMP',
-      currentTime: new Date().toLocaleTimeString()
-    });
-
-
-
-
     return (
       <div className={styles.regulationContainer}>
         <div className={styles.regulationHeader}>
@@ -496,35 +445,16 @@ export default function MessageList({
     return (
       <div className={styles.emptyMessages}>
         <div className={styles.welcomeMessage}>
-          <h3>Welcome to REG-GPT!</h3>
-          <p>Get instant, professional building code compliance reports with AI-powered analysis and precise citations.</p>
 
-          <div className={styles.capabilities}>
-            <h4>Professional Building Code Analysis:</h4>
-            <ul>
-              <li>🏗️ Building code requirements & compliance</li>
-              <li>🔥 Fire safety & egress regulations</li>
-              <li>♿ ADA accessibility standards</li>
-              <li>🏢 Occupancy classifications</li>
-              <li>🔧 Structural design standards</li>
-              <li>📋 Zoning & development regulations</li>
+          <div className={styles.examplePrompts}>
+            <p className={styles.exampleTitle}>Try asking:</p>
+            <ul className={styles.exampleList}>
+              <li>"What are the minimum ceiling heights for residential buildings?"</li>
+              <li>"Fire escape requirements for 3-story office building"</li>
+              <li>"Accessibility requirements for public buildings"</li>
+              <li>"Minimum window sizes for emergency egress"</li>
+              <li>"Structural requirements for load-bearing walls"</li>
             </ul>
-          </div>
-
-          <div className={styles.regulationNote}>
-            <div className={styles.noteIcon}>
-              <svg xmlns="http://www.w3.org/2000/svg" className={styles.noteIconSvg} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
-            </div>
-            <div className={styles.noteContent}>
-              <strong>Smart Query Routing:</strong> REG-GPT intelligently handles building code questions, system information queries, and provides helpful guidance when information isn't available.
-              {enableTTS && isTTSSupported && (
-                <>
-                  <br /><strong>🔊 Voice Features:</strong> Ask questions hands-free and listen to responses while working on designs.
-                </>
-              )}
-            </div>
           </div>
         </div>
       </div>
@@ -578,26 +508,6 @@ export default function MessageList({
                 </div>
 
                 <div className={styles.contentHeaderRight}>
-                  {/* TTS button for assistant messages */}
-                  {message.role === 'assistant' && enableTTS && isTTSSupported && (
-                    <button
-                      onClick={() => handleSpeakMessage(index)}
-                      className={`${styles.actionButton} ${speakingMessageIndex === index ? styles.speaking : ''}`}
-                      title={speakingMessageIndex === index ? "Stop speaking" : "Read aloud"}
-                    >
-                      {speakingMessageIndex === index ? (
-                        <svg xmlns="http://www.w3.org/2000/svg" className={styles.actionIcon} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 9h6v6H9z" />
-                        </svg>
-                      ) : (
-                        <svg xmlns="http://www.w3.org/2000/svg" className={styles.actionIcon} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M9 21a1 1 0 01-1-1v-4a1 1 0 011-1h2l4-4V7l-4-4H9a1 1 0 01-1 1v4a1 1 0 011 1z" />
-                        </svg>
-                      )}
-                    </button>
-                  )}
-
                   {/* Edit button for user messages */}
                   {message.role === 'user' && editingMessageIndex !== index && !isGenerating && (
                     <button

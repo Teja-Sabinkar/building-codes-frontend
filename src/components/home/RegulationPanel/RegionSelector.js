@@ -5,82 +5,113 @@ import React, { useState } from 'react';
 import styles from './RegionSelector.module.css';
 
 const RegionSelector = ({ isOpen, onRegionSelect, onCancel }) => {
-  const [selectedRegion, setSelectedRegion] = useState('');
+  const [selectedCountry, setSelectedCountry] = useState('');
 
-  const regions = [
+  const countries = [
     {
-      code: 'India',
-      name: 'Indian Building Codes',
-      flag: '🇮🇳',
-      description: 'National Building Code 2016 (NBC)',
-      chunks: '2,252 chunks available',
-      documents: 'NBC 2016-VOL.1 & VOL.2'
+      country: 'India',
+      countryName: 'India',
+      codes: [
+        {
+          code: 'India',
+          name: 'Indian Building Codes',
+          documents: [
+            'NBC 2016-VOL.1',
+            'NBC 2016-VOL.2'
+          ]
+        }
+      ]
     },
     {
-      code: 'Scotland',
-      name: 'Scottish Building Standards', 
-      flag: '🏴󠁧󠁢󠁳󠁣󠁴󠁿',
-      description: 'Building Standards Technical Handbook 2025',
-      chunks: '55 chunks available',
-      documents: 'BSTH Jan2025 Domestic & Non-Domestic'
+      country: 'Scotland',
+      countryName: 'Scotland',
+      codes: [
+        {
+          code: 'Scotland',
+          name: 'Scottish Building Standards',
+          documents: [
+            'Building standards technical handbook January 2025 domestic',
+            'Building standards technical handbook January 2025 non-domestic',
+            'Single-building-assessment-specification-sba',
+            'Standards-single-building-assessments-additional-work-assessments',
+            'Task-group-recommendations-march-2024',
+            'Determining-fire-risk-posed-external-wall-systems-existing-multistorey-residential-buildings',
+            'Draft-scottish-advice-note-external-wall-systems-version-3-0'
+          ]
+        }
+      ]
     }
   ];
 
-  const handleRegionChange = (event) => {
-    setSelectedRegion(event.target.value);
+  const handleCountryChange = (event) => {
+    setSelectedCountry(event.target.value);
   };
 
-  const handleCreateConversation = () => {
-    if (selectedRegion) {
-      const regionData = regions.find(r => r.code === selectedRegion);
-      onRegionSelect(regionData);
-      setSelectedRegion(''); // Reset for next time
+  const handleCreateConversation = (codeData) => {
+    if (codeData) {
+      onRegionSelect(codeData);
+      setSelectedCountry(''); // Reset for next time
     }
   };
 
   if (!isOpen) return null;
+
+  const selectedCountryData = countries.find(c => c.country === selectedCountry);
 
   return (
     <div className={styles.modalOverlay}>
       <div className={styles.modalContent}>
         <div className={styles.modalHeader}>
           <h3>Select Building Code Region</h3>
-          <p>Choose the building codes region for this conversation</p>
+          <p>Choose the country and building codes for this conversation</p>
         </div>
 
         <div className={styles.regionSelector}>
-          <label htmlFor="region-select" className={styles.selectLabel}>
-            Building Code Region:
+          <label htmlFor="country-select" className={styles.selectLabel}>
+            Select Country:
           </label>
           <select 
-            id="region-select"
-            value={selectedRegion}
-            onChange={handleRegionChange}
+            id="country-select"
+            value={selectedCountry}
+            onChange={handleCountryChange}
             className={styles.regionDropdown}
           >
-            <option value="">Choose a region...</option>
-            {regions.map(region => (
-              <option key={region.code} value={region.code}>
-                {region.flag} {region.name}
+            <option value="">Choose a country...</option>
+            {countries.map(country => (
+              <option key={country.country} value={country.country}>
+                {country.flag} {country.countryName}
               </option>
             ))}
           </select>
 
-          {selectedRegion && (
+          {selectedCountryData && (
             <div className={styles.regionDetails}>
-              {(() => {
-                const region = regions.find(r => r.code === selectedRegion);
-                return (
-                  <div className={styles.regionInfo}>
-                    <h4>{region.flag} {region.name}</h4>
-                    <p>{region.description}</p>
-                    <div className={styles.regionStats}>
-                      <span className={styles.chunks}>{region.chunks}</span>
-                      <span className={styles.documents}>{region.documents}</span>
+              <h4>{selectedCountryData.flag} Available Building Codes for {selectedCountryData.countryName}</h4>
+              <div className={styles.codesContainer}>
+                {selectedCountryData.codes.map((codeData, index) => (
+                  <div key={index} className={styles.codeCard}>
+                    <div className={styles.codeHeader}>
+                      <h5>{codeData.name}</h5>
                     </div>
+                    <div className={styles.codeStats}>
+                      <div className={styles.documentsSection}>
+                        <span className={styles.documentsLabel}>Available Documents:</span>
+                        <ul className={styles.documentsList}>
+                          {codeData.documents.map((doc, docIndex) => (
+                            <li key={docIndex} className={styles.documentItem}>{doc}</li>
+                          ))}
+                        </ul>
+                      </div>
+                    </div>
+                    <button 
+                      onClick={() => handleCreateConversation(codeData)}
+                      className={styles.selectCodeButton}
+                    >
+                      Select {codeData.name}
+                    </button>
                   </div>
-                );
-              })()}
+                ))}
+              </div>
             </div>
           )}
         </div>
@@ -91,13 +122,6 @@ const RegionSelector = ({ isOpen, onRegionSelect, onCancel }) => {
             className={styles.cancelButton}
           >
             Cancel
-          </button>
-          <button 
-            onClick={handleCreateConversation}
-            disabled={!selectedRegion}
-            className={styles.createButton}
-          >
-            Create Conversation
           </button>
         </div>
       </div>

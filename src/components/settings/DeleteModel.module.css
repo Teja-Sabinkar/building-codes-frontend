@@ -1,0 +1,580 @@
+/* src/components/settings/DeleteModel.module.css - Account Deletion Modal Styling with Dark Mode */
+
+/* Modal Overlay */
+.modalOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.75);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  padding: 1rem;
+  animation: fadeIn 0.2s ease-out;
+}
+
+:global(.dark-mode) .modalOverlay {
+  background-color: rgba(0, 0, 0, 0.85);
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+/* Modal Content */
+.modalContent {
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+  max-width: 540px;
+  width: 100%;
+  max-height: 90vh;
+  overflow-y: auto;
+  animation: slideIn 0.3s ease-out;
+  border: 1px solid #f3f4f6;
+  transition: all 0.3s ease;
+}
+
+:global(.dark-mode) .modalContent {
+  background: #2d2d2d;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.8);
+  border: 1px solid #444;
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateY(-20px);
+    opacity: 0;
+  }
+
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+/* Modal Header */
+.modalHeader {
+  display: flex;
+  gap: 1rem;
+  padding: 2rem 2rem 1rem 2rem;
+  border-bottom: 1px solid #f3f4f6;
+  transition: border-color 0.3s ease;
+  align-items: center;
+}
+
+:global(.dark-mode) .modalHeader {
+  border-bottom: 1px solid #444;
+}
+
+.headerIcon {
+  flex-shrink: 0;
+  width: 48px;
+  height: 48px;
+  background-color: #fee2e2;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.3s ease;
+}
+
+:global(.dark-mode) .headerIcon {
+  background-color: #4a2626;
+}
+
+.dangerIcon {
+  width: 24px;
+  height: 24px;
+  color: #dc2626;
+  transition: color 0.3s ease;
+}
+
+:global(.dark-mode) .dangerIcon {
+  color: #f87171;
+}
+
+.headerText {
+  flex: 1;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
+.modalTitle {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #111827;
+  margin: 0;
+  line-height: 1.3;
+  transition: color 0.3s ease;
+}
+
+:global(.dark-mode) .modalTitle {
+  color: #e5e5e5;
+}
+
+.closeButton {
+  background: none;
+  border: none;
+  padding: 0.5rem;
+  cursor: pointer;
+  color: #6b7280;
+  border-radius: 6px;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+}
+
+:global(.dark-mode) .closeButton {
+  color: #9ca3af;
+}
+
+.closeButton:hover:not(:disabled) {
+  background-color: #f3f4f6;
+  color: #374151;
+}
+
+:global(.dark-mode) .closeButton:hover:not(:disabled) {
+  background-color: #4a4a4a;
+  color: #d1d5db;
+}
+
+.closeButton:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.closeIcon {
+  width: 20px;
+  height: 20px;
+}
+
+/* Modal Body */
+.modalBody {
+  padding: 2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.userInfo {
+  background-color: #f9fafb;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 1rem;
+  transition: all 0.3s ease;
+}
+
+:global(.dark-mode) .userInfo {
+  background-color: #2a2a2a;
+  border: 1px solid #555;
+}
+
+.userDetail {
+  margin: 0;
+  color: #374151;
+  font-size: 0.95rem;
+  transition: color 0.3s ease;
+}
+
+:global(.dark-mode) .userDetail {
+  color: #d1d5db;
+}
+
+.warningText {
+  color: #374151;
+  font-size: 1rem;
+  line-height: 1.6;
+  margin: 0;
+  transition: color 0.3s ease;
+}
+
+:global(.dark-mode) .warningText {
+  color: #d1d5db;
+}
+
+.criticalWarning {
+  background-color: #fef2f2;
+  border: 2px solid #fecaca;
+  border-radius: 10px;
+  padding: 1.25rem;
+  display: flex;
+  gap: 0.75rem;
+  align-items: flex-start;
+  transition: all 0.3s ease;
+}
+
+:global(.dark-mode) .criticalWarning {
+  background-color: #2d1a1a;
+  border: 2px solid #7f1d1d;
+}
+
+.warningIcon {
+  width: 24px;
+  height: 24px;
+  color: #dc2626;
+  flex-shrink: 0;
+  margin-top: 2px;
+  transition: color 0.3s ease;
+}
+
+:global(.dark-mode) .warningIcon {
+  color: #f87171;
+}
+
+.warningContent {
+  flex: 1;
+}
+
+.warningContent strong {
+  color: #991b1b;
+  font-size: 1rem;
+  display: block;
+  margin-bottom: 0.5rem;
+  transition: color 0.3s ease;
+}
+
+:global(.dark-mode) .warningContent strong {
+  color: #fca5a5;
+}
+
+.warningContent p {
+  color: #7f1d1d;
+  font-size: 0.9rem;
+  line-height: 1.5;
+  margin: 0;
+  transition: color 0.3s ease;
+}
+
+:global(.dark-mode) .warningContent p {
+  color: #f87171;
+}
+
+/* Acknowledgment Section */
+.acknowledgmentSection {
+  background-color: #f9fafb;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 1.25rem;
+  transition: all 0.3s ease;
+}
+
+:global(.dark-mode) .acknowledgmentSection {
+  background-color: #2a2a2a;
+  border: 1px solid #555;
+}
+
+.checkboxContainer {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  cursor: pointer;
+}
+
+.checkbox {
+  width: 18px;
+  height: 18px;
+  border: 2px solid #d1d5db;
+  border-radius: 4px;
+  cursor: pointer;
+  flex-shrink: 0;
+  margin-top: 2px;
+  accent-color: #dc2626;
+  transition: border-color 0.3s ease;
+}
+
+:global(.dark-mode) .checkbox {
+  border: 2px solid #555;
+  background-color: #3d3d3d;
+}
+
+.checkbox:focus {
+  outline: 2px solid #dc2626;
+  outline-offset: 2px;
+}
+
+.checkbox:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.checkboxLabel {
+  color: #374151;
+  font-size: 0.9rem;
+  line-height: 1.5;
+  cursor: pointer;
+  transition: color 0.3s ease;
+}
+
+:global(.dark-mode) .checkboxLabel {
+  color: #d1d5db;
+}
+
+/* Confirmation Section */
+.confirmationSection {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.confirmLabel {
+  color: #374151;
+  font-size: 0.95rem;
+  font-weight: 500;
+  transition: color 0.3s ease;
+}
+
+:global(.dark-mode) .confirmLabel {
+  color: #d1d5db;
+}
+
+.confirmInput {
+  width: 100%;
+  padding: 0.75rem;
+  border: 2px solid #d1d5db;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-family: inherit;
+  background-color: white;
+  transition: all 0.2s ease;
+  color: #1f2937;
+}
+
+:global(.dark-mode) .confirmInput {
+  background-color: #3d3d3d;
+  border-color: #555;
+  color: #e5e5e5;
+}
+
+.confirmInput:focus {
+  outline: none;
+  border-color: #dc2626;
+}
+
+.confirmInput:disabled {
+  background-color: #f9fafb;
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+:global(.dark-mode) .confirmInput:disabled {
+  background-color: #2a2a2a;
+  color: #9ca3af;
+}
+
+/* Modal Footer */
+.modalFooter {
+  display: flex;
+  gap: 0.75rem;
+  justify-content: flex-end;
+  padding: 1.5rem 2rem 2rem 2rem;
+  border-top: 1px solid #f3f4f6;
+  transition: border-color 0.3s ease;
+}
+
+:global(.dark-mode) .modalFooter {
+  border-top: 1px solid #444;
+}
+
+.cancelButton {
+  padding: 0.75rem 1.5rem;
+  font-size: 0.95rem;
+  font-weight: 500;
+  color: #374151;
+  background-color: white;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  min-width: 100px;
+}
+
+:global(.dark-mode) .cancelButton {
+  color: #d1d5db;
+  background-color: #3d3d3d;
+  border: 1px solid #555;
+}
+
+.cancelButton:hover:not(:disabled) {
+  background-color: #f9fafb;
+  border-color: #9ca3af;
+}
+
+:global(.dark-mode) .cancelButton:hover:not(:disabled) {
+  background-color: #4a4a4a;
+  border-color: #666;
+}
+
+.cancelButton:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.deleteButton {
+  padding: 0.75rem 1.5rem;
+  font-size: 0.95rem;
+  font-weight: 600;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  min-width: 180px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+.deleteButtonEnabled {
+  background-color: #dc2626;
+  color: white;
+}
+
+.deleteButtonEnabled:hover:not(:disabled) {
+  background-color: #b91c1c;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(220, 38, 38, 0.3);
+}
+
+:global(.dark-mode) .deleteButtonEnabled:hover:not(:disabled) {
+  box-shadow: 0 4px 8px rgba(220, 38, 38, 0.5);
+}
+
+.deleteButtonDisabled {
+  background-color: #e5e7eb;
+  color: #9ca3af;
+  cursor: not-allowed;
+}
+
+:global(.dark-mode) .deleteButtonDisabled {
+  background-color: #2a2a2a;
+  color: #6b7280;
+}
+
+.loadingSpinner {
+  animation: spin 1s linear infinite;
+  flex-shrink: 0;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Mobile Responsive */
+@media (max-width: 640px) {
+  .modalOverlay {
+    padding: 0.5rem;
+  }
+
+  .modalContent {
+    max-height: 95vh;
+  }
+
+  .modalHeader {
+    padding: 1.5rem 1.5rem 1rem 1.5rem;
+  }
+
+  .modalTitle {
+    font-size: 1.25rem;
+  }
+
+  .modalBody {
+    padding: 1.5rem;
+    gap: 1.25rem;
+  }
+
+  .modalFooter {
+    padding: 1.25rem 1.5rem 1.5rem 1.5rem;
+    flex-direction: column;
+  }
+
+  .cancelButton,
+  .deleteButton {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+/* Accessibility */
+.deleteButton:focus-visible,
+.cancelButton:focus-visible {
+  outline: 2px solid #dc2626;
+  outline-offset: 2px;
+}
+
+:global(.dark-mode) .deleteButton:focus-visible,
+:global(.dark-mode) .cancelButton:focus-visible {
+  outline: 2px solid #f87171;
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+  .modalContent {
+    border: 2px solid #000;
+  }
+
+  :global(.dark-mode) .modalContent {
+    border: 2px solid #fff;
+  }
+
+  .confirmInput {
+    border-width: 2px;
+  }
+
+  .cancelButton,
+  .deleteButton {
+    border-width: 2px;
+  }
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+
+  .modalContent,
+  .modalHeader,
+  .headerIcon,
+  .dangerIcon,
+  .modalTitle,
+  .closeButton,
+  .userInfo,
+  .userDetail,
+  .warningText,
+  .criticalWarning,
+  .warningIcon,
+  .warningContent strong,
+  .warningContent p,
+  .acknowledgmentSection,
+  .checkbox,
+  .checkboxLabel,
+  .confirmLabel,
+  .confirmInput,
+  .modalFooter,
+  .cancelButton {
+    animation: none;
+    transition: none;
+  }
+
+  .loadingSpinner {
+    animation: none;
+  }
+
+  .deleteButtonEnabled:hover:not(:disabled) {
+    transform: none;
+  }
+}

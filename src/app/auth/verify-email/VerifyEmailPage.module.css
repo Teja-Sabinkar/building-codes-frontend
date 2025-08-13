@@ -1,3 +1,5 @@
+/* app/auth/verify-email/VerifyEmailPage.module.css - REG-GPT Theme with Dark Mode Support */
+
 .container {
     display: flex;
     flex-direction: column;
@@ -7,6 +9,12 @@
     align-items: center;
     justify-content: center;
     padding: 2rem 1.5rem;
+    transition: background 0.3s ease;
+}
+
+/* 🌙 Dark Mode Support - Claude's Gray Theme */
+:global(.dark-mode) .container {
+    background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
 }
 
 .wrapper {
@@ -22,6 +30,14 @@
     border: 1px solid #bbf7d0;
     padding: 2rem;
     margin-bottom: 1rem;
+    transition: all 0.3s ease;
+}
+
+/* 🌙 Dark Mode Support for Card */
+:global(.dark-mode) .card {
+    background-color: #2d2d2d;
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.4), 0 4px 6px -2px rgba(0, 0, 0, 0.3);
+    border: 1px solid #10b981;
 }
 
 .statusSuccess {
@@ -30,6 +46,12 @@
     flex-direction: column;
     align-items: center;
     padding: 1.5rem 0;
+    transition: color 0.3s ease;
+}
+
+/* 🌙 Dark Mode Support for Success Status */
+:global(.dark-mode) .statusSuccess {
+    color: #10b981;
 }
 
 .statusError {
@@ -38,6 +60,12 @@
     flex-direction: column;
     align-items: center;
     padding: 1.5rem 0;
+    transition: color 0.3s ease;
+}
+
+/* 🌙 Dark Mode Support for Error Status */
+:global(.dark-mode) .statusError {
+    color: #f87171;
 }
 
 .loadingSpinner {
@@ -48,6 +76,13 @@
     border: 2px solid #bbf7d0;
     border-top-color: #059669;
     animation: spin 1s linear infinite;
+    transition: all 0.3s ease;
+}
+
+/* 🌙 Dark Mode Support for Loading Spinner */
+:global(.dark-mode) .loadingSpinner {
+    border: 2px solid #4a4a4a;
+    border-top-color: #10b981;
 }
 
 @keyframes spin {
@@ -66,4 +101,75 @@
         margin: 1rem;
         border-radius: 0.75rem;
     }
+}
+
+/* Additional text styling for dark mode in card content */
+.card h2 {
+    color: #1f2937;
+    transition: color 0.3s ease;
+}
+
+:global(.dark-mode) .card h2 {
+    color: #e5e5e5;
+}
+
+.card h3 {
+    color: #1f2937;
+    transition: color 0.3s ease;
+}
+
+:global(.dark-mode) .card h3 {
+    color: #e5e5e5;
+}
+
+.card p {
+    color: #6b7280;
+    transition: color 0.3s ease;
+}
+
+:global(.dark-mode) .card p {
+    color: #9ca3af;
+}
+
+/* Button styling in card */
+.card button {
+    background-color: #059669;
+    color: white;
+    transition: all 0.3s ease;
+}
+
+:global(.dark-mode) .card button {
+    background-color: #10b981;
+    color: #1a1a1a;
+}
+
+.card button:hover {
+    background-color: #047857;
+}
+
+:global(.dark-mode) .card button:hover {
+    background-color: #059669;
+    color: white;
+}
+
+/* Link styling in card */
+.card a {
+    background-color: #059669;
+    color: white;
+    transition: all 0.3s ease;
+}
+
+:global(.dark-mode) .card a {
+    background-color: #10b981;
+    color: #1a1a1a;
+}
+
+.card a:hover {
+    background-color: #047857;
+    text-decoration: none;
+}
+
+:global(.dark-mode) .card a:hover {
+    background-color: #059669;
+    color: white;
 }

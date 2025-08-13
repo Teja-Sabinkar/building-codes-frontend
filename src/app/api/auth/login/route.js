@@ -1,4 +1,4 @@
-// app/api/auth/login/route.js
+// app/api/auth/login/route.js - FIXED: Corrected Soft Deletion Check
 import { NextResponse } from 'next/server';
 import jwt from 'jsonwebtoken';
 import connectToDatabase from '@/lib/db/mongodb';
@@ -20,12 +20,31 @@ export async function POST(request) {
       );
     }
     
-    // Find the user by email (include password for comparison)
+    // 🔧 FIXED: Find user without middleware filter, then check deletion manually
     const user = await User.findOne({ email: email.toLowerCase() }).select('+password');
     
     if (!user) {
       return NextResponse.json(
         { error: 'Invalid email or password' },
+        { status: 401 }
+      );
+    }
+    
+    // 🆕 CHECK IF ACCOUNT IS DELETED
+    if (user.isDeleted === true) {
+      console.log('🚫 Login attempt on deleted account:', {
+        userId: user._id,
+        email: user.originalEmail || email,
+        deletedAt: user.deletedAt,
+        attemptTime: new Date().toISOString()
+      });
+
+      return NextResponse.json(
+        { 
+          error: 'Account not found',
+          code: 'ACCOUNT_DELETED',
+          message: 'This account has been deactivated. Please contact support if you believe this is an error.'
+        },
         { status: 401 }
       );
     }
@@ -57,6 +76,12 @@ export async function POST(request) {
       process.env.JWT_SECRET,
       { expiresIn: '7d' }
     );
+
+    console.log('✅ Successful login:', {
+      userId: user._id,
+      email: user.email,
+      lastLogin: user.lastLogin
+    });
     
     // Return success response WITH token
     return NextResponse.json({
