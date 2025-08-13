@@ -110,14 +110,13 @@
 .regionDetails {
   margin-top: 20px;
   padding: 20px;
-  background: #f0fdf4;
   border-radius: 12px;
   border: 1px solid #bbf7d0;
   transition: all 0.3s ease;
 }
 
 :global(.dark-mode) .regionDetails {
-  background: #1a3a2e;
+  background: transparent;
   border: 1px solid #10b981;
 }
 
@@ -141,7 +140,6 @@
 
 .codeCard {
   background: white;
-  border: 2px solid #e5e7eb;
   border-radius: 8px;
   padding: 16px;
   transition: all 0.2s ease;
@@ -149,17 +147,7 @@
 
 :global(.dark-mode) .codeCard {
   background: #2d2d2d;
-  border: 2px solid #555;
-}
-
-.codeCard:hover {
-  border-color: #059669;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-}
-
-:global(.dark-mode) .codeCard:hover {
-  border-color: #10b981;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
+  border: 2px solid #2d2d2d;
 }
 
 .codeHeader h5 {
