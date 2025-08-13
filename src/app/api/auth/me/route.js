@@ -1,8 +1,12 @@
-// src/app/api/auth/me/route.js - Enhanced with Theme Support
+// src/app/api/auth/me/route.js - Enhanced with Theme Support + Dynamic Config
 import { NextResponse } from 'next/server';
 import jwt from 'jsonwebtoken';
 import connectToDatabase from '@/lib/db/mongodb';
 import User from '@/models/User';
+
+// 🚀 FIX: Force dynamic rendering to prevent static generation error
+export const dynamic = 'force-dynamic';
+export const runtime = 'nodejs';
 
 const JWT_SECRET = process.env.JWT_SECRET;
 
@@ -55,7 +59,7 @@ export async function GET(request) {
       usageStats: user.usageStats,
       preferences: {
         ...user.preferences,
-        theme: user.getThemePreference() // Ensure theme is included
+        theme: user.getThemePreference ? user.getThemePreference() : (user.preferences?.theme || 'light')
       }
     };
 

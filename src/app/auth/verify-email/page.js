@@ -1,13 +1,14 @@
-// app/auth/verify-email/page.js - With Smart Persistence Theme Logic
+// app/auth/verify-email/page.js - With Smart Persistence Theme Logic + Suspense Fix
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import AuthHeader from '@/components/auth/AuthHeader';
 import styles from './VerifyEmailPage.module.css';
 
-export default function VerifyEmailPage() {
+// 🚀 FIX: Separate component for useSearchParams to wrap in Suspense
+function VerifyEmailContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const token = searchParams.get('token');
@@ -163,5 +164,26 @@ export default function VerifyEmailPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+// 🚀 FIX: Main component wraps content in Suspense
+export default function VerifyEmailPage() {
+  return (
+    <Suspense fallback={
+      <div className={styles.container}>
+        <div className={styles.wrapper}>
+          <AuthHeader />
+          <div className={styles.card}>
+            <div className="text-center py-8">
+              <div className={styles.loadingSpinner}></div>
+              <p className="text-gray-600 mt-4">Loading verification page...</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    }>
+      <VerifyEmailContent />
+    </Suspense>
   );
 }
