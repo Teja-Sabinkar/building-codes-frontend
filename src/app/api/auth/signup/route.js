@@ -1,4 +1,4 @@
-// app/api/auth/signup/route.js - ENHANCED with Better Email Debugging
+// app/api/auth/signup/route.js - PRODUCTION READY with Enhanced Email Debugging
 import { NextResponse } from 'next/server';
 import jwt from 'jsonwebtoken';
 import connectToDatabase from '@/lib/db/mongodb';
@@ -108,37 +108,80 @@ export async function POST(request) {
       token: jwtToken
     };
     
-    // Send verification email (enhanced error handling)
+    // Send verification email with enhanced error handling and logging
     console.log('📧 Attempting to send verification email...');
+    console.log('📧 Email service configuration check:', {
+      hasEmailHost: !!process.env.EMAIL_HOST,
+      emailHost: process.env.EMAIL_HOST,
+      emailUser: process.env.EMAIL_USER,
+      hasPassword: !!process.env.EMAIL_PASSWORD,
+      emailFrom: process.env.EMAIL_FROM,
+      appUrl: process.env.NEXT_PUBLIC_APP_URL,
+      nodeEnv: process.env.NODE_ENV
+    });
+    
     try {
-      await sendVerificationEmail(savedUser, verificationToken);
-      console.log('✅ Verification email sent successfully to:', savedUser.email);
+      console.log('🔗 About to call sendVerificationEmail with:', {
+        userId: savedUser._id,
+        userEmail: savedUser.email,
+        userName: savedUser.name,
+        tokenLength: verificationToken.length
+      });
+      
+      const emailResult = await sendVerificationEmail(savedUser, verificationToken);
+      
+      console.log('✅ Verification email sent successfully:', {
+        messageId: emailResult.messageId,
+        accepted: emailResult.accepted,
+        rejected: emailResult.rejected,
+        response: emailResult.response
+      });
       
       // Email sent successfully
+      successResponse.emailSent = true;
+      successResponse.emailStatus = 'sent';
+      
       return NextResponse.json(successResponse, { status: 201 });
       
     } catch (emailError) {
-      console.error('❌ Email sending failed:', {
+      console.error('❌ EMAIL SENDING FAILED - CRITICAL ERROR:', {
         error: emailError.message,
         stack: emailError.stack,
+        code: emailError.code,
+        command: emailError.command,
         userId: savedUser._id,
-        userEmail: savedUser.email
+        userEmail: savedUser.email,
+        timestamp: new Date().toISOString()
       });
       
+      // Detailed error analysis
+      if (emailError.message.includes('EAUTH')) {
+        console.error('🔧 SMTP Authentication Error - Check Gmail App Password');
+      } else if (emailError.message.includes('ECONNECTION')) {
+        console.error('🔧 SMTP Connection Error - Check network/firewall');
+      } else if (emailError.message.includes('NEXT_PUBLIC_APP_URL')) {
+        console.error('🔧 Environment Variable Error - NEXT_PUBLIC_APP_URL missing');
+      } else {
+        console.error('🔧 Unknown Email Error - Check email service configuration');
+      }
+      
       // User is still created successfully, but email failed
-      // Return success but with a warning about email
-      successResponse.emailWarning = 'Account created successfully, but verification email could not be sent. You can request a new verification email from your dashboard.';
+      // Return success but with email failure warning
+      successResponse.emailSent = false;
+      successResponse.emailStatus = 'failed';
       successResponse.emailError = emailError.message;
+      successResponse.emailWarning = 'Account created successfully, but verification email could not be sent. You can request a new verification email from your dashboard.';
       
       return NextResponse.json(successResponse, { status: 201 });
     }
     
   } catch (error) {
-    console.error('❌ Signup error:', {
+    console.error('❌ SIGNUP ERROR - CRITICAL FAILURE:', {
       error: error.message,
       stack: error.stack,
       name: error.name,
-      code: error.code
+      code: error.code,
+      timestamp: new Date().toISOString()
     });
     
     if (error.code === 11000) {
