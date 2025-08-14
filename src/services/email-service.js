@@ -1,4 +1,4 @@
-// services/email-service.js - Enhanced with Better Attachment Support
+// services/email-service.js - FIXED VERSION
 import nodemailer from 'nodemailer';
 
 /**
@@ -9,7 +9,7 @@ export async function sendEmail({ to, subject, html, attachments }) {
   
   if (process.env.EMAIL_HOST) {
     // Production email service configuration
-    transporter = nodemailer.createTransport({
+    transporter = nodemailer.createTransport({  // 🔧 FIXED: createTransport (not createTransporter)
       host: process.env.EMAIL_HOST,
       port: parseInt(process.env.EMAIL_PORT) || 587,
       secure: process.env.EMAIL_SECURE === 'true',
@@ -28,7 +28,7 @@ export async function sendEmail({ to, subject, html, attachments }) {
     // For development, use ethereal.email
     const testAccount = await nodemailer.createTestAccount();
     
-    transporter = nodemailer.createTransporter({
+    transporter = nodemailer.createTransport({  // 🔧 FIXED: createTransport (not createTransporter)
       host: 'smtp.ethereal.email',
       port: 587,
       secure: false,
@@ -41,7 +41,7 @@ export async function sendEmail({ to, subject, html, attachments }) {
 
   // Prepare mail options
   const mailOptions = {
-    from: process.env.EMAIL_FROM || '"REG-GPT" <noreply@reg-gpt.com>',
+    from: process.env.EMAIL_FROM || '"REG-GPT" <sabinkar2304@gmail.com>',  // 🔧 FIXED: Updated fallback
     to,
     subject,
     html,
@@ -113,18 +113,32 @@ export async function sendVerificationEmail(user, verificationToken) {
   const verificationUrl = `${process.env.NEXT_PUBLIC_APP_URL}/auth/verify-email?token=${verificationToken}`;
   
   const html = `
-    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-      <h2>Verify Your Email Address</h2>
-      <p>Hi ${user.name},</p>
-      <p>Thank you for signing up for REG-GPT. Please verify your email address by clicking the button below:</p>
-      <div style="text-align: center; margin: 30px 0;">
-        <a href="${verificationUrl}" style="background-color: #059669; color: white; padding: 12px 24px; text-decoration: none; border-radius: 4px; font-weight: bold;">Verify Email</a>
+    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f9f9f9;">
+      <div style="background-color: white; padding: 30px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+        <div style="text-align: center; margin-bottom: 30px;">
+          <h1 style="color: #059669; margin: 0; font-size: 28px;">REG-GPT</h1>
+          <p style="color: #666; margin: 5px 0 0 0;">Building Codes Assistant</p>
+        </div>
+        
+        <h2 style="color: #333; margin-bottom: 20px;">Verify Your Email Address</h2>
+        <p style="color: #555; line-height: 1.6;">Hi ${user.name},</p>
+        <p style="color: #555; line-height: 1.6;">Thank you for signing up for REG-GPT. Please verify your email address by clicking the button below:</p>
+        
+        <div style="text-align: center; margin: 30px 0;">
+          <a href="${verificationUrl}" style="background-color: #059669; color: white; padding: 14px 28px; text-decoration: none; border-radius: 6px; font-weight: bold; display: inline-block; font-size: 16px;">Verify Email Address</a>
+        </div>
+        
+        <p style="color: #666; line-height: 1.6; font-size: 14px;">If the button doesn't work, you can also copy and paste the following link into your browser:</p>
+        <p style="color: #059669; word-break: break-all; font-size: 14px;">${verificationUrl}</p>
+        
+        <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #eee;">
+          <p style="color: #666; font-size: 14px; margin-bottom: 5px;">⏰ This link will expire in 24 hours.</p>
+          <p style="color: #666; font-size: 14px; margin-bottom: 20px;">🔒 If you didn't sign up for REG-GPT, please ignore this email.</p>
+          
+          <p style="color: #333; margin-bottom: 5px;">Best regards,</p>
+          <p style="color: #059669; font-weight: bold; margin: 0;">The REG-GPT Team</p>
+        </div>
       </div>
-      <p>If the button doesn't work, you can also copy and paste the following link into your browser:</p>
-      <p>${verificationUrl}</p>
-      <p>This link will expire in 24 hours.</p>
-      <p>If you didn't sign up for REG-GPT, please ignore this email.</p>
-      <p>Best regards,<br>The REG-GPT Team</p>
     </div>
   `;
   
@@ -142,19 +156,33 @@ export async function sendPasswordResetEmail(user, resetToken) {
   const resetUrl = `${process.env.NEXT_PUBLIC_APP_URL}/auth/reset-password?token=${resetToken}`;
   
   const html = `
-    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-      <h2>Reset Your Password</h2>
-      <p>Hi ${user.name},</p>
-      <p>You are receiving this email because you (or someone else) has requested to reset your password for your REG-GPT account.</p>
-      <p>Please click the button below to reset your password:</p>
-      <div style="text-align: center; margin: 30px 0;">
-        <a href="${resetUrl}" style="background-color: #059669; color: white; padding: 12px 24px; text-decoration: none; border-radius: 4px; font-weight: bold;">Reset Password</a>
+    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f9f9f9;">
+      <div style="background-color: white; padding: 30px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+        <div style="text-align: center; margin-bottom: 30px;">
+          <h1 style="color: #059669; margin: 0; font-size: 28px;">REG-GPT</h1>
+          <p style="color: #666; margin: 5px 0 0 0;">Building Codes Assistant</p>
+        </div>
+        
+        <h2 style="color: #333; margin-bottom: 20px;">Reset Your Password</h2>
+        <p style="color: #555; line-height: 1.6;">Hi ${user.name},</p>
+        <p style="color: #555; line-height: 1.6;">You are receiving this email because you (or someone else) has requested to reset your password for your REG-GPT account.</p>
+        <p style="color: #555; line-height: 1.6;">Please click the button below to reset your password:</p>
+        
+        <div style="text-align: center; margin: 30px 0;">
+          <a href="${resetUrl}" style="background-color: #059669; color: white; padding: 14px 28px; text-decoration: none; border-radius: 6px; font-weight: bold; display: inline-block; font-size: 16px;">Reset Password</a>
+        </div>
+        
+        <p style="color: #666; line-height: 1.6; font-size: 14px;">If the button doesn't work, you can also copy and paste the following link into your browser:</p>
+        <p style="color: #059669; word-break: break-all; font-size: 14px;">${resetUrl}</p>
+        
+        <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #eee;">
+          <p style="color: #dc2626; font-size: 14px; margin-bottom: 5px;">⏰ This link will expire in 10 minutes.</p>
+          <p style="color: #666; font-size: 14px; margin-bottom: 20px;">🔒 If you didn't request a password reset, please ignore this email and your password will remain unchanged.</p>
+          
+          <p style="color: #333; margin-bottom: 5px;">Best regards,</p>
+          <p style="color: #059669; font-weight: bold; margin: 0;">The REG-GPT Team</p>
+        </div>
       </div>
-      <p>If the button doesn't work, you can also copy and paste the following link into your browser:</p>
-      <p>${resetUrl}</p>
-      <p>This link will expire in 10 minutes.</p>
-      <p>If you didn't request a password reset, please ignore this email and your password will remain unchanged.</p>
-      <p>Best regards,<br>The REG-GPT Team</p>
     </div>
   `;
   
