@@ -1,4 +1,4 @@
-// src/app/dashboard/settings/page.js - COMPLETELY FLASH-FREE VERSION
+// src/app/dashboard/settings/page.js - COMPLETELY FLASH-FREE VERSION WITH MOBILE TOGGLE
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -63,6 +63,22 @@ export default function SettingsPage() {
   const [activeTab, setActiveTab] = useState('general');
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  const [isMobile, setIsMobile] = useState(false);
+
+  // 🆕 MOBILE: Handle mobile detection and sidebar state
+  useEffect(() => {
+    const checkMobile = () => {
+      const mobile = window.innerWidth <= 480;
+      setIsMobile(mobile);
+    };
+
+    // Check on mount
+    checkMobile();
+
+    // Add resize listener
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
 
   // 🆕 ENSURE THEME IS APPLIED IMMEDIATELY ON MOUNT
   useEffect(() => {
@@ -173,6 +189,14 @@ export default function SettingsPage() {
     router.push('/dashboard/home');
   };
 
+  const toggleSidebar = () => {
+    setIsSidebarOpen(!isSidebarOpen);
+  };
+
+  // 🆕 MOBILE: Determine where the toggle button should appear
+  const shouldShowToggleInContent = isMobile && !isSidebarOpen;
+  const shouldShowToggleInSidebar = !isMobile || isSidebarOpen;
+
   const renderTabContent = () => {
     switch (activeTab) {
       case 'general':
@@ -200,19 +224,22 @@ export default function SettingsPage() {
                 <span className={styles.brandText}>RegGPT</span>
               </div>
             )}
-            <button
-              onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-              className={styles.sidebarToggle}
-              title={isSidebarOpen ? 'Hide conversations' : 'Show conversations'}
-            >
-              <svg xmlns="http://www.w3.org/2000/svg" className={styles.toggleIcon} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                {isSidebarOpen ? (
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 19l-7-7 7-7m8 14l-7-7 7-7" />
-                ) : (
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 5l7 7-7 7M5 5l7 7-7 7" />
-                )}
-              </svg>
-            </button>
+            {/* 🆕 MOBILE: Toggle button in sidebar header (when sidebar is open OR desktop) */}
+            {shouldShowToggleInSidebar && (
+              <button
+                onClick={toggleSidebar}
+                className={styles.sidebarToggle}
+                title={isSidebarOpen ? 'Hide conversations' : 'Show conversations'}
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" className={styles.toggleIcon} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  {isSidebarOpen ? (
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 19l-7-7 7-7m8 14l-7-7 7-7" />
+                  ) : (
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 5l7 7-7 7M5 5l7 7-7 7" />
+                  )}
+                </svg>
+              </button>
+            )}
           </div>
 
           {isSidebarOpen && (
@@ -314,7 +341,10 @@ export default function SettingsPage() {
         {/* Main Settings Content */}
         <div className={styles.mainContent}>
           <div className={styles.settingsContainer}>
-            <SettingsLayout activeTab={activeTab} setActiveTab={setActiveTab}>
+            <SettingsLayout 
+              shouldShowToggleInContent={shouldShowToggleInContent}
+              onToggleSidebar={toggleSidebar}
+            >
               {renderTabContent()}
             </SettingsLayout>
           </div>

@@ -276,7 +276,7 @@
   }
 }
 
-/* UPDATED: Helper Text with New Tips Structure */
+/* Helper Text with New Tips Structure */
 .helperText {
   display: flex;
   flex-direction: column;
@@ -328,6 +328,13 @@
   color: #fbbf24;
 }
 
+/* 🆕 MOBILE: Hide helper text on mobile devices */
+@media (max-width: 480px) {
+  .helperText {
+    display: none !important;
+  }
+}
+
 /* Responsive Design */
 @media (max-width: 768px) {
   .inputContainer {
@@ -355,33 +362,38 @@
     height: 18px;
   }
 
-  .helperText {
-    font-size: 11px;
-  }
-
-  .tip {
-    font-size: 11px;
-  }
-
   .voiceSection {
     padding: 10px;
   }
 }
 
 @media (max-width: 480px) {
-  .helperText {
-    gap: 6px;
+  .inputContainer {
+    gap: 8px; /* Reduce gap since helper text is hidden */
   }
 
-  .tipsContainer {
-    gap: 4px;
+  .inputWrapper {
+    padding: 10px 12px;
   }
 
-  .tip {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 2px;
-    font-size: 10px;
+  .textarea {
+    font-size: 16px;
+  }
+
+  .voiceButton,
+  .sendButton {
+    width: 36px;
+    height: 36px;
+  }
+
+  .voiceIcon,
+  .sendIcon {
+    width: 18px;
+    height: 18px;
+  }
+
+  .voiceSection {
+    padding: 10px;
   }
 }
 

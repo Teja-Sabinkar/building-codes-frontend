@@ -1,4 +1,4 @@
-// src/components/home/RegulationPanel/RegulationPanel.js - Building Codes Assistant
+// src/components/home/RegulationPanel/RegulationPanel.js - Building Codes Assistant - MOBILE RESPONSIVE
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -31,7 +31,23 @@ export default function RegulationPanel({
   const [isUpdatingTitle, setIsUpdatingTitle] = useState(false);
   const [showRegionSelector, setShowRegionSelector] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(isSidebarOpen);
+  const [isMobile, setIsMobile] = useState(false);
   const router = useRouter();
+
+  // Handle mobile detection and sidebar state
+  useEffect(() => {
+    const checkMobile = () => {
+      const mobile = window.innerWidth <= 480;
+      setIsMobile(mobile);
+    };
+
+    // Check on mount
+    checkMobile();
+
+    // Add resize listener
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
 
   // Handle sidebar state
   useEffect(() => {
@@ -218,6 +234,10 @@ export default function RegulationPanel({
     isTitleEditable
   });
 
+  // 🆕 MOBILE: Determine where the toggle button should appear
+  const shouldShowToggleInHeader = isMobile && !sidebarOpen;
+  const shouldShowToggleInSidebar = !isMobile || sidebarOpen;
+
   return (
     <div className={styles.regulationPanel}>
       {/* Conversation Sidebar */}
@@ -233,19 +253,22 @@ export default function RegulationPanel({
               <span className={styles.brandText}>RegGPT</span>
             </div>
           )}
-          <button
-            onClick={toggleSidebar}
-            className={styles.sidebarToggle}
-            title={sidebarOpen ? 'Hide conversations' : 'Show conversations'}
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" className={styles.toggleIcon} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              {sidebarOpen ? (
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 19l-7-7 7-7m8 14l-7-7 7-7" />
-              ) : (
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 5l7 7-7 7M5 5l7 7-7 7" />
-              )}
-            </svg>
-          </button>
+          {/* 🆕 MOBILE: Toggle button in sidebar header (when sidebar is open OR desktop) */}
+          {shouldShowToggleInSidebar && (
+            <button
+              onClick={toggleSidebar}
+              className={styles.sidebarToggle}
+              title={sidebarOpen ? 'Hide conversations' : 'Show conversations'}
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" className={styles.toggleIcon} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                {sidebarOpen ? (
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 19l-7-7 7-7m8 14l-7-7 7-7" />
+                ) : (
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 5l7 7-7 7M5 5l7 7-7 7" />
+                )}
+              </svg>
+            </button>
+          )}
         </div>
 
         {sidebarOpen && (
@@ -341,6 +364,19 @@ export default function RegulationPanel({
       <div className={styles.mainArea}>
         {/* Header */}
         <div className={styles.mainHeader}>
+          {/* 🆕 MOBILE: Toggle button in main header (when sidebar is closed on mobile) */}
+          {shouldShowToggleInHeader && (
+            <button
+              onClick={toggleSidebar}
+              className={styles.mainHeaderToggle}
+              title="Show conversations"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" className={styles.toggleIcon} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 5l7 7-7 7M5 5l7 7-7 7" />
+              </svg>
+            </button>
+          )}
+          
           <div className={styles.headerTitle}>
             {currentConversation ? (
               <div className={styles.titleContainer}>

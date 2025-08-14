@@ -1,4 +1,4 @@
-/* src/app/dashboard/settings/page.module.css - Enhanced with Dark Mode Support */
+/* src/app/dashboard/settings/page.module.css - Enhanced with Dark Mode Support & Mobile */
 
 .settingsPage {
   min-height: 100vh;
@@ -531,8 +531,78 @@
   color: #9ca3af;
 }
 
-/* Responsive Design */
-@media (max-width: 768px) {
+/* 🆕 MOBILE RESPONSIVE DESIGN - 480px BREAKPOINT */
+@media (max-width: 480px) {
+  .settingsPage {
+    width: 100%;
+  }
+
+  /* Sidebar Mobile Behavior */
+  .sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 100vh;
+    z-index: 30;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  }
+
+  .settingsPage:global(.dark-mode) .sidebar {
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
+  }
+
+  .sidebarClosed {
+    width: 0;
+    border-right: none;
+    transform: translateX(-100%);
+  }
+
+  .sidebarOpen {
+    width: 280px;
+    transform: translateX(0);
+  }
+
+  .sidebarHeader {
+    padding: 0.75rem;
+  }
+
+  .sidebarTitleSection {
+    padding: 0.75rem;
+  }
+
+  .newConversationBtn {
+    padding: 0.75rem;
+  }
+
+  .actionText {
+    display: block;
+    font-size: 0.8125rem;
+  }
+
+  .brandText {
+    font-size: 1rem;
+  }
+
+  .userName {
+    display: block;
+    font-size: 0.8125rem;
+  }
+
+  .userButton {
+    padding: 0.75rem;
+  }
+
+  .settingsContainer {
+    padding: 1rem;
+  }
+
+  .mainContent {
+    width: 100%;
+  }
+}
+
+/* 🆕 TABLET RESPONSIVE DESIGN - 768px BREAKPOINT */
+@media (max-width: 768px) and (min-width: 481px) {
   .sidebar {
     position: absolute;
     top: 0;
@@ -583,15 +653,21 @@
   .settingsContainer {
     padding: 1rem;
   }
-
-  .mainContent {
-    width: 100%;
-  }
 }
 
-@media (max-width: 480px) {
+/* 🆕 VERY SMALL MOBILE - 400px BREAKPOINT */
+@media (max-width: 400px) {
   .settingsContainer {
     padding: 0.75rem;
+  }
+
+  .sidebarOpen {
+    width: 90vw;
+  }
+
+  .toggleIcon {
+    width: 1.125rem;
+    height: 1.125rem;
   }
 }
 
@@ -621,5 +697,54 @@
   .loadingSpinner,
   .loading p {
     transition: none;
+  }
+
+  .sidebarClosed {
+    transform: none;
+  }
+}
+
+/* Focus styles for accessibility */
+.newConversationBtn:focus-visible,
+.sidebarToggle:focus-visible,
+.userButton:focus-visible,
+.dropdownItem:focus-visible,
+.navItem:focus-visible {
+  outline: 2px solid #059669;
+  outline-offset: 2px;
+}
+
+.settingsPage:global(.dark-mode) .newConversationBtn:focus-visible,
+.settingsPage:global(.dark-mode) .sidebarToggle:focus-visible,
+.settingsPage:global(.dark-mode) .userButton:focus-visible,
+.settingsPage:global(.dark-mode) .dropdownItem:focus-visible,
+.settingsPage:global(.dark-mode) .navItem:focus-visible {
+  outline: 2px solid #10b981;
+}
+
+/* High contrast mode */
+@media (prefers-contrast: high) {
+  .logo {
+    background-color: #047857;
+  }
+
+  .newConversationBtn {
+    background-color: #047857;
+  }
+
+  .userAvatar {
+    background-color: #047857;
+  }
+
+  .navItemActive {
+    border-color: #047857;
+    background-color: #bbf7d0;
+    color: #047857;
+  }
+
+  .settingsPage:global(.dark-mode) .navItemActive {
+    border-color: #10b981;
+    background-color: #1a3a2e;
+    color: #10b981;
   }
 }
