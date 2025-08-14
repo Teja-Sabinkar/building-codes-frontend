@@ -1,10 +1,10 @@
-// services/email-service.js - ENHANCED VERSION with Debugging
-import nodemailer from 'nodemailer';
+// services/email-service.js - CommonJS VERSION (Fixed for deployment)
+const nodemailer = require('nodemailer');
 
 /**
  * Send an email using nodemailer with enhanced attachment support
  */
-export async function sendEmail({ to, subject, html, attachments }) {
+async function sendEmail({ to, subject, html, attachments }) {
   let transporter;
   
   console.log('📧 Email service configuration check:', {
@@ -148,7 +148,7 @@ export async function sendEmail({ to, subject, html, attachments }) {
 /**
  * Send a verification email to the user
  */
-export async function sendVerificationEmail(user, verificationToken) {
+async function sendVerificationEmail(user, verificationToken) {
   console.log('🔗 Generating verification email for user:', {
     userId: user._id,
     userEmail: user.email,
@@ -226,7 +226,7 @@ export async function sendVerificationEmail(user, verificationToken) {
 /**
  * Send a password reset email to the user
  */
-export async function sendPasswordResetEmail(user, resetToken) {
+async function sendPasswordResetEmail(user, resetToken) {
   console.log('🔑 Generating password reset email for user:', {
     userId: user._id,
     userEmail: user.email,
@@ -296,3 +296,10 @@ export async function sendPasswordResetEmail(user, resetToken) {
     throw error;
   }
 }
+
+// CommonJS exports
+module.exports = {
+  sendEmail,
+  sendVerificationEmail,
+  sendPasswordResetEmail
+};
