@@ -1,4 +1,4 @@
-// models/User.js - Enhanced with Theme Preference Support
+// models/User.js - ENHANCED with Better Email Verification Handling
 import mongoose from 'mongoose';
 import bcrypt from 'bcryptjs';
 import crypto from 'crypto';
@@ -37,11 +37,11 @@ const userSchema = new mongoose.Schema({
   },
   lastLogin: Date,
 
-  // 🆕 SOFT DELETION FIELDS
+  // SOFT DELETION FIELDS
   isDeleted: {
     type: Boolean,
     default: false,
-    index: true // Index for performance when filtering deleted users
+    index: true
   },
   deletedAt: {
     type: Date,
@@ -63,9 +63,18 @@ const userSchema = new mongoose.Schema({
     default: null
   },
 
+  // Email verification tracking
+  emailVerificationAttempts: {
+    type: Number,
+    default: 0
+  },
+  lastVerificationEmailSent: {
+    type: Date,
+    default: null
+  },
+
   // Building Codes Assistant specific fields
   profile: {
-    // Professional information for building codes context
     company: {
       type: String,
       trim: true,
@@ -84,13 +93,12 @@ const userSchema = new mongoose.Schema({
     primaryJurisdiction: {
       type: String,
       trim: true,
-      default: null // e.g., "California", "New York City", "International"
+      default: null
     },
     specializations: [{
       type: String,
       enum: ['residential', 'commercial', 'institutional', 'industrial', 'mixed-use', 'healthcare', 'education', 'hospitality']
     }],
-    // License information (optional)
     licenseNumber: {
       type: String,
       trim: true,
@@ -102,7 +110,7 @@ const userSchema = new mongoose.Schema({
       default: null
     }
   },
-  // Usage analytics for building codes
+  
   usageStats: {
     totalRegulationQueries: {
       type: Number,
@@ -132,14 +140,13 @@ const userSchema = new mongoose.Schema({
       type: Date,
       default: null
     },
-    // Track user's expertise level based on query patterns
     expertiseLevel: {
       type: String,
       enum: ['beginner', 'intermediate', 'advanced', 'expert'],
       default: 'beginner'
     }
   },
-  // User preferences for building codes
+  
   preferences: {
     defaultCodeType: {
       type: String,
@@ -166,28 +173,25 @@ const userSchema = new mongoose.Schema({
       type: Boolean,
       default: true
     },
-    // 🌙 THEME PREFERENCE FIELD
     theme: {
       type: String,
       enum: ['light', 'dark'],
-      default: 'dark'   // 👈 NEW ACCOUNTS START WITH DARK
+      default: 'dark'
     }
   }
 }, { timestamps: true });
 
-// 🆕 INDEXES FOR SOFT DELETION PERFORMANCE
+// INDEXES FOR PERFORMANCE
 userSchema.index({ email: 1, isDeleted: 1 });
 userSchema.index({ isDeleted: 1, deletedAt: 1 });
+userSchema.index({ emailVerificationToken: 1, emailVerificationExpires: 1 });
 
 // Hash the password before saving
 userSchema.pre('save', async function (next) {
-  // Only hash the password if it's modified (or new)
   if (!this.isModified('password')) return next();
 
   try {
-    // Generate a salt
     const salt = await bcrypt.genSalt(10);
-    // Hash the password along with the new salt
     this.password = await bcrypt.hash(this.password, salt);
     next();
   } catch (error) {
@@ -200,10 +204,13 @@ userSchema.methods.comparePassword = async function (candidatePassword) {
   return await bcrypt.compare(candidatePassword, this.password);
 };
 
-// Method to generate email verification token
+// ENHANCED: Method to generate email verification token with logging
 userSchema.methods.createEmailVerificationToken = function () {
+  console.log(`🔑 Creating email verification token for user: ${this._id}`);
+  
   // Create a random token
   const verificationToken = crypto.randomBytes(32).toString('hex');
+  console.log(`✅ Generated verification token: ${verificationToken.substring(0, 8)}...`);
 
   // Hash the token and set it to emailVerificationToken field
   this.emailVerificationToken = crypto
@@ -213,16 +220,23 @@ userSchema.methods.createEmailVerificationToken = function () {
 
   // Set token expiry (24 hours)
   this.emailVerificationExpires = Date.now() + 24 * 60 * 60 * 1000;
+  
+  // Track verification attempts
+  this.emailVerificationAttempts = (this.emailVerificationAttempts || 0) + 1;
+  this.lastVerificationEmailSent = new Date();
+
+  console.log(`✅ Token expires at: ${new Date(this.emailVerificationExpires)}`);
+  console.log(`📊 Verification attempt #${this.emailVerificationAttempts}`);
 
   return verificationToken;
 };
 
 // Method to generate password reset token
 userSchema.methods.createPasswordResetToken = function () {
-  // Create a random token
+  console.log(`🔑 Creating password reset token for user: ${this._id}`);
+  
   const resetToken = crypto.randomBytes(32).toString('hex');
 
-  // Hash the token and set it to passwordResetToken field
   this.passwordResetToken = crypto
     .createHash('sha256')
     .update(resetToken)
@@ -230,11 +244,47 @@ userSchema.methods.createPasswordResetToken = function () {
 
   // Set token expiry (10 minutes)
   this.passwordResetExpires = Date.now() + 10 * 60 * 1000;
+  
+  console.log(`✅ Reset token expires at: ${new Date(this.passwordResetExpires)}`);
 
   return resetToken;
 };
 
-// 🆕 THEME PREFERENCE METHODS
+// ENHANCED: Check if user can request new verification email
+userSchema.methods.canRequestVerificationEmail = function () {
+  // Allow if no previous attempt
+  if (!this.lastVerificationEmailSent) {
+    return { canRequest: true, reason: 'first_attempt' };
+  }
+  
+  // Check if enough time has passed (5 minutes minimum between requests)
+  const timeSinceLastEmail = Date.now() - this.lastVerificationEmailSent.getTime();
+  const minimumWaitTime = 5 * 60 * 1000; // 5 minutes
+  
+  if (timeSinceLastEmail < minimumWaitTime) {
+    const remainingTime = Math.ceil((minimumWaitTime - timeSinceLastEmail) / 1000 / 60);
+    return { 
+      canRequest: false, 
+      reason: 'rate_limited',
+      waitMinutes: remainingTime
+    };
+  }
+  
+  // Check if too many attempts (max 5 per day)
+  const attemptsToday = this.emailVerificationAttempts || 0;
+  if (attemptsToday >= 5) {
+    return { 
+      canRequest: false, 
+      reason: 'daily_limit_exceeded',
+      maxAttempts: 5,
+      currentAttempts: attemptsToday
+    };
+  }
+  
+  return { canRequest: true, reason: 'retry_allowed' };
+};
+
+// THEME PREFERENCE METHODS
 userSchema.methods.updateThemePreference = function (theme) {
   console.log(`🎨 Updating theme preference for user ${this._id}: ${theme}`);
 
@@ -247,22 +297,18 @@ userSchema.methods.updateThemePreference = function (theme) {
 };
 
 userSchema.methods.getThemePreference = function () {
-  return this.preferences?.theme || 'light';
+  return this.preferences?.theme || 'dark';
 };
 
-// 🆕 SOFT DELETION METHODS
+// SOFT DELETION METHODS
 userSchema.methods.softDelete = function (reason = 'user_requested') {
   console.log(`🗑️ Soft deleting user: ${this._id} - ${this.email}`);
 
   this.isDeleted = true;
   this.deletedAt = new Date();
   this.deletionReason = reason;
-
-  // Preserve original data for recovery
   this.originalEmail = this.email;
   this.originalName = this.name;
-
-  // Anonymize email for privacy but keep account recoverable
   this.email = `deleted_${this._id}@deleted.regGPT.local`;
 
   return this.save();
@@ -275,7 +321,6 @@ userSchema.methods.restore = function () {
     throw new Error('User is not deleted');
   }
 
-  // Restore original data
   if (this.originalEmail) {
     this.email = this.originalEmail;
   }
@@ -283,7 +328,6 @@ userSchema.methods.restore = function () {
     this.name = this.originalName;
   }
 
-  // Clear deletion markers
   this.isDeleted = false;
   this.deletedAt = null;
   this.deletionReason = null;
@@ -297,11 +341,10 @@ userSchema.methods.isAccountDeleted = function () {
   return this.isDeleted === true;
 };
 
-// 🆕 STATIC METHODS FOR ADMIN OPERATIONS
+// STATIC METHODS FOR ADMIN OPERATIONS
 userSchema.statics.findDeleted = function (options = {}) {
   return this.find({
-    isDeleted: true,
-    includeDeleted: true
+    isDeleted: true
   })
     .sort({ deletedAt: -1 })
     .limit(options.limit || 50)
@@ -311,8 +354,7 @@ userSchema.statics.findDeleted = function (options = {}) {
 userSchema.statics.findByOriginalEmail = function (email) {
   return this.findOne({
     originalEmail: email,
-    isDeleted: true,
-    includeDeleted: true
+    isDeleted: true
   });
 };
 
@@ -327,12 +369,9 @@ userSchema.statics.getDeletedUsersCount = function () {
 // Method to update usage statistics
 userSchema.methods.updateUsageStats = function (regulationData) {
   const stats = this.usageStats;
-
-  // Increment total queries
   stats.totalRegulationQueries = (stats.totalRegulationQueries || 0) + 1;
   stats.lastQueryDate = new Date();
 
-  // Update code type usage
   if (regulationData.queryMetadata && regulationData.queryMetadata.codeType) {
     const codeType = regulationData.queryMetadata.codeType;
     const codeTypeIndex = stats.mostUsedCodeTypes.findIndex(item => item.codeType === codeType);
@@ -343,13 +382,10 @@ userSchema.methods.updateUsageStats = function (regulationData) {
       stats.mostUsedCodeTypes.push({ codeType, count: 1 });
     }
 
-    // Sort by count (descending)
     stats.mostUsedCodeTypes.sort((a, b) => b.count - a.count);
-    // Keep only top 10
     stats.mostUsedCodeTypes = stats.mostUsedCodeTypes.slice(0, 10);
   }
 
-  // Update building type usage
   if (regulationData.queryMetadata && regulationData.queryMetadata.buildingType) {
     const buildingType = regulationData.queryMetadata.buildingType;
     const buildingTypeIndex = stats.mostQueriedBuildingTypes.findIndex(item => item.buildingType === buildingType);
@@ -360,26 +396,20 @@ userSchema.methods.updateUsageStats = function (regulationData) {
       stats.mostQueriedBuildingTypes.push({ buildingType, count: 1 });
     }
 
-    // Sort by count (descending)
     stats.mostQueriedBuildingTypes.sort((a, b) => b.count - a.count);
-    // Keep only top 10
     stats.mostQueriedBuildingTypes = stats.mostQueriedBuildingTypes.slice(0, 10);
   }
 
-  // Update average confidence score
   if (regulationData.confidence !== null && regulationData.confidence !== undefined) {
     if (stats.averageConfidenceScore === null) {
       stats.averageConfidenceScore = regulationData.confidence;
     } else {
-      // Running average
       const totalQueries = stats.totalRegulationQueries;
       stats.averageConfidenceScore = ((stats.averageConfidenceScore * (totalQueries - 1)) + regulationData.confidence) / totalQueries;
     }
   }
 
-  // Update expertise level based on query count and diversity
   this._updateExpertiseLevel();
-
   this.markModified('usageStats');
   return this.save();
 };
@@ -391,7 +421,6 @@ userSchema.methods._updateExpertiseLevel = function () {
   const codeTypeDiversity = stats.mostUsedCodeTypes.length;
   const buildingTypeDiversity = stats.mostQueriedBuildingTypes.length;
 
-  // Calculate expertise based on usage patterns
   if (queryCount >= 500 || (queryCount >= 200 && codeTypeDiversity >= 5 && buildingTypeDiversity >= 4)) {
     stats.expertiseLevel = 'expert';
   } else if (queryCount >= 100 || (queryCount >= 50 && codeTypeDiversity >= 3 && buildingTypeDiversity >= 3)) {
@@ -421,49 +450,8 @@ userSchema.methods.getProfessionalSummary = function () {
     preferredBuildingType: stats.mostQueriedBuildingTypes[0]?.buildingType || null,
     joinedDate: this.createdAt,
     lastActive: stats.lastQueryDate || this.lastLogin,
-    theme: this.preferences?.theme || 'light'
+    theme: this.preferences?.theme || 'dark'
   };
-};
-
-// Method to get personalized recommendations
-userSchema.methods.getPersonalizedRecommendations = function () {
-  const stats = this.usageStats || {};
-  const profile = this.profile || {};
-  const preferences = this.preferences || {};
-
-  const recommendations = [];
-
-  // Recommend based on profession
-  if (profile.profession === 'architect' && !stats.mostUsedCodeTypes.find(item => item.codeType === 'ADA')) {
-    recommendations.push({
-      type: 'code_exploration',
-      title: 'Explore ADA Requirements',
-      description: 'As an architect, familiarizing yourself with ADA accessibility requirements is essential.',
-      suggestedQuery: 'ADA door width requirements for commercial buildings'
-    });
-  }
-
-  // Recommend based on usage patterns
-  if (stats.expertiseLevel === 'beginner' && stats.totalRegulationQueries < 10) {
-    recommendations.push({
-      type: 'getting_started',
-      title: 'Common Building Code Questions',
-      description: 'Start with these frequently asked building code questions.',
-      suggestedQuery: 'What are the minimum ceiling heights for residential buildings?'
-    });
-  }
-
-  // Recommend based on specializations
-  if (profile.specializations.includes('residential') && !stats.mostUsedCodeTypes.find(item => item.codeType === 'IRC')) {
-    recommendations.push({
-      type: 'specialization',
-      title: 'International Residential Code (IRC)',
-      description: 'Since you work with residential projects, explore IRC requirements.',
-      suggestedQuery: 'IRC bedroom window requirements for egress'
-    });
-  }
-
-  return recommendations.slice(0, 3); // Return top 3 recommendations
 };
 
 // Prevent mongoose from creating a new model if it already exists

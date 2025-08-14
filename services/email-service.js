@@ -1,4 +1,4 @@
-// services/email-service.js - FIXED VERSION
+// services/email-service.js - ENHANCED VERSION with Debugging
 import nodemailer from 'nodemailer';
 
 /**
@@ -7,9 +7,19 @@ import nodemailer from 'nodemailer';
 export async function sendEmail({ to, subject, html, attachments }) {
   let transporter;
   
+  console.log('📧 Email service configuration check:', {
+    hasEmailHost: !!process.env.EMAIL_HOST,
+    emailHost: process.env.EMAIL_HOST,
+    emailPort: process.env.EMAIL_PORT,
+    emailUser: process.env.EMAIL_USER,
+    hasPassword: !!process.env.EMAIL_PASSWORD,
+    emailFrom: process.env.EMAIL_FROM,
+    nodeEnv: process.env.NODE_ENV
+  });
+  
   if (process.env.EMAIL_HOST) {
     // Production email service configuration
-    transporter = nodemailer.createTransport({  // 🔧 FIXED: createTransport (not createTransporter)
+    transporter = nodemailer.createTransport({
       host: process.env.EMAIL_HOST,
       port: parseInt(process.env.EMAIL_PORT) || 587,
       secure: process.env.EMAIL_SECURE === 'true',
@@ -23,12 +33,17 @@ export async function sendEmail({ to, subject, html, attachments }) {
       maxMessages: 100,
       rateDelta: 20000,
       rateLimit: 5,
+      // Add debugging for connection issues
+      debug: process.env.NODE_ENV === 'development',
+      logger: process.env.NODE_ENV === 'development'
     });
   } else {
+    console.log('⚠️ No EMAIL_HOST found, using ethereal.email for testing');
+    
     // For development, use ethereal.email
     const testAccount = await nodemailer.createTestAccount();
     
-    transporter = nodemailer.createTransport({  // 🔧 FIXED: createTransport (not createTransporter)
+    transporter = nodemailer.createTransport({
       host: 'smtp.ethereal.email',
       port: 587,
       secure: false,
@@ -39,31 +54,44 @@ export async function sendEmail({ to, subject, html, attachments }) {
     });
   }
 
+  // Verify SMTP connection
+  try {
+    await transporter.verify();
+    console.log('✅ SMTP connection verified successfully');
+  } catch (error) {
+    console.error('❌ SMTP connection verification failed:', error);
+    throw new Error(`SMTP connection failed: ${error.message}`);
+  }
+
   // Prepare mail options
   const mailOptions = {
-    from: process.env.EMAIL_FROM || '"REG-GPT" <sabinkar2304@gmail.com>',  // 🔧 FIXED: Updated fallback
+    from: process.env.EMAIL_FROM || '"REG-GPT" <sabinkar2304@gmail.com>',
     to,
     subject,
     html,
   };
 
+  console.log('📮 Preparing email:', {
+    from: mailOptions.from,
+    to: mailOptions.to,
+    subject: mailOptions.subject,
+    hasHtml: !!mailOptions.html,
+    htmlLength: mailOptions.html ? mailOptions.html.length : 0
+  });
+
   // Add attachments if provided
   if (attachments && attachments.length > 0) {
-    // Process attachments to ensure proper format
     mailOptions.attachments = attachments.map(attachment => {
-      // Ensure attachment has proper structure
       const processedAttachment = {
         filename: attachment.filename,
         content: attachment.content,
         contentType: attachment.contentType || 'application/octet-stream',
       };
 
-      // Add Content-ID for inline images
       if (attachment.cid) {
         processedAttachment.cid = attachment.cid;
       }
 
-      // Set encoding if specified
       if (attachment.encoding) {
         processedAttachment.encoding = attachment.encoding;
       }
@@ -77,6 +105,8 @@ export async function sendEmail({ to, subject, html, attachments }) {
   }
 
   try {
+    console.log('🚀 Sending email...');
+    
     // Send the email
     const info = await transporter.sendMail(mailOptions);
 
@@ -90,13 +120,22 @@ export async function sendEmail({ to, subject, html, attachments }) {
       messageId: info.messageId,
       to: to,
       subject: subject,
-      attachmentCount: attachments ? attachments.length : 0
+      attachmentCount: attachments ? attachments.length : 0,
+      accepted: info.accepted,
+      rejected: info.rejected,
+      response: info.response
     });
 
     return info;
 
   } catch (error) {
-    console.error('❌ Error sending email:', error);
+    console.error('❌ Error sending email:', {
+      error: error.message,
+      code: error.code,
+      command: error.command,
+      to: to,
+      subject: subject
+    });
     throw error;
   } finally {
     // Close the transporter
@@ -110,7 +149,23 @@ export async function sendEmail({ to, subject, html, attachments }) {
  * Send a verification email to the user
  */
 export async function sendVerificationEmail(user, verificationToken) {
+  console.log('🔗 Generating verification email for user:', {
+    userId: user._id,
+    userEmail: user.email,
+    userName: user.name,
+    hasToken: !!verificationToken,
+    tokenLength: verificationToken ? verificationToken.length : 0
+  });
+
+  // Check if required environment variables are set
+  if (!process.env.NEXT_PUBLIC_APP_URL) {
+    console.error('❌ NEXT_PUBLIC_APP_URL environment variable is not set!');
+    throw new Error('NEXT_PUBLIC_APP_URL environment variable is required for verification emails');
+  }
+
   const verificationUrl = `${process.env.NEXT_PUBLIC_APP_URL}/auth/verify-email?token=${verificationToken}`;
+  
+  console.log('🔗 Generated verification URL:', verificationUrl);
   
   const html = `
     <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f9f9f9;">
@@ -142,18 +197,50 @@ export async function sendVerificationEmail(user, verificationToken) {
     </div>
   `;
   
-  return sendEmail({
-    to: user.email,
-    subject: 'Verify Your Email Address - REG-GPT',
-    html,
-  });
+  console.log('📧 Sending verification email to:', user.email);
+  
+  try {
+    const result = await sendEmail({
+      to: user.email,
+      subject: 'Verify Your Email Address - REG-GPT',
+      html,
+    });
+    
+    console.log('✅ Verification email sent successfully:', {
+      userId: user._id,
+      userEmail: user.email,
+      messageId: result.messageId
+    });
+    
+    return result;
+  } catch (error) {
+    console.error('❌ Failed to send verification email:', {
+      userId: user._id,
+      userEmail: user.email,
+      error: error.message
+    });
+    throw error;
+  }
 }
 
 /**
  * Send a password reset email to the user
  */
 export async function sendPasswordResetEmail(user, resetToken) {
+  console.log('🔑 Generating password reset email for user:', {
+    userId: user._id,
+    userEmail: user.email,
+    userName: user.name
+  });
+
+  if (!process.env.NEXT_PUBLIC_APP_URL) {
+    console.error('❌ NEXT_PUBLIC_APP_URL environment variable is not set!');
+    throw new Error('NEXT_PUBLIC_APP_URL environment variable is required for password reset emails');
+  }
+
   const resetUrl = `${process.env.NEXT_PUBLIC_APP_URL}/auth/reset-password?token=${resetToken}`;
+  
+  console.log('🔗 Generated reset URL:', resetUrl);
   
   const html = `
     <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f9f9f9;">
@@ -186,9 +273,26 @@ export async function sendPasswordResetEmail(user, resetToken) {
     </div>
   `;
   
-  return sendEmail({
-    to: user.email,
-    subject: 'Reset Your Password - REG-GPT',
-    html,
-  });
+  try {
+    const result = await sendEmail({
+      to: user.email,
+      subject: 'Reset Your Password - REG-GPT',
+      html,
+    });
+    
+    console.log('✅ Password reset email sent successfully:', {
+      userId: user._id,
+      userEmail: user.email,
+      messageId: result.messageId
+    });
+    
+    return result;
+  } catch (error) {
+    console.error('❌ Failed to send password reset email:', {
+      userId: user._id,
+      userEmail: user.email,
+      error: error.message
+    });
+    throw error;
+  }
 }

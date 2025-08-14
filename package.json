@@ -2,13 +2,15 @@
   "name": "reg-gpt",
   "version": "0.1.0",
   "private": true,
+  "type": "module",
   "description": "AI-powered building regulations and codes search assistant for architecture firms",
   "keywords": ["building codes", "regulations", "AI assistant", "architecture", "compliance", "construction"],
   "scripts": {
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "test-email": "node debug-email.js"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.55.0",

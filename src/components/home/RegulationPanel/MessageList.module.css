@@ -219,7 +219,7 @@
 }
 
 :global(.dark-mode) .userMessage .messageContent {
-  background-color: #10b981;
+  background-color: transparent;
   color: #1a1a1a;
   border-color: #10b981;
 }
