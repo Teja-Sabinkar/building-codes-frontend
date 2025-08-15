@@ -163,7 +163,8 @@ export async function sendVerificationEmail(user, verificationToken) {
     throw new Error('NEXT_PUBLIC_APP_URL environment variable is required for verification emails');
   }
 
-  const verificationUrl = `${process.env.NEXT_PUBLIC_APP_URL}/auth/verify-email?token=${verificationToken}`;
+  // Temporary fix for testing
+const verificationUrl = `https://www.reggpt.uk/auth/verify-email?token=${verificationToken}`;
   
   console.log('🔗 Generated verification URL:', verificationUrl);
   
