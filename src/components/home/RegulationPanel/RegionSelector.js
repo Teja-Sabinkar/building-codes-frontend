@@ -12,7 +12,6 @@ const RegionSelector = ({ isOpen, onRegionSelect, onCancel }) => {
     {
       country: 'India',
       countryName: 'India',
-      flag: '🇮🇳',
       codes: [
         {
           code: 'India',
@@ -27,7 +26,6 @@ const RegionSelector = ({ isOpen, onRegionSelect, onCancel }) => {
     {
       country: 'Scotland',
       countryName: 'Scotland',
-      flag: '🏴󠁧󠁢󠁳󠁣󠁴󠁿',
       codes: [
         {
           code: 'Scotland',
@@ -47,7 +45,6 @@ const RegionSelector = ({ isOpen, onRegionSelect, onCancel }) => {
     {
       country: 'Dubai',
       countryName: 'Dubai',
-      flag: '🇦🇪',
       codes: [
         {
           code: 'Dubai',
