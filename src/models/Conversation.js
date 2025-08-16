@@ -1,4 +1,4 @@
-// src/models/Conversation.js - Building Codes Assistant
+// src/models/Conversation.js - Building Codes Assistant - UPDATED WITH DUBAI SUPPORT
 import mongoose from 'mongoose';
 
 const MessageSchema = new mongoose.Schema({
@@ -90,7 +90,7 @@ const ConversationSchema = new mongoose.Schema({
   region: {
     type: String,
     required: true,
-    enum: ['India', 'Scotland'],
+    enum: ['India', 'Scotland', 'Dubai'], // 🔥 UPDATED: Added Dubai
     default: 'India'
   },
   regionDisplayName: {
@@ -286,7 +286,7 @@ ConversationSchema.methods.categorizeQuery = function (queryText) {
 
 // Instance Methods
 ConversationSchema.methods.addMessage = function (messageData) {
-  console.log('🔄 addMessage called for regulation query');
+  console.log('📄 addMessage called for regulation query');
   try {
     // Process regulation metadata if this message contains a regulation
     if (messageData.regulation && messageData.regulation.answer) {
@@ -354,7 +354,7 @@ ConversationSchema.methods.addMessage = function (messageData) {
 };
 
 ConversationSchema.methods.updateMessage = function (messageIndex, updates) {
-  console.log('🔄 updateMessage called:', { messageIndex, updates });
+  console.log('📄 updateMessage called:', { messageIndex, updates });
   try {
     if (messageIndex < 0 || messageIndex >= this.messages.length) {
       throw new Error(`Invalid message index: ${messageIndex}. Message count: ${this.messages.length}`);
@@ -413,7 +413,7 @@ ConversationSchema.methods.editMessageAndRegenerate = function (messageIndex, ne
       throw new Error(`Cannot edit ${message.role} message. Only user messages can be edited.`);
     }
 
-    console.log('📝 Editing regulation query:', {
+    console.log('🔍 Editing regulation query:', {
       originalContent: message.content?.substring(0, 50) + '...',
       newContent: newContent.substring(0, 50) + '...',
       messageRole: message.role
@@ -477,7 +477,7 @@ ConversationSchema.methods.getRegulationByIndex = function (regulationIndex) {
 ConversationSchema.methods.archive = function () {
   // Check if already archived to avoid redundant operations
   if (this.metadata?.isArchived === true) {
-    console.log(`⏭️ Conversation ${this._id} already archived, skipping`);
+    console.log(`⭐️ Conversation ${this._id} already archived, skipping`);
     return Promise.resolve(this); // Return resolved promise without save
   }
 
@@ -490,7 +490,7 @@ ConversationSchema.methods.archive = function () {
 ConversationSchema.methods.unarchive = function () {
   // Check if already unarchived
   if (this.metadata?.isArchived !== true) {
-    console.log(`⏭️ Conversation ${this._id} already active, skipping unarchive`);
+    console.log(`⭐️ Conversation ${this._id} already active, skipping unarchive`);
     return Promise.resolve(this);
   }
 

@@ -1,4 +1,4 @@
-// src/components/home/RegulationPanel/RegionSelector.js
+// src/components/home/RegulationPanel/RegionSelector.js - UPDATED WITH DUBAI SUPPORT
 'use client';
 
 import React, { useState } from 'react';
@@ -7,10 +7,12 @@ import styles from './RegionSelector.module.css';
 const RegionSelector = ({ isOpen, onRegionSelect, onCancel }) => {
   const [selectedCountry, setSelectedCountry] = useState('');
 
+  // 🔥 UPDATED: Added Dubai with flag and building code documents
   const countries = [
     {
       country: 'India',
       countryName: 'India',
+      flag: '🇮🇳',
       codes: [
         {
           code: 'India',
@@ -25,6 +27,7 @@ const RegionSelector = ({ isOpen, onRegionSelect, onCancel }) => {
     {
       country: 'Scotland',
       countryName: 'Scotland',
+      flag: '🏴󠁧󠁢󠁳󠁣󠁴󠁿',
       codes: [
         {
           code: 'Scotland',
@@ -37,6 +40,20 @@ const RegionSelector = ({ isOpen, onRegionSelect, onCancel }) => {
             'Task-group-recommendations-march-2024',
             'Determining-fire-risk-posed-external-wall-systems-existing-multistorey-residential-buildings',
             'Draft-scottish-advice-note-external-wall-systems-version-3-0'
+          ]
+        }
+      ]
+    },
+    {
+      country: 'Dubai',
+      countryName: 'Dubai',
+      flag: '🇦🇪',
+      codes: [
+        {
+          code: 'Dubai',
+          name: 'Dubai Building Code',
+          documents: [
+            'Dubai Building Code English 2021 Edition'
           ]
         }
       ]

@@ -1,4 +1,4 @@
-// src/app/api/conversations/route.js - Building Codes Assistant
+// src/app/api/conversations/route.js - Building Codes Assistant - UPDATED WITH DUBAI SUPPORT
 import { NextResponse } from 'next/server';
 import { headers } from 'next/headers';
 import jwt from 'jsonwebtoken';
@@ -152,9 +152,11 @@ export async function POST(request) {
     if (regionDisplayName && regionDisplayName !== 'undefined' && regionDisplayName.trim()) {
       finalRegionDisplayName = regionDisplayName.trim();
     } else {
-      // Fallback based on region
+      // Fallback based on region - 🔥 UPDATED: Added Dubai support
       if (region === 'Scotland') {
         finalRegionDisplayName = '🏴󠁧󠁢󠁳󠁣󠁴󠁿 Scottish Building Standards';
+      } else if (region === 'Dubai') {
+        finalRegionDisplayName = '🇦🇪 Dubai Building Code';
       } else {
         finalRegionDisplayName = '🇮🇳 Indian Building Codes';
       }
@@ -260,7 +262,7 @@ export async function PATCH(request) {
       );
     }
 
-    console.log('🔄 Updating regulation conversation:', {
+    console.log('📄 Updating regulation conversation:', {
       conversationId,
       updates: Object.keys(updates),
       currentTitle: conversation.title
@@ -283,8 +285,8 @@ export async function PATCH(request) {
             conversation.title = newTitle;
           }
         } else if (key === 'region') {  // 🆕 ADD REGION VALIDATION
-          // Validate region is one of the allowed values
-          const allowedRegions = ['India', 'Scotland'];
+          // Validate region is one of the allowed values - 🔥 UPDATED: Added Dubai
+          const allowedRegions = ['India', 'Scotland', 'Dubai'];
           if (allowedRegions.includes(updates.region)) {
             conversation.region = updates.region;
           }
