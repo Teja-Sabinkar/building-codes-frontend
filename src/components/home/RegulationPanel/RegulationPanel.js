@@ -58,7 +58,7 @@ export default function RegulationPanel({
   const getConversationDisplayTitle = (conversation) => {
     if (!conversation) return 'Building Codes Assistant';
 
-    // 🔧 FIX: Always use database title if it exists and is not empty
+    // ðŸ"§ FIX: Always use database title if it exists and is not empty
     if (conversation.title && conversation.title.trim() && conversation.title !== 'New Regulation Query') {
       return conversation.title;
     }
@@ -81,8 +81,8 @@ export default function RegulationPanel({
 
   const handleLogout = async () => {
     try {
-      // 🆕 Save current theme as guest preference BEFORE logout
-      console.log('🎨 Saving theme preference before logout...');
+      // ðŸ†• Save current theme as guest preference BEFORE logout
+      console.log('ðŸŽ¨ Saving theme preference before logout...');
       saveThemeOnLogout();
       
       // Existing logout logic
@@ -100,7 +100,7 @@ export default function RegulationPanel({
   };
 
   const handleSendMessage = async (message) => {
-    console.log('📤 Sending regulation query:', message);
+    console.log('ðŸ"¤ Sending regulation query:', message);
     onSendMessage(message);
   };
 
@@ -110,7 +110,7 @@ export default function RegulationPanel({
       return;
     }
 
-    console.log('🔧 Editing message:', { messageIndex, newContent, conversationId: currentConversation._id });
+    console.log('ðŸ"§ Editing message:', { messageIndex, newContent, conversationId: currentConversation._id });
 
     try {
       if (onEditMessage) {
@@ -120,18 +120,18 @@ export default function RegulationPanel({
         throw new Error('Message editing not available');
       }
     } catch (error) {
-      console.error('❌ Error editing message:', error);
+      console.error('âŒ Error editing message:', error);
       throw error;
     }
   };
 
   const canSendMessages = () => {
     if (!currentConversation) {
-      console.log('❌ Cannot send messages: No current conversation');
+      console.log('âŒ Cannot send messages: No current conversation');
       return false;
     }
     if (isGenerating) {
-      console.log('❌ Cannot send messages: Currently generating');
+      console.log('âŒ Cannot send messages: Currently generating');
       return false;
     }
     return true;
@@ -148,7 +148,7 @@ export default function RegulationPanel({
     setIsUpdatingTitle(true);
 
     try {
-      console.log('🏷️ Updating conversation title:', {
+      console.log('ðŸ·ï¸ Updating conversation title:', {
         conversationId: currentConversation._id,
         oldTitle: currentConversation.title,
         newTitle
@@ -180,7 +180,7 @@ export default function RegulationPanel({
         throw new Error(data.error || 'Failed to update title');
       }
 
-      console.log('✅ Title updated in database:', data.conversation?.title);
+      console.log('âœ… Title updated in database:', data.conversation?.title);
 
       // Update the conversation in the frontend state
       if (onUpdateConversation && data.conversation) {
@@ -190,7 +190,7 @@ export default function RegulationPanel({
       setIsTitleEditOpen(false);
 
     } catch (error) {
-      console.error('❌ Error updating title:', error);
+      console.error('âŒ Error updating title:', error);
       throw error;
     } finally {
       setIsUpdatingTitle(false);
@@ -198,7 +198,7 @@ export default function RegulationPanel({
   };
 
   const handleRegionSelected = async (regionData) => {
-    console.log('🌍 Region selected:', regionData);
+    console.log('ðŸŒ Region selected:', regionData);
     setShowRegionSelector(false);
 
     // Call the parent component's function to create conversation with region
@@ -225,7 +225,7 @@ export default function RegulationPanel({
   // Determine if the title is editable (show edit icon)
   const isTitleEditable = currentConversation && currentConversation.messages && currentConversation.messages.length > 0;
 
-  console.log('📋 RegulationPanel - Title Display:', {
+  console.log('ðŸ"‹ RegulationPanel - Title Display:', {
     conversationId: currentConversation?._id,
     storedTitle: currentConversation?.title,
     displayTitle,
@@ -234,7 +234,7 @@ export default function RegulationPanel({
     isTitleEditable
   });
 
-  // 🆕 MOBILE: Determine where the toggle button should appear
+  // ðŸ†• MOBILE: Determine where the toggle button should appear
   const shouldShowToggleInHeader = isMobile && !sidebarOpen;
   const shouldShowToggleInSidebar = !isMobile || sidebarOpen;
 
@@ -253,7 +253,7 @@ export default function RegulationPanel({
               <span className={styles.brandText}>RegGPT</span>
             </div>
           )}
-          {/* 🆕 MOBILE: Toggle button in sidebar header (when sidebar is open OR desktop) */}
+          {/* ðŸ†• MOBILE: Toggle button in sidebar header (when sidebar is open OR desktop) */}
           {shouldShowToggleInSidebar && (
             <button
               onClick={toggleSidebar}
@@ -364,7 +364,7 @@ export default function RegulationPanel({
       <div className={styles.mainArea}>
         {/* Header */}
         <div className={styles.mainHeader}>
-          {/* 🆕 MOBILE: Toggle button in main header (when sidebar is closed on mobile) */}
+          {/* ðŸ†• MOBILE: Toggle button in main header (when sidebar is closed on mobile) */}
           {shouldShowToggleInHeader && (
             <button
               onClick={toggleSidebar}
@@ -416,15 +416,8 @@ export default function RegulationPanel({
                 <h3>Welcome to REG-GPT!</h3>
                 <p>Get instant, professional building code compliance reports with AI-powered analysis and precise citations.</p>
               </div>
-              <div className={styles.examplePrompts}>
-                <p className={styles.exampleTitle}>Try asking:</p>
-                <ul className={styles.exampleList}>
-                  <li>"What are the minimum ceiling heights for residential buildings?"</li>
-                  <li>"Fire escape requirements for 3-story office building"</li>
-                  <li>"Accessibility requirements for public buildings"</li>
-                  <li>"Minimum window sizes for emergency egress"</li>
-                  <li>"Structural requirements for load-bearing walls"</li>
-                </ul>
+              <div className={styles.getStartedMessage}>
+                <h3>Select "New Query" with a region to get started</h3>
               </div>
             </div>
           )}

@@ -185,7 +185,7 @@
   color: #10b981;
 }
 
-/* 🆕 MOBILE: Main Header Toggle Button */
+/* ðŸ†• MOBILE: Main Header Toggle Button */
 .mainHeaderToggle {
   background: none;
   border: none;
@@ -630,12 +630,12 @@
   height: 100%;
   text-align: center;
   padding: 2rem;
+  gap: 2rem;
 }
 
 .welcomeMessage {
   text-align: center;
   max-width: 600px;
-  margin-bottom: 2rem;
 }
 
 .welcomeMessage h3 {
@@ -662,63 +662,22 @@
   color: #9ca3af;
 }
 
-.examplePrompts {
-  text-align: left;
-  max-width: 400px;
-  width: 100%;
+/* New Get Started Message */
+.getStartedMessage {
+  text-align: center;
+  max-width: 600px;
 }
 
-.exampleTitle {
-  font-size: 0.875rem;
-  font-weight: 600;
+.getStartedMessage h3 {
+  font-size: 1.5rem;
+  font-weight: 700;
   color: #059669;
-  margin: 0 0 0.75rem 0;
+  margin: 0;
   transition: color 0.3s ease;
 }
 
-:global(.dark-mode) .exampleTitle {
+:global(.dark-mode) .getStartedMessage h3 {
   color: #10b981;
-}
-
-.exampleList {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-}
-
-.exampleList li {
-  background-color: white;
-  border: 1px solid #bbf7d0;
-  border-radius: 0.375rem;
-  padding: 0.75rem;
-  margin-bottom: 0.5rem;
-  font-size: 0.875rem;
-  color: #4b5563;
-  font-style: italic;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-:global(.dark-mode) .exampleList li {
-  background-color: #2d2d2d;
-  border: 1px solid #10b981;
-  color: #b0b0b0;
-}
-
-.exampleList li:hover {
-  border-color: #059669;
-  background-color: #f0fdf4;
-  color: #1f2937;
-}
-
-:global(.dark-mode) .exampleList li:hover {
-  border-color: #34d399;
-  background-color: #1a3a2e;
-  color: #e5e5e5;
-}
-
-.exampleList li:last-child {
-  margin-bottom: 0;
 }
 
 .emptyIcon {
@@ -797,7 +756,7 @@
   width: 100%;
 }
 
-/* 🆕 MOBILE RESPONSIVE DESIGN - 480px BREAKPOINT */
+/* ðŸ†• MOBILE RESPONSIVE DESIGN - 480px BREAKPOINT */
 @media (max-width: 480px) {
   .regulationPanel {
     width: 100%;
@@ -828,12 +787,12 @@
     transform: translateX(0);
   }
 
-  /* 🆕 MOBILE: Show toggle in main header when sidebar is closed */
+  /* ðŸ†• MOBILE: Show toggle in main header when sidebar is closed */
   .mainHeaderToggle {
     display: flex !important;
   }
 
-  /* 🆕 MOBILE: Adjust main header for toggle button */
+  /* ðŸ†• MOBILE: Adjust main header for toggle button */
   .mainHeader {
     padding: 0.75rem 1rem;
     align-items: center;
@@ -885,30 +844,23 @@
     height: 0.875rem;
   }
 
-  /* 🆕 MOBILE: Empty state adjustments */
+  /* ðŸ†• MOBILE: Empty state adjustments */
   .emptyState {
     padding: 1.5rem 1rem;
+    gap: 1.5rem;
   }
 
-  .welcomeMessage h3 {
+  .welcomeMessage h3,
+  .getStartedMessage h3 {
     font-size: 1.25rem;
   }
 
   .welcomeMessage p {
     font-size: 0.9375rem;
   }
-
-  .examplePrompts {
-    max-width: 100%;
-  }
-
-  .exampleList li {
-    font-size: 0.8125rem;
-    padding: 0.625rem;
-  }
 }
 
-/* 🆕 TABLET RESPONSIVE DESIGN - 768px BREAKPOINT */
+/* ðŸ†• TABLET RESPONSIVE DESIGN - 768px BREAKPOINT */
 @media (max-width: 768px) and (min-width: 481px) {
   .regulationPanel {
     width: 100%;
@@ -958,7 +910,7 @@
   }
 }
 
-/* 🆕 VERY SMALL MOBILE - 400px BREAKPOINT */
+/* ðŸ†• VERY SMALL MOBILE - 400px BREAKPOINT */
 @media (max-width: 400px) {
   .mainHeader {
     padding: 0.5rem 0.75rem;
@@ -983,19 +935,16 @@
 
   .emptyState {
     padding: 1rem 0.75rem;
+    gap: 1rem;
   }
 
-  .welcomeMessage h3 {
+  .welcomeMessage h3,
+  .getStartedMessage h3 {
     font-size: 1.125rem;
   }
 
   .welcomeMessage p {
     font-size: 0.875rem;
-  }
-
-  .exampleList li {
-    font-size: 0.75rem;
-    padding: 0.5rem;
   }
 
   .sidebarOpen {
@@ -1064,14 +1013,6 @@
   :global(.dark-mode) .emptyIcon {
     border-color: #10b981;
   }
-
-  .exampleList li {
-    border-color: #059669;
-  }
-
-  :global(.dark-mode) .exampleList li {
-    border-color: #10b981;
-  }
 }
 
 /* Reduced motion support */
@@ -1107,8 +1048,7 @@
   .messagesContainer,
   .welcomeMessage h3,
   .welcomeMessage p,
-  .exampleTitle,
-  .exampleList li,
+  .getStartedMessage h3,
   .emptyIcon,
   .emptyIconSvg,
   .emptyTitle,
