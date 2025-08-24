@@ -1,4 +1,4 @@
-// src/components/home/RegulationPanel/RegionSelector.js - UPDATED WITH DUBAI SUPPORT
+// src/components/home/RegulationPanel/RegionSelector.js - UPDATED WITH DUBAI SUPPORT & ALPHABETICAL SORTING
 'use client';
 
 import React, { useState } from 'react';
@@ -7,7 +7,7 @@ import styles from './RegionSelector.module.css';
 const RegionSelector = ({ isOpen, onRegionSelect, onCancel }) => {
   const [selectedCountry, setSelectedCountry] = useState('');
 
-  // 🔥 UPDATED: Added Dubai with flag and building code documents
+  // ðŸ"¥ UPDATED: Added Dubai with flag and building code documents
   const countries = [
     {
       country: 'India',
@@ -55,7 +55,7 @@ const RegionSelector = ({ isOpen, onRegionSelect, onCancel }) => {
         }
       ]
     }
-  ];
+  ].sort((a, b) => a.countryName.localeCompare(b.countryName)); // Sort alphabetically by country name
 
   const handleCountryChange = (event) => {
     setSelectedCountry(event.target.value);
