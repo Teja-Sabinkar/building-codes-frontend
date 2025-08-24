@@ -139,12 +139,6 @@ const RegionSelector = ({ isOpen, onRegionSelect, onCancel }) => {
           </button>
         </div>
 
-
-
-
-
-
-
         
       </div>
     </div>
