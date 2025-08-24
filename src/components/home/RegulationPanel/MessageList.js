@@ -1,4 +1,4 @@
-// src/components/home/RegulationPanel/MessageList.js - Building Codes Assistant - BULLET POINT REFERENCES
+// src/components/home/RegulationPanel/MessageList.js - Building Codes Assistant - UPDATED WITH REFERENCE FALLBACK
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
@@ -112,6 +112,53 @@ export default function MessageList({
       .trim();
 
     return processedContent;
+  };
+
+  // NEW: Extract references from message content as fallback
+  const extractReferencesFromContent = (messageContent) => {
+    if (!messageContent) return [];
+    
+    console.log('📋 Extracting references from content...');
+    
+    // Look for reference patterns in the message content
+    const referencePatterns = [
+      /\*\*Reference:\s*([^*]+)\*\*/g,  // **Reference: Building standards... Page 32**
+      /Reference:\s*([^*\n]+)/g,        // Reference: Building standards... Page 32
+    ];
+    
+    const foundReferences = [];
+    
+    for (const pattern of referencePatterns) {
+      let match;
+      while ((match = pattern.exec(messageContent)) !== null) {
+        const referenceText = match[1].trim();
+        console.log('📋 Found reference text:', referenceText);
+        
+        // Extract document and page from reference text
+        const pageMatch = referenceText.match(/^(.+?)\s+Page\s+(\d+)$/i);
+        if (pageMatch) {
+          const document = pageMatch[1].trim();
+          const page = pageMatch[2];
+          
+          foundReferences.push({
+            document: document,
+            page: page,
+            display_text: `${document} Page ${page}`,
+            country: "Scotland" // Default for now - could be enhanced to detect country
+          });
+          
+          console.log('✅ Extracted reference:', `${document} Page ${page}`);
+        }
+      }
+    }
+    
+    // Remove duplicates
+    const uniqueReferences = foundReferences.filter((ref, index, self) => 
+      index === self.findIndex((r) => r.display_text === ref.display_text)
+    );
+    
+    console.log('📋 Final extracted references:', uniqueReferences.length);
+    return uniqueReferences;
   };
 
   const renderMessageContent = (message, messageIndex) => {
@@ -377,26 +424,32 @@ export default function MessageList({
     return elements;
   };
 
-  // Smart function to determine if references should be shown
-  const shouldShowReferences = (regulation) => {
-    if (!regulation || !regulation.references || regulation.references.length === 0) {
+  // UPDATED: Smart function to determine if references should be shown (with fallback)
+  const shouldShowReferences = (regulation, messageContent) => {
+    if (!regulation || regulation.query_type !== "building_codes") {
       return false;
     }
 
-    // Get query type from regulation data
-    const queryType = regulation.query_type;
-
-    // Only show references for building codes queries
-    if (queryType === "building_codes") {
-      console.log('✅ Showing references for building_codes query');
+    // Check if we have references in the regulation object
+    if (regulation.references && regulation.references.length > 0) {
+      console.log('✅ Showing references from regulation object');
       return true;
     }
 
-    // Don't show references for other query types
-    console.log(`❌ Not showing references for query type: ${queryType}`);
+    // FALLBACK: Check if we can extract references from message content
+    if (messageContent) {
+      const contentReferences = extractReferencesFromContent(messageContent);
+      if (contentReferences.length > 0) {
+        console.log('✅ Showing references extracted from message content');
+        return true;
+      }
+    }
+
+    console.log('❌ No references found in regulation object or message content');
     return false;
   };
 
+  // UPDATED: renderRegulationResult with content fallback
   const renderRegulationResult = (message, messageIndex) => {
     if (!message.regulation || !message.regulation.answer) {
       console.log(`❌ No regulation data for message ${messageIndex}`);
@@ -404,23 +457,32 @@ export default function MessageList({
     }
 
     const regulation = message.regulation;
+    const messageContent = message.content;
 
     // Log query type detection (console only - not visible to users)
     console.log(`🔍 Message ${messageIndex} regulation analysis:`, {
       queryType: regulation.query_type,
       hasReferences: !!regulation.references,
       referencesCount: regulation.references?.length || 0,
-      shouldShow: shouldShowReferences(regulation)
+      shouldShow: shouldShowReferences(regulation, messageContent)
     });
 
-    // Only render the container if we actually have references to show
-    if (!shouldShowReferences(regulation)) {
+    // Check if we should show references (with fallback)
+    if (!shouldShowReferences(regulation, messageContent)) {
       console.log(`📝 No regulation container needed for query type: ${regulation.query_type}`);
-      return null; // Don't render anything - no container, no header, nothing
+      return null;
     }
 
-    // Only render if we have references to show
-    console.log(`✅ Rendering regulation container with ${regulation.references.length} references`);
+    // Get references - either from regulation object or extract from content
+    let referencesToShow = regulation.references || [];
+    
+    if (referencesToShow.length === 0 && messageContent) {
+      // Use content extraction as fallback
+      referencesToShow = extractReferencesFromContent(messageContent);
+      console.log('🔄 Using content-extracted references as fallback:', referencesToShow.length);
+    }
+
+    console.log(`✅ Rendering regulation container with ${referencesToShow.length} references`);
 
     return (
       <div className={styles.regulationContainer}>
@@ -428,8 +490,8 @@ export default function MessageList({
           <div className={styles.headerReferencesSection}>
             <div className={styles.headerReferencesTitle}>Also refer these pages:</div>
             <div className={styles.headerReferencesList}>
-              {/* NEW: Display as bullet points instead of comma-separated */}
-              {regulation.references.map((ref, index) => (
+              {/* Display as bullet points */}
+              {referencesToShow.map((ref, index) => (
                 <div key={index} className={styles.headerReferenceItem}>
                   • {ref.display_text || `${ref.document} Page ${ref.page}`}
                 </div>
