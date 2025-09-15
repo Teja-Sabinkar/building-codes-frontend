@@ -27,6 +27,27 @@
   overflow-y: auto;
   box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
   transition: all 0.3s ease;
+  /* Firefox scrollbar */
+  scrollbar-width: thin;
+  scrollbar-color: #d1d5db transparent;
+}
+
+/* Custom thin gray scrollbar for Webkit browsers (Chrome, Safari, Edge) */
+.modalContent::-webkit-scrollbar {
+  width: 6px;
+}
+
+.modalContent::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.modalContent::-webkit-scrollbar-thumb {
+  background: #d1d5db;
+  border-radius: 3px;
+}
+
+.modalContent::-webkit-scrollbar-thumb:hover {
+  background: #9ca3af;
 }
 
 :global(.dark-mode) .modalContent {
@@ -164,6 +185,31 @@
 
 .codeStats {
   margin-bottom: 12px;
+}
+
+.categorySection {
+  margin-bottom: 16px;
+  padding: 12px;
+  border-radius: 6px;
+  background: #f9fafb;
+  border: 1px solid #e5e7eb;
+}
+
+:global(.dark-mode) .categorySection {
+  background: #1a1a1a;
+  border: 1px solid #444;
+}
+
+.categoryTitle {
+  margin: 0 0 8px 0;
+  color: #047857;
+  font-size: 0.875rem;
+  font-weight: 600;
+  transition: color 0.3s ease;
+}
+
+:global(.dark-mode) .categoryTitle {
+  color: #34d399;
 }
 
 .documentsSection {
@@ -309,6 +355,15 @@
     padding: 10px 14px;
   }
 
+  .categorySection {
+    padding: 10px;
+    margin-bottom: 12px;
+  }
+
+  .categoryTitle {
+    font-size: 0.8125rem;
+  }
+
   .documentsLabel {
     font-size: 0.6875rem;
   }
@@ -360,6 +415,10 @@
     border-width: 2px;
   }
 
+  .categorySection {
+    border-width: 2px;
+  }
+
   .selectCodeButton {
     background: #047857;
     border-color: #047857;
@@ -390,6 +449,8 @@
   .regionDetails h4,
   .codeCard,
   .codeHeader h5,
+  .categorySection,
+  .categoryTitle,
   .documentsLabel,
   .documentItem,
   .selectCodeButton,

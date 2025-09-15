@@ -1,4 +1,4 @@
-// src/components/home/RegulationPanel/RegionSelector.js - UPDATED WITH DUBAI SUPPORT & ALPHABETICAL SORTING
+// src/components/home/RegulationPanel/RegionSelector.js - UPDATED WITH INDIA 7 CATEGORIES
 'use client';
 
 import React, { useState } from 'react';
@@ -7,7 +7,7 @@ import styles from './RegionSelector.module.css';
 const RegionSelector = ({ isOpen, onRegionSelect, onCancel }) => {
   const [selectedCountry, setSelectedCountry] = useState('');
 
-  // ðŸ"¥ UPDATED: Added Dubai with flag and building code documents
+  // Updated: India now has organized categories with one selection
   const countries = [
     {
       country: 'India',
@@ -15,10 +15,82 @@ const RegionSelector = ({ isOpen, onRegionSelect, onCancel }) => {
       codes: [
         {
           code: 'India',
-          name: 'Indian Building Codes',
-          documents: [
-            'NBC 2016-VOL.1',
-            'NBC 2016-VOL.2'
+          name: 'Indian Building Codes & Structural Engineering Standards',
+          categories: [
+            {
+              categoryName: 'Building Regulations',
+              documents: [
+                'NBC 2016-VOL.1',
+                'NBC 2016-VOL.2'
+              ]
+            },
+            {
+              categoryName: 'Bridges & Special Structures',
+              documents: [
+                'IRC 006-2017 - STANDARD SPECIFICATIONS AND CODE OF PRACTICE',
+                'IRC 021-2000 - STANDARD SPECIFICATIONS AND CODE OF PRACTICE FOR ROAD BRIDGES',
+                'IRC 078-2000 - STANDARD SPECIFICATIONS AND CODE OF PRACTICE FOR ROAD BRIDGES',
+                'IS 3370 (Part 1)-2009 - CODE OF PRACTICE FOR CONCRETE STRUCTURES FOR STORAGE OF LIQUIDS',
+                'IS 4995 (Part 1)-1974 - CRITERIA FOR DESIGN OF REINFORCED CONCRETE BINS FOR THE STORAGE OF GRANULAR AND POWDER'
+              ]
+            },
+            {
+              categoryName: 'Concrete Structures',
+              documents: [
+                'IS 10262-2009 - GUIDELINES FOR CONCRETE MIX PROPORTIONING',
+                'IS 1343-2012 - CODE OF PRACTICE FOR PRESTRESSED CONCRETE',
+                'IS 3370 (Part 1)-2009 - CODE OF PRACTICE FOR CONCRETE STRUCTURES FOR STORAGE OF LIQUIDS',
+                'IS 3370 (Part 2)-2009 - CODE OF PRACTICE FOR CONCRETE STRUCTURES FOR STORAGE OF LIQUIDS',
+                'IS 3370 (Part 3)-1967 - CODE OF PRACTICE FOR CONCRETE STRUCTURES FOR STORAGE OF LIQUIDS',
+                'IS 3370 (Part 4)-1967 - CODE OF PRACTICE FOR CONCRETE STRUCTURES FOR STORAGE OF LIQUIDS',
+                'IS 456-2000 - CODE OF PRACTICE FOR PLAIN AND REINFORCED CONCRETE',
+                'IS 875 (Part 1)-1987 - CODE OF PRACTICE FOR DESIGN LOADS (OTHER THAN EARTHQUAKE) FOR BUILDINGS AND STRUCTURES',
+                'IS 875 (Part 2)-1987 - CODE OF PRACTICE FOR DESIGN LOADS (OTHER THAN EARTHQUAKE) FOR BUILDINGS AND STRUCTURES',
+                'IS 875 (Part 3)-1987 - CODE OF PRACTICE FOR DESIGN LOADS (OTHER THAN EARTHQUAKE) FOR BUILDINGS AND STRUCTURES',
+                'IS 875 (Part 4)-1987 - CODE OF PRACTICE FOR DESIGN LOADS (OTHER THAN EARTHQUAKE) FOR BUILDINGS AND STRUCTURES',
+                'IS 875 (Part 5)-1987 - CODE OF PRACTICE FOR DESIGN LOADS (OTHER THAN EARTHQUAKE) FOR BUILDINGS AND STRUCTURES'
+              ]
+            },
+            {
+              categoryName: 'Earthquake & Wind',
+              documents: [
+                'IS 13920-1993 - CODE OF PRACTICE FOR DUCTILE DETAILING OF REINFORCED CONCRETE STRUCTURES SUBJECTED TO SEISMIC FORCES',
+                'IS 1893 (Part 1)-2016 - CRITERIA FOR EARTHQUAKE RESISTANT DESIGN OF STRUCTURES',
+                'IS 4326-2013 - CODE OF PRACTICE FOR EARTHQUAKE RESISTANT DESIGN AND CONSTRUCTION OF BUILDINGS',
+                'IS 875 (Part 3)-2015 - CODE OF PRACTICE FOR DESIGN LOADS (OTHER THAN EARTHQUAKE) FOR BUILDINGS AND STRUCTURES'
+              ]
+            },
+            {
+              categoryName: 'Foundation & Soils',
+              documents: [
+                'IS 2911 (Part 1.1)-2010 - CODE OF PRACTICE FOR DESIGN AND CONSTRUCTION OF PILE FOUNDATIONS',
+                'IS 2911 (Part 1.2)-2010 - CODE OF PRACTICE FOR DESIGN AND CONSTRUCTION OF PILE FOUNDATIONS',
+                'IS 2911 (Part 1.3)-2010 - CODE OF PRACTICE FOR DESIGN AND CONSTRUCTION OF PILE FOUNDATIONS',
+                'IS 2911 (Part 1.4)-2010 - CODE OF PRACTICE FOR DESIGN AND CONSTRUCTION OF PILE FOUNDATIONS',
+                'IS 2950 (Part 1.1)-1981 - CODE OF PRACTICE FOR DESIGN AND CONSTRUCTION OF RAFT FOUNDATIONS',
+                'IS 6403-1981 - CODE OF PRACTICE FOR DETERMINATION OF BREAKING CAPACITY OF SHALLOW FOUNDATIONS',
+                'IS 1904-1986 - CODE OF PRACTICE FOR DESIGN AND CONSTRUCTION OF FOUNDATIONS IN SOILS GENERAL REQUIREMENTS'
+              ]
+            },
+            {
+              categoryName: 'Masonry & Timber',
+              documents: [
+                'IS 1905-1987 - CODE OF PRACTICE FOR STRUCTURAL USE OF UNREINFORCED MASONRY',
+                'IS 2212-1991 - CODE OF PRACTICE FOR BRICK WORKS',
+                'IS 883-1994 - CODE OF PRACTICE FOR DESIGN OF STRUCTURAL TIMBER IN BUILDING',
+                'IS SP 20-1991 - HANDBOOK ON MASONRY DESIGN AND CONSTRUCTION'
+              ]
+            },
+            {
+              categoryName: 'Steel Structures',
+              documents: [
+                'IS 4923-1997 - SPECIFICATION FOR HOLLOW STEEL SECTIONS FOR STRUCTURAL USE',
+                'IS 800-2007 - CODE OF PRACTICE FOR GENERAL CONSTRUCTION IN STEEL',
+                'IS 801-1975 - CODE OF PRACTICE FOR USE OF COLD-FORMED LIGHT GAUGE STEEL STRUCTURAL MEMBERS IN GENERAL BUILDING CONSTRUCTION',
+                'IS 806-1968 - CODE OF PRACTICE FOR USE OF STEEL TUBES IN GENERAL BUILDING CONSTRUCTION',
+                'IS 875 (Part 3)-2015 - CODE OF PRACTICE FOR DESIGN LOADS (OTHER THAN EARTHQUAKE) FOR BUILDINGS AND STRUCTURES'
+              ]
+            }
           ]
         }
       ]
@@ -108,14 +180,32 @@ const RegionSelector = ({ isOpen, onRegionSelect, onCancel }) => {
                       <h5>{codeData.name}</h5>
                     </div>
                     <div className={styles.codeStats}>
-                      <div className={styles.documentsSection}>
-                        <span className={styles.documentsLabel}>Available Documents:</span>
-                        <ul className={styles.documentsList}>
-                          {codeData.documents.map((doc, docIndex) => (
-                            <li key={docIndex} className={styles.documentItem}>{doc}</li>
-                          ))}
-                        </ul>
-                      </div>
+                      {codeData.categories ? (
+                        // India with categories
+                        codeData.categories.map((category, catIndex) => (
+                          <div key={catIndex} className={styles.categorySection}>
+                            <h6 className={styles.categoryTitle}>{category.categoryName}</h6>
+                            <div className={styles.documentsSection}>
+                              <span className={styles.documentsLabel}>Available Documents:</span>
+                              <ul className={styles.documentsList}>
+                                {category.documents.map((doc, docIndex) => (
+                                  <li key={docIndex} className={styles.documentItem}>{doc}</li>
+                                ))}
+                              </ul>
+                            </div>
+                          </div>
+                        ))
+                      ) : (
+                        // Other countries with simple documents list
+                        <div className={styles.documentsSection}>
+                          <span className={styles.documentsLabel}>Available Documents:</span>
+                          <ul className={styles.documentsList}>
+                            {codeData.documents.map((doc, docIndex) => (
+                              <li key={docIndex} className={styles.documentItem}>{doc}</li>
+                            ))}
+                          </ul>
+                        </div>
+                      )}
                     </div>
                     <button 
                       onClick={() => handleCreateConversation(codeData)}
