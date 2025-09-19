@@ -569,8 +569,10 @@ export default function MessageList({
                   )}
                 </div>
 
+
                 <div className={styles.contentHeaderRight}>
                   {/* Edit button for user messages */}
+                  {/* 
                   {message.role === 'user' && editingMessageIndex !== index && !isGenerating && (
                     <button
                       onClick={() => handleEditStart(index, message.content)}
@@ -582,7 +584,9 @@ export default function MessageList({
                       </svg>
                     </button>
                   )}
+                    */}
                 </div>
+
               </div>
 
               {/* Render regulation result for assistant messages with query type awareness */}
