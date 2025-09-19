@@ -399,7 +399,7 @@ export default function HomePage() {
     // Ensure we have a current conversation
     let conversation = currentConversation;
     if (!conversation) {
-      console.log('🔄 No current conversation, creating new one...');
+      console.log('📄 No current conversation, creating new one...');
       conversation = await createNewConversation();
       if (!conversation) {
         console.error('❌ Failed to create conversation');
@@ -438,8 +438,36 @@ export default function HomePage() {
       const addMessageData = await addMessageResponse.json();
       console.log('✅ User message added to conversation');
 
-      // STEP 2: Send query to Python backend for AI processing
-      console.log('🤖 Step 2: Sending query to Python backend for AI processing...');
+      // STEP 2: Prepare conversation history for context
+      console.log('🧠 Preparing conversation history for context...');
+
+      // Get recent messages from current conversation (last 4 messages for context)
+      const conversationHistory = [];
+      if (conversation.messages && conversation.messages.length > 0) {
+        // Take the last 4 messages, but prioritize user/assistant pairs
+        const recentMessages = conversation.messages.slice(-4);
+
+        for (const msg of recentMessages) {
+          conversationHistory.push({
+            role: msg.role,
+            content: msg.content
+          });
+        }
+      }
+
+      // Add the current user message to conversation history
+      conversationHistory.push({
+        role: 'user',
+        content: message
+      });
+
+      console.log('🧠 Conversation history prepared:', {
+        historyLength: conversationHistory.length,
+        messages: conversationHistory.map(msg => `${msg.role}: ${msg.content.substring(0, 50)}...`)
+      });
+
+      // STEP 2: Send query to Python backend for AI processing WITH CONVERSATION HISTORY
+      console.log('🤖 Step 2: Sending query to Python backend with conversation context...');
       const aiResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/query`, {
         method: 'POST',
         headers: {
@@ -449,7 +477,8 @@ export default function HomePage() {
           question: message,
           conversationId: conversation._id,
           region: conversation.region || 'India',
-          maxResults: 10
+          maxResults: 10,
+          conversation_history: conversationHistory // 🆕 ADD CONVERSATION HISTORY
         }),
       });
 
@@ -458,10 +487,11 @@ export default function HomePage() {
       }
 
       const aiData = await aiResponse.json();
-      console.log('🔍 AI Response received:', {
+      console.log('🔍 AI Response received with context:', {
         hasRegulation: !!aiData.regulation,
         queryType: aiData.regulation?.query_type,
-        referencesCount: aiData.regulation?.references?.length
+        referencesCount: aiData.regulation?.references?.length,
+        usedConversationContext: conversationHistory.length > 1
       });
 
       // STEP 3: Add assistant message with regulation data to conversation via Next.js API
@@ -488,7 +518,7 @@ export default function HomePage() {
       }
 
       const finalConversationData = await addAssistantResponse.json();
-      console.log('✅ Complete conversation updated');
+      console.log('✅ Complete conversation updated with context-aware response');
 
       // STEP 4: Update frontend state with the complete conversation while preserving all regulation data
       const updatedConversation = finalConversationData.conversation;
@@ -562,7 +592,7 @@ export default function HomePage() {
       // PERSISTENCE: Save current conversation
       try {
         localStorage.setItem('currentConversationId', updatedConversation._id);
-        console.log('💾 Message sent - saved conversation to localStorage:', updatedConversation._id);
+        console.log('💾 Message sent with context - saved conversation to localStorage:', updatedConversation._id);
       } catch (error) {
         console.error('❌ Failed to save conversation to localStorage:', error);
       }
