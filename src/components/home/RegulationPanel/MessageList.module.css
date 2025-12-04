@@ -980,3 +980,235 @@
     background-color: #34d399;
   }
 }
+/* ========================================
+   USER FEEDBACK BUTTONS STYLES
+   Thumbs Up/Down for Assistant Responses
+   ======================================== */
+
+/* Feedback container */
+.feedbackContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding: 1rem 0 0 0;
+  margin-top: 1rem;
+  margin-bottom: 2rem;
+  border-top: 1px solid #e5e7eb;
+  transition: all 0.3s ease;
+}
+
+:global(.dark-mode) .feedbackContainer {
+  border-top: 1px solid #444;
+}
+
+/* Feedback question */
+.feedbackQuestion {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #6b7280;
+  transition: color 0.3s ease;
+}
+
+:global(.dark-mode) .feedbackQuestion {
+  color: #9ca3af;
+}
+
+/* Feedback buttons row */
+.feedbackButtons {
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
+}
+
+/* Individual feedback button */
+.feedbackButton {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  border: 2px solid #e5e7eb;
+  background: #ffffff;
+  border-radius: 0.5rem;
+  cursor: pointer;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #6b7280;
+  transition: all 0.2s ease;
+  position: relative;
+}
+
+:global(.dark-mode) .feedbackButton {
+  border: 2px solid #444;
+  background: #2d2d2d;
+  color: #9ca3af;
+}
+
+/* Hover state */
+.feedbackButton:hover:not(:disabled) {
+  border-color: #059669;
+  background: #f0fdf4;
+  color: #059669;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(5, 150, 105, 0.1);
+}
+
+:global(.dark-mode) .feedbackButton:hover:not(:disabled) {
+  border-color: #10b981;
+  background: #1a3a2e;
+  color: #10b981;
+  box-shadow: 0 2px 4px rgba(16, 185, 129, 0.2);
+}
+
+/* Active state (voted) - GREEN for both thumbs up and thumbs down */
+.feedbackButtonActive {
+  border-color: #059669 !important;
+  background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%) !important;
+  color: #059669 !important;
+  font-weight: 600;
+  box-shadow: 0 2px 8px rgba(5, 150, 105, 0.15);
+}
+
+:global(.dark-mode) .feedbackButtonActive {
+  border-color: #10b981 !important;
+  background: linear-gradient(135deg, #1a3a2e 0%, #2a4a3e 100%) !important;
+  color: #10b981 !important;
+  box-shadow: 0 2px 8px rgba(16, 185, 129, 0.25);
+}
+
+/* Disabled state */
+.feedbackButton:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Feedback icon */
+.feedbackIcon {
+  width: 1.25rem;
+  height: 1.25rem;
+  flex-shrink: 0;
+  transition: all 0.2s ease;
+}
+
+/* Feedback label */
+.feedbackLabel {
+  font-size: 0.875rem;
+  transition: all 0.2s ease;
+}
+
+/* Voted indicator (checkmark) */
+.votedIndicator {
+  margin-left: 0.25rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #059669;
+}
+
+:global(.dark-mode) .votedIndicator {
+  color: #10b981;
+}
+
+/* Feedback error message */
+.feedbackError {
+  font-size: 0.8125rem;
+  color: #dc2626;
+  padding: 0.5rem 0.75rem;
+  background: #fee2e2;
+  border-radius: 0.375rem;
+  border-left: 3px solid #dc2626;
+  transition: all 0.3s ease;
+}
+
+:global(.dark-mode) .feedbackError {
+  color: #f87171;
+  background: #3a1a1a;
+  border-left: 3px solid #f87171;
+}
+
+/* Feedback submitting indicator */
+.feedbackSubmitting {
+  font-size: 0.8125rem;
+  color: #059669;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+:global(.dark-mode) .feedbackSubmitting {
+  color: #10b981;
+}
+
+/* Mobile responsiveness */
+@media (max-width: 768px) {
+  .feedbackContainer {
+    padding: 0.75rem 0 0 0;
+    margin-top: 0.75rem;
+  }
+
+  .feedbackButtons {
+    flex-direction: row;
+    gap: 0.5rem;
+  }
+
+  .feedbackButton {
+    padding: 0.4rem 0.75rem;
+    font-size: 0.8125rem;
+  }
+
+  .feedbackIcon {
+    width: 1rem;
+    height: 1rem;
+  }
+
+  .feedbackLabel {
+    font-size: 0.8125rem;
+  }
+}
+
+/* Small mobile */
+@media (max-width: 480px) {
+  .feedbackButtons {
+    flex-direction: column;
+    width: 100%;
+  }
+
+  .feedbackButton {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+/* Focus styles for accessibility */
+.feedbackButton:focus-visible {
+  outline: 2px solid #059669;
+  outline-offset: 2px;
+}
+
+:global(.dark-mode) .feedbackButton:focus-visible {
+  outline: 2px solid #10b981;
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+  .feedbackButtonActive {
+    border-width: 3px;
+  }
+
+  .feedbackButton:hover:not(:disabled) {
+    border-width: 3px;
+  }
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  .feedbackContainer,
+  .feedbackButton,
+  .feedbackIcon,
+  .feedbackLabel {
+    transition: none;
+  }
+
+  .feedbackButton:hover:not(:disabled) {
+    transform: none;
+  }
+}

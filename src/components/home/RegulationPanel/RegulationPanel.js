@@ -409,6 +409,7 @@ export default function RegulationPanel({
               isGenerating={isGenerating}
               onEditMessage={handleEditMessage}
               user={user}
+              conversationId={currentConversation._id}
             />
           ) : (
             <div className={styles.emptyState}>

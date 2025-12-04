@@ -72,6 +72,18 @@ const MessageSchema = new mongoose.Schema({
       jurisdiction: String,
       lastUpdated: Date
     }
+  },
+  // 🆕 USER FEEDBACK FIELD - Real user votes (thumbs up/down)
+  feedback: {
+    userVote: {
+      type: String,
+      enum: ['helpful', 'unhelpful', null],
+      default: null
+    },
+    votedAt: {
+      type: Date,
+      default: null
+    }
   }
 }, { _id: true });
 

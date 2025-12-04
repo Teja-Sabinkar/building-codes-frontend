@@ -8,12 +8,17 @@ export default function MessageList({
   messages,
   isGenerating,
   onEditMessage,
-  user
+  user,
+  conversationId  // Add conversationId prop
 }) {
   const messagesEndRef = useRef(null);
   const [editingMessageIndex, setEditingMessageIndex] = useState(null);
   const [editContent, setEditContent] = useState('');
   const [isEditing, setIsEditing] = useState(false);
+  
+  // 🆕 Feedback state
+  const [feedbackState, setFeedbackState] = useState({}); // { messageId: { userVote: 'helpful'|'unhelpful', isSubmitting: false } }
+  const [feedbackErrors, setFeedbackErrors] = useState({});
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -22,6 +27,103 @@ export default function MessageList({
   useEffect(() => {
     scrollToBottom();
   }, [messages, isGenerating]);
+
+  // 🆕 Initialize feedback state from messages
+  useEffect(() => {
+    const initialFeedbackState = {};
+    messages.forEach((message) => {
+      if (message._id && message.feedback) {
+        initialFeedbackState[message._id] = {
+          userVote: message.feedback.userVote,
+          isSubmitting: false
+        };
+      }
+    });
+    setFeedbackState(initialFeedbackState);
+  }, [messages]);
+
+  // 🆕 Handle feedback button click
+  const handleFeedbackClick = async (messageId, vote) => {
+    if (!conversationId || !messageId) {
+      console.error('Missing conversationId or messageId');
+      return;
+    }
+
+    // Check if user is trying to click the same vote again
+    const currentVote = feedbackState[messageId]?.userVote;
+    if (currentVote === vote) {
+      console.log('User clicked the same vote - no action needed');
+      return;
+    }
+
+    console.log('👍 Feedback click:', { messageId, vote, currentVote });
+
+    // Set submitting state
+    setFeedbackState(prev => ({
+      ...prev,
+      [messageId]: { userVote: vote, isSubmitting: true }
+    }));
+
+    // Clear any previous errors
+    setFeedbackErrors(prev => {
+      const newErrors = { ...prev };
+      delete newErrors[messageId];
+      return newErrors;
+    });
+
+    try {
+      // Get auth token - FIXED: Use 'authToken' instead of 'token'
+      const token = localStorage.getItem('authToken');
+      
+      if (!token) {
+        throw new Error('Not authenticated');
+      }
+
+      // Send feedback to API
+      const response = await fetch('/api/messages/feedback', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          conversationId,
+          messageId,
+          vote
+        })
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to save feedback');
+      }
+
+      const data = await response.json();
+      
+      console.log('✅ Feedback saved:', data);
+
+      // Update local state with success
+      setFeedbackState(prev => ({
+        ...prev,
+        [messageId]: { userVote: vote, isSubmitting: false }
+      }));
+
+    } catch (error) {
+      console.error('❌ Feedback error:', error);
+      
+      // Revert to previous state on error
+      setFeedbackState(prev => ({
+        ...prev,
+        [messageId]: { userVote: currentVote, isSubmitting: false }
+      }));
+
+      // Set error message
+      setFeedbackErrors(prev => ({
+        ...prev,
+        [messageId]: error.message
+      }));
+    }
+  };
 
   const formatTime = (timestamp) => {
     if (!timestamp) return 'Just now';
@@ -424,6 +526,88 @@ export default function MessageList({
     return elements;
   };
 
+  // 🆕 Render feedback buttons for assistant messages
+  const renderFeedbackButtons = (message) => {
+    if (!message._id || message.role !== 'assistant') {
+      return null;
+    }
+
+    const messageId = message._id;
+    const currentFeedback = feedbackState[messageId];
+    const userVote = currentFeedback?.userVote;
+    const isSubmitting = currentFeedback?.isSubmitting || false;
+    const error = feedbackErrors[messageId];
+
+    return (
+      <div className={styles.feedbackContainer}>
+        <div className={styles.feedbackQuestion}>Was this response helpful?</div>
+        <div className={styles.feedbackButtons}>
+          {/* Helpful Button */}
+          <button
+            onClick={() => handleFeedbackClick(messageId, 'helpful')}
+            className={`${styles.feedbackButton} ${userVote === 'helpful' ? styles.feedbackButtonActive : ''}`}
+            disabled={isSubmitting}
+            title="This response was helpful"
+          >
+            <svg 
+              xmlns="http://www.w3.org/2000/svg" 
+              className={styles.feedbackIcon} 
+              fill={userVote === 'helpful' ? 'currentColor' : 'none'} 
+              viewBox="0 0 24 24" 
+              stroke="currentColor"
+            >
+              <path 
+                strokeLinecap="round" 
+                strokeLinejoin="round" 
+                strokeWidth={2} 
+                d="M14 10h4.764a2 2 0 011.789 2.894l-3.5 7A2 2 0 0115.263 21h-4.017c-.163 0-.326-.02-.485-.06L7 20m7-10V5a2 2 0 00-2-2h-.095c-.5 0-.905.405-.905.905 0 .714-.211 1.412-.608 2.006L7 11v9m7-10h-2M7 20H5a2 2 0 01-2-2v-6a2 2 0 012-2h2.5" 
+              />
+            </svg>
+            <span className={styles.feedbackLabel}>Helpful</span>
+          </button>
+
+          {/* Not Helpful Button */}
+          <button
+            onClick={() => handleFeedbackClick(messageId, 'unhelpful')}
+            className={`${styles.feedbackButton} ${userVote === 'unhelpful' ? styles.feedbackButtonActive : ''}`}
+            disabled={isSubmitting}
+            title="This response was not helpful"
+          >
+            <svg 
+              xmlns="http://www.w3.org/2000/svg" 
+              className={styles.feedbackIcon} 
+              fill={userVote === 'unhelpful' ? 'currentColor' : 'none'} 
+              viewBox="0 0 24 24" 
+              stroke="currentColor"
+            >
+              <path 
+                strokeLinecap="round" 
+                strokeLinejoin="round" 
+                strokeWidth={2} 
+                d="M10 14H5.236a2 2 0 01-1.789-2.894l3.5-7A2 2 0 018.736 3h4.018a2 2 0 01.485.06l3.76.94m-7 10v5a2 2 0 002 2h.096c.5 0 .905-.405.905-.904 0-.715.211-1.413.608-2.008L17 13V4m-7 10h2m5-10h2a2 2 0 012 2v6a2 2 0 01-2 2h-2.5" 
+              />
+            </svg>
+            <span className={styles.feedbackLabel}>Not Helpful</span>
+          </button>
+        </div>
+        
+        {/* Error message */}
+        {error && (
+          <div className={styles.feedbackError}>
+            {error}
+          </div>
+        )}
+
+        {/* Submitting indicator */}
+        {isSubmitting && (
+          <div className={styles.feedbackSubmitting}>
+            Saving...
+          </div>
+        )}
+      </div>
+    );
+  };
+
   // UPDATED: Smart function to determine if references should be shown (with fallback)
   const shouldShowReferences = (regulation, messageContent) => {
     if (!regulation || regulation.query_type !== "building_codes") {
@@ -591,6 +775,9 @@ export default function MessageList({
 
               {/* Render regulation result for assistant messages with query type awareness */}
               {message.role === 'assistant' && renderRegulationResult(message, index)}
+
+              {/* 🆕 Render feedback buttons for assistant messages */}
+              {message.role === 'assistant' && renderFeedbackButtons(message)}
             </div>
           </div>
         </div>
