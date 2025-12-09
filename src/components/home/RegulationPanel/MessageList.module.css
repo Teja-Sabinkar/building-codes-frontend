@@ -1211,4 +1211,150 @@
   .feedbackButton:hover:not(:disabled) {
     transform: none;
   }
+}/* MessageList.module.css - ADD THESE STYLES */
+
+/* Success message styling - ADD THIS TO THE FILE */
+.feedbackSuccess {
+  margin-top: 0.75rem;
+  padding: 0.625rem 0.875rem;
+  background: linear-gradient(135deg, #dcfce7 0%, #f0fdf4 100%);
+  border: 1px solid #bbf7d0;
+  border-radius: 0.5rem;
+  font-size: 0.8125rem;
+  color: #047857;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  animation: slideInFade 0.3s ease-out;
+  transition: all 0.3s ease;
+}
+
+:global(.dark-mode) .feedbackSuccess {
+  background: linear-gradient(135deg, #1a3a2e 0%, #2a4a3e 100%);
+  border-color: #059669;
+  color: #10b981;
+}
+
+@keyframes slideInFade {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Ensure existing feedback error styling is compatible */
+.feedbackError {
+  margin-top: 0.75rem;
+  padding: 0.625rem 0.875rem;
+  background: linear-gradient(135deg, #fee2e2 0%, #fef2f2 100%);
+  border: 1px solid #fecaca;
+  border-radius: 0.5rem;
+  font-size: 0.8125rem;
+  color: #dc2626;
+  font-weight: 500;
+  transition: all 0.3s ease;
+}
+
+:global(.dark-mode) .feedbackError {
+  background: linear-gradient(135deg, #3a1a1a 0%, #4a2a2a 100%);
+  border-color: #ef4444;
+  color: #f87171;
+}
+
+/* Ensure feedback submitting indicator has proper styling */
+.feedbackSubmitting {
+  margin-top: 0.75rem;
+  padding: 0.625rem 0.875rem;
+  background: linear-gradient(135deg, #f3f4f6 0%, #ffffff 100%);
+  border: 1px solid #d1d5db;
+  border-radius: 0.5rem;
+  font-size: 0.8125rem;
+  color: #6b7280;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  transition: all 0.3s ease;
+}
+
+:global(.dark-mode) .feedbackSubmitting {
+  background: linear-gradient(135deg, #2d2d2d 0%, #3d3d3d 100%);
+  border-color: #555;
+  color: #9ca3af;
+}
+
+/* Add spinner animation for submitting state */
+.feedbackSubmitting::before {
+  content: '';
+  width: 0.875rem;
+  height: 0.875rem;
+  border: 2px solid #d1d5db;
+  border-top-color: #059669;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+:global(.dark-mode) .feedbackSubmitting::before {
+  border-color: #555;
+  border-top-color: #10b981;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Mobile responsiveness for feedback messages */
+@media (max-width: 640px) {
+  .feedbackSuccess,
+  .feedbackError,
+  .feedbackSubmitting {
+    font-size: 0.75rem;
+    padding: 0.5rem 0.75rem;
+    margin-top: 0.5rem;
+  }
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  .feedbackSuccess {
+    animation: none;
+  }
+  
+  .feedbackSubmitting::before {
+    animation: none;
+  }
+  
+  .feedbackSuccess,
+  .feedbackError,
+  .feedbackSubmitting {
+    transition: none;
+  }
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+  .feedbackSuccess {
+    border-width: 2px;
+    border-color: #047857;
+  }
+  
+  :global(.dark-mode) .feedbackSuccess {
+    border-color: #10b981;
+  }
+  
+  .feedbackError {
+    border-width: 2px;
+    border-color: #dc2626;
+  }
+  
+  :global(.dark-mode) .feedbackError {
+    border-color: #f87171;
+  }
 }

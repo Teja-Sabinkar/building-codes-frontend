@@ -73,7 +73,7 @@ const MessageSchema = new mongoose.Schema({
       lastUpdated: Date
     }
   },
-  // 🆕 USER FEEDBACK FIELD - Real user votes (thumbs up/down)
+  // 🆕 USER FEEDBACK FIELD - Real user votes (thumbs up/down) with detailed feedback
   feedback: {
     userVote: {
       type: String,
@@ -83,6 +83,25 @@ const MessageSchema = new mongoose.Schema({
     votedAt: {
       type: Date,
       default: null
+    },
+    // 🆕 Detailed feedback fields (from feedback modal)
+    issueType: {
+      type: String,
+      enum: [
+        'UI bug',
+        'Did not fully follow my request',
+        'Not factually correct',
+        'Incomplete response',
+        'Report content',
+        'Other',
+        null
+      ],
+      default: null
+    },
+    details: {
+      type: String,
+      default: null,
+      maxlength: 2000 // Limit detailed feedback to 2000 characters
     }
   }
 }, { _id: true });

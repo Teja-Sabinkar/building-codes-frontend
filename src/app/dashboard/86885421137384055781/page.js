@@ -1977,6 +1977,22 @@ export default function EnhancedUserMetricsPage() {
                           <td className={styles.timestampCell}>{formatDate(query.timestamp)}</td>
                           <td className={styles.queryCell}>
                             <span className={styles.queryText}>{query.query}</span>
+                            {query.hasFeedbackDetails && (
+                              <div className={styles.feedbackDetailsInline}>
+                                {query.feedbackIssueType && (
+                                  <div className={styles.feedbackIssueInline}>
+                                    <span className={styles.feedbackLabelInline}>Issue:</span>
+                                    <span className={styles.feedbackIssueTypeInline}>{query.feedbackIssueType}</span>
+                                  </div>
+                                )}
+                                {query.feedbackDetails && (
+                                  <div className={styles.feedbackDetailsTextInline}>
+                                    <span className={styles.feedbackLabelInline}>Details:</span>
+                                    <span className={styles.feedbackDetailsContentInline}>{query.feedbackDetails}</span>
+                                  </div>
+                                )}
+                              </div>
+                            )}
                           </td>
                           <td className={styles.regionCell}>
                             <span className={`${styles.regionBadge} ${styles[`region${query.region}`]}`}>

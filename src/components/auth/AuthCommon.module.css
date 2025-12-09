@@ -220,6 +220,7 @@
     color: #6b7280;
     transition: color 0.3s ease;
     margin-left: 80px;
+    display: none;
 }
 
 :global(.dark-mode) .formFooter {

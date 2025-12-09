@@ -1,4 +1,4 @@
-// src/app/api/messages/feedback/route.js - User Feedback for Building Codes Responses
+// src/app/api/messages/feedback/route.js - User Feedback with Detailed Feedback Support
 import { NextResponse } from 'next/server';
 import { headers } from 'next/headers';
 import jwt from 'jsonwebtoken';
@@ -51,12 +51,14 @@ export async function POST(request) {
     await connectToDatabase();
 
     // Parse the request body
-    const { conversationId, messageId, vote } = await request.json();
+    const { conversationId, messageId, vote, issueType, details } = await request.json();
 
-    console.log('📝 Feedback request:', {
+    console.log('🔍 Feedback request:', {
       conversationId,
       messageId,
       vote,
+      hasIssueType: !!issueType,
+      hasDetails: !!details,
       userId: currentUser.id
     });
 
@@ -74,6 +76,33 @@ export async function POST(request) {
       console.log('❌ Invalid vote value:', vote);
       return NextResponse.json(
         { error: 'Vote must be either "helpful" or "unhelpful"' },
+        { status: 400 }
+      );
+    }
+
+    // Validate issueType if provided (must match schema enum)
+    const validIssueTypes = [
+      'UI bug',
+      'Did not fully follow my request',
+      'Not factually correct',
+      'Incomplete response',
+      'Report content',
+      'Other'
+    ];
+    
+    if (issueType && !validIssueTypes.includes(issueType)) {
+      console.log('❌ Invalid issue type:', issueType);
+      return NextResponse.json(
+        { error: 'Invalid issue type provided' },
+        { status: 400 }
+      );
+    }
+
+    // Validate details length if provided
+    if (details && details.length > 2000) {
+      console.log('❌ Details too long:', details.length);
+      return NextResponse.json(
+        { error: 'Feedback details cannot exceed 2000 characters' },
         { status: 400 }
       );
     }
@@ -135,6 +164,17 @@ export async function POST(request) {
 
     message.feedback.userVote = vote;
     message.feedback.votedAt = new Date();
+    
+    // 🆕 Save detailed feedback if provided
+    if (issueType) {
+      message.feedback.issueType = issueType;
+      console.log('📝 Issue type saved:', issueType);
+    }
+    
+    if (details && details.trim()) {
+      message.feedback.details = details.trim();
+      console.log('📝 Feedback details saved (length):', details.trim().length);
+    }
 
     // Mark the messages array as modified
     conversation.markModified('messages');
@@ -145,6 +185,9 @@ export async function POST(request) {
     console.log('✅ Feedback saved successfully:', {
       messageId,
       vote,
+      issueType: message.feedback.issueType || 'none',
+      hasDetails: !!message.feedback.details,
+      detailsLength: message.feedback.details?.length || 0,
       previousVote,
       isChangingVote,
       votedAt: message.feedback.votedAt
@@ -154,6 +197,8 @@ export async function POST(request) {
       message: 'Feedback saved successfully',
       feedback: {
         userVote: message.feedback.userVote,
+        issueType: message.feedback.issueType,
+        hasDetails: !!message.feedback.details,
         votedAt: message.feedback.votedAt,
         isChangingVote
       }
@@ -165,6 +210,13 @@ export async function POST(request) {
     if (error.name === 'CastError') {
       return NextResponse.json(
         { error: 'Invalid conversation or message ID format' },
+        { status: 400 }
+      );
+    }
+
+    if (error.name === 'ValidationError') {
+      return NextResponse.json(
+        { error: 'Validation error: ' + error.message },
         { status: 400 }
       );
     }
@@ -230,7 +282,12 @@ export async function GET(request) {
     }
 
     return NextResponse.json({
-      feedback: message.feedback || { userVote: null, votedAt: null }
+      feedback: message.feedback || { 
+        userVote: null, 
+        votedAt: null,
+        issueType: null,
+        details: null
+      }
     });
 
   } catch (error) {

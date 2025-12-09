@@ -1,8 +1,9 @@
-// src/components/home/RegulationPanel/MessageList.js - Building Codes Assistant - UPDATED WITH REFERENCE FALLBACK
+// src/components/home/RegulationPanel/MessageList.js - Building Codes Assistant - UPDATED WITH FEEDBACK MODAL
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
 import styles from './MessageList.module.css';
+import FeedbackModal from './FeedbackModal';
 
 export default function MessageList({
   messages,
@@ -19,6 +20,19 @@ export default function MessageList({
   // 🆕 Feedback state
   const [feedbackState, setFeedbackState] = useState({}); // { messageId: { userVote: 'helpful'|'unhelpful', isSubmitting: false } }
   const [feedbackErrors, setFeedbackErrors] = useState({});
+
+  // 🆕 Feedback modal state
+  const [feedbackModal, setFeedbackModal] = useState({
+    isOpen: false,
+    messageId: null,
+    feedbackType: null // 'helpful' or 'unhelpful'
+  });
+
+  // 🆕 Success message state
+  const [successMessage, setSuccessMessage] = useState({
+    messageId: null,
+    show: false
+  });
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -42,7 +56,7 @@ export default function MessageList({
     setFeedbackState(initialFeedbackState);
   }, [messages]);
 
-  // 🆕 Handle feedback button click
+  // 🆕 Handle feedback button click - UPDATED to show modal
   const handleFeedbackClick = async (messageId, vote) => {
     if (!conversationId || !messageId) {
       console.error('Missing conversationId or messageId');
@@ -56,12 +70,26 @@ export default function MessageList({
       return;
     }
 
-    console.log('👍 Feedback click:', { messageId, vote, currentVote });
+    console.log('👍 Opening feedback modal:', { messageId, vote, currentVote });
 
+    // Open feedback modal
+    setFeedbackModal({
+      isOpen: true,
+      messageId: messageId,
+      feedbackType: vote
+    });
+  };
+
+  // 🆕 Handle feedback modal submission
+  const handleFeedbackSubmit = async (feedbackData) => {
+    const { messageId, feedbackType } = feedbackData;
+    
+    console.log('📝 Submitting feedback with details:', feedbackData);
+    
     // Set submitting state
     setFeedbackState(prev => ({
       ...prev,
-      [messageId]: { userVote: vote, isSubmitting: true }
+      [messageId]: { userVote: feedbackType, isSubmitting: true }
     }));
 
     // Clear any previous errors
@@ -72,14 +100,14 @@ export default function MessageList({
     });
 
     try {
-      // Get auth token - FIXED: Use 'authToken' instead of 'token'
+      // Get auth token
       const token = localStorage.getItem('authToken');
       
       if (!token) {
         throw new Error('Not authenticated');
       }
 
-      // Send feedback to API
+      // Send feedback to API with detailed feedback
       const response = await fetch('/api/messages/feedback', {
         method: 'POST',
         headers: {
@@ -89,7 +117,9 @@ export default function MessageList({
         body: JSON.stringify({
           conversationId,
           messageId,
-          vote
+          vote: feedbackType,
+          issueType: feedbackData.issueType || null,
+          details: feedbackData.details || null
         })
       });
 
@@ -99,19 +129,32 @@ export default function MessageList({
       }
 
       const data = await response.json();
-      
-      console.log('✅ Feedback saved:', data);
+      console.log('✅ Feedback saved to database:', data);
 
       // Update local state with success
       setFeedbackState(prev => ({
         ...prev,
-        [messageId]: { userVote: vote, isSubmitting: false }
+        [messageId]: { userVote: feedbackType, isSubmitting: false }
       }));
+      
+      // Close modal
+      setFeedbackModal({ isOpen: false, messageId: null, feedbackType: null });
+      
+      // Show success message
+      setSuccessMessage({ messageId, show: true });
+      
+      // Hide success message after 3 seconds
+      setTimeout(() => {
+        setSuccessMessage({ messageId: null, show: false });
+      }, 3000);
+
+      console.log('✅ Feedback saved successfully');
 
     } catch (error) {
       console.error('❌ Feedback error:', error);
       
       // Revert to previous state on error
+      const currentVote = feedbackState[messageId]?.userVote;
       setFeedbackState(prev => ({
         ...prev,
         [messageId]: { userVote: currentVote, isSubmitting: false }
@@ -122,7 +165,15 @@ export default function MessageList({
         ...prev,
         [messageId]: error.message
       }));
+      
+      // Close modal on error too
+      setFeedbackModal({ isOpen: false, messageId: null, feedbackType: null });
     }
+  };
+
+  // 🆕 Handle feedback modal close
+  const handleFeedbackModalClose = () => {
+    setFeedbackModal({ isOpen: false, messageId: null, feedbackType: null });
   };
 
   const formatTime = (timestamp) => {
@@ -591,6 +642,13 @@ export default function MessageList({
           </button>
         </div>
         
+        {/* Success message */}
+        {successMessage.show && successMessage.messageId === messageId && (
+          <div className={styles.feedbackSuccess}>
+            ✓ Thank you for your feedback!
+          </div>
+        )}
+        
         {/* Error message */}
         {error && (
           <div className={styles.feedbackError}>
@@ -814,6 +872,15 @@ export default function MessageList({
       )}
 
       <div ref={messagesEndRef} />
+      
+      {/* Feedback Modal */}
+      <FeedbackModal
+        isOpen={feedbackModal.isOpen}
+        onClose={handleFeedbackModalClose}
+        onSubmit={handleFeedbackSubmit}
+        feedbackType={feedbackModal.feedbackType}
+        messageId={feedbackModal.messageId}
+      />
     </div>
   );
 }

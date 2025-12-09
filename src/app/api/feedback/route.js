@@ -1,196 +1,301 @@
-// src/app/api/feedback/route.js - Fixed Image Attachment Handling
+// src/app/api/messages/feedback/route.js - User Feedback with Detailed Feedback Support
 import { NextResponse } from 'next/server';
-import { sendEmail } from '@/services/email-service';
+import { headers } from 'next/headers';
+import jwt from 'jsonwebtoken';
+import connectToDatabase from '@/lib/db/mongodb';
+import User from '@/models/User';
+import Conversation from '@/models/Conversation';
 
-export async function POST(request) {
+// Helper function to get authenticated user (JWT-based)
+async function getAuthenticatedUser() {
   try {
-    // Parse the multipart form data
-    const formData = await request.formData();
-    
-    // Extract form fields
-    const title = formData.get('title');
-    const description = formData.get('description');
-    const allowContact = formData.get('allowContact') === 'true';
+    const headersList = headers();
+    const authorization = headersList.get('authorization');
 
-    // Validate required fields
-    if (!title || !description) {
-      return NextResponse.json({ 
-        message: 'Title and description are required',
-        success: false 
-      }, { status: 400 });
+    if (!authorization || !authorization.startsWith('Bearer ')) {
+      return null;
     }
 
-    // Process uploaded files with proper encoding
-    const attachments = [];
-    const files = [];
-    
-    // Get all file entries
-    for (const [key, value] of formData.entries()) {
-      if (key.startsWith('file_') && value instanceof File && value.size > 0) {
-        files.push(value);
-      }
-    }
-    
-    // Process each file with proper MIME type detection
-    for (const file of files) {
-      try {
-        const bytes = await file.arrayBuffer();
-        const buffer = Buffer.from(bytes);
-        
-        // Get proper MIME type for images
-        let contentType = file.type;
-        if (!contentType && file.name) {
-          const ext = file.name.toLowerCase().split('.').pop();
-          const mimeTypes = {
-            'jpg': 'image/jpeg',
-            'jpeg': 'image/jpeg',
-            'png': 'image/png',
-            'gif': 'image/gif',
-            'svg': 'image/svg+xml',
-            'pdf': 'application/pdf',
-            'txt': 'text/plain',
-            'doc': 'application/msword',
-            'docx': 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
-          };
-          contentType = mimeTypes[ext] || 'application/octet-stream';
-        }
-        
-        attachments.push({
-          filename: file.name,
-          content: buffer,
-          contentType: contentType,
-          encoding: 'base64',  // Explicitly set encoding for images
-          cid: `attachment_${attachments.length}` // Content ID for inline images
-        });
-        
-        console.log(`✅ Processed file: ${file.name} (${contentType}, ${buffer.length} bytes)`);
-      } catch (error) {
-        console.error('❌ Error processing file:', file.name, error);
-      }
-    }
+    const token = authorization.substring(7);
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
-    // Prepare email content with inline image support
-    const emailSubject = `REG-GPT Feedback: ${title}`;
-    
-    // Build inline image references for email
-    const inlineImageHTML = attachments
-      .filter(att => att.contentType.startsWith('image/'))
-      .map((att, index) => `
-        <div style="margin: 10px 0;">
-          <p style="margin: 5px 0; font-weight: bold; color: #374151;">Attached Image: ${att.filename}</p>
-          <img src="cid:${att.cid}" style="max-width: 500px; height: auto; border: 1px solid #e5e7eb; border-radius: 4px;" alt="${att.filename}">
-        </div>
-      `).join('');
-    
-    const emailHtml = `
-      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
-        <div style="background-color: #f0fdf4; border-left: 4px solid #059669; padding: 16px; margin-bottom: 20px;">
-          <h2 style="color: #059669; margin: 0 0 8px 0;">REG-GPT Feedback Submission</h2>
-          <p style="color: #047857; margin: 0; font-size: 14px;">Building Codes Assistant Feedback</p>
-        </div>
-        
-        <div style="background-color: #ffffff; border: 1px solid #e5e7eb; border-radius: 8px; padding: 20px;">
-          <h3 style="color: #111827; margin-top: 0;">Feedback Details</h3>
-          
-          <div style="margin-bottom: 16px;">
-            <strong style="color: #374151;">Title:</strong>
-            <p style="margin: 4px 0 0 0; color: #1f2937;">${title}</p>
-          </div>
-          
-          <div style="margin-bottom: 16px;">
-            <strong style="color: #374151;">Description:</strong>
-            <div style="margin: 4px 0 0 0; color: #1f2937; white-space: pre-wrap;">${description}</div>
-          </div>
-          
-          <div style="margin-bottom: 16px;">
-            <strong style="color: #374151;">Contact Permission:</strong>
-            <p style="margin: 4px 0 0 0; color: #1f2937;">
-              ${allowContact ? '✅ User agrees to be contacted for follow-up' : '❌ User does not want to be contacted'}
-            </p>
-          </div>
-          
-          ${attachments.length > 0 ? `
-          <div style="margin-bottom: 16px;">
-            <strong style="color: #374151;">Attachments (${attachments.length} files):</strong>
-            <ul style="margin: 4px 0 0 20px; color: #1f2937;">
-              ${attachments.map(att => `
-                <li>${att.filename} (${att.contentType || 'unknown'}, ${(att.content.length / 1024).toFixed(1)} KB)</li>
-              `).join('')}
-            </ul>
-          </div>
-          ` : ''}
-          
-          ${inlineImageHTML ? `
-          <div style="margin-bottom: 16px;">
-            <strong style="color: #374151;">Attached Images:</strong>
-            ${inlineImageHTML}
-          </div>
-          ` : ''}
-          
-          <div style="background-color: #f9fafb; border-radius: 6px; padding: 12px; margin-top: 20px;">
-            <p style="margin: 0; font-size: 12px; color: #6b7280;">
-              <strong>Submission Time:</strong> ${new Date().toLocaleString('en-GB', { 
-                timeZone: 'Europe/London',
-                dateStyle: 'full',
-                timeStyle: 'medium'
-              })}
-            </p>
-          </div>
-        </div>
-        
-        <div style="margin-top: 20px; padding: 16px; background-color: #f8fafc; border-radius: 8px;">
-          <p style="margin: 0; font-size: 12px; color: #64748b; text-align: center;">
-            This feedback was submitted through the REG-GPT Building Codes Assistant feedback form.
-          </p>
-        </div>
-      </div>
-    `;
+    await connectToDatabase();
+    const userId = decoded.userId || decoded.id;
+    const user = await User.findById(userId);
 
-    // Send email with proper attachment configuration
-    const emailOptions = {
-      to: 'teja.sabinkar2304@gmail.com',
-      subject: emailSubject,
-      html: emailHtml
-    };
-
-    // Add attachments if any exist
-    if (attachments.length > 0) {
-      emailOptions.attachments = attachments;
-    }
-
-    await sendEmail(emailOptions);
-
-    // Log successful submission with attachment details
-    console.log('✅ Feedback submitted successfully:', {
-      title,
-      allowContact,
-      attachmentCount: attachments.length,
-      attachmentTypes: attachments.map(att => ({ name: att.filename, type: att.contentType })),
-      timestamp: new Date().toISOString(),
-    });
-
-    // Return success response
-    return NextResponse.json({ 
-      message: 'Feedback submitted successfully',
-      success: true,
-      attachmentCount: attachments.length,
-      timestamp: new Date().toISOString(),
-    });
-
+    return user ? { id: user._id, email: user.email, name: user.name } : null;
   } catch (error) {
-    console.error('❌ Error processing feedback submission:', error);
-    
-    return NextResponse.json({ 
-      message: 'Internal server error. Please try again later.',
-      success: false,
-      error: process.env.NODE_ENV === 'development' ? error.message : undefined,
-    }, { status: 500 });
+    console.error('Authentication error:', error);
+    return null;
   }
 }
 
-// Handle other HTTP methods
-export async function GET() {
-  return NextResponse.json({ 
-    message: 'Feedback API - Use POST method to submit feedback' 
-  }, { status: 405 });
+export async function POST(request) {
+  try {
+    console.log('👍 User feedback API called');
+
+    // Get the current user from JWT token
+    const currentUser = await getAuthenticatedUser();
+
+    if (!currentUser) {
+      console.log('❌ User not authenticated');
+      return NextResponse.json(
+        { error: 'Not authenticated' },
+        { status: 401 }
+      );
+    }
+
+    console.log('✅ User authenticated:', currentUser.id);
+
+    // Connect to the database
+    await connectToDatabase();
+
+    // Parse the request body
+    const { conversationId, messageId, vote, issueType, details } = await request.json();
+
+    console.log('🔍 Feedback request:', {
+      conversationId,
+      messageId,
+      vote,
+      hasIssueType: !!issueType,
+      hasDetails: !!details,
+      userId: currentUser.id
+    });
+
+    // Validate required fields
+    if (!conversationId || !messageId) {
+      console.log('❌ Missing required fields');
+      return NextResponse.json(
+        { error: 'Conversation ID and message ID are required' },
+        { status: 400 }
+      );
+    }
+
+    // Validate vote value
+    if (!vote || !['helpful', 'unhelpful'].includes(vote)) {
+      console.log('❌ Invalid vote value:', vote);
+      return NextResponse.json(
+        { error: 'Vote must be either "helpful" or "unhelpful"' },
+        { status: 400 }
+      );
+    }
+
+    // Validate issueType if provided (must match schema enum)
+    const validIssueTypes = [
+      'UI bug',
+      'Did not fully follow my request',
+      'Not factually correct',
+      'Incomplete response',
+      'Report content',
+      'Other'
+    ];
+    
+    if (issueType && !validIssueTypes.includes(issueType)) {
+      console.log('❌ Invalid issue type:', issueType);
+      return NextResponse.json(
+        { error: 'Invalid issue type provided' },
+        { status: 400 }
+      );
+    }
+
+    // Validate details length if provided
+    if (details && details.length > 2000) {
+      console.log('❌ Details too long:', details.length);
+      return NextResponse.json(
+        { error: 'Feedback details cannot exceed 2000 characters' },
+        { status: 400 }
+      );
+    }
+
+    // Find the conversation
+    console.log('🔍 Finding conversation...');
+    const conversation = await Conversation.findOne({
+      _id: conversationId,
+      userId: currentUser.id
+    });
+
+    if (!conversation) {
+      console.log('❌ Conversation not found:', { conversationId, userId: currentUser.id });
+      return NextResponse.json(
+        { error: 'Conversation not found or access denied' },
+        { status: 404 }
+      );
+    }
+
+    console.log('✅ Conversation found:', {
+      title: conversation.title,
+      messageCount: conversation.messages.length
+    });
+
+    // Find the message by _id
+    const message = conversation.messages.id(messageId);
+
+    if (!message) {
+      console.log('❌ Message not found:', messageId);
+      return NextResponse.json(
+        { error: 'Message not found in conversation' },
+        { status: 404 }
+      );
+    }
+
+    console.log('✅ Message found:', {
+      role: message.role,
+      hasRegulation: !!message.regulation,
+      currentFeedback: message.feedback
+    });
+
+    // Only allow feedback on assistant messages
+    if (message.role !== 'assistant') {
+      console.log('❌ Cannot add feedback to non-assistant message:', message.role);
+      return NextResponse.json(
+        { error: 'Feedback can only be added to assistant responses' },
+        { status: 400 }
+      );
+    }
+
+    // Check if user is changing their vote
+    const previousVote = message.feedback?.userVote;
+    const isChangingVote = previousVote && previousVote !== vote;
+
+    // Update the feedback
+    if (!message.feedback) {
+      message.feedback = {};
+    }
+
+    message.feedback.userVote = vote;
+    message.feedback.votedAt = new Date();
+    
+    // 🆕 Save detailed feedback if provided
+    if (issueType) {
+      message.feedback.issueType = issueType;
+      console.log('📝 Issue type saved:', issueType);
+    }
+    
+    if (details && details.trim()) {
+      message.feedback.details = details.trim();
+      console.log('📝 Feedback details saved (length):', details.trim().length);
+    }
+
+    // Mark the messages array as modified
+    conversation.markModified('messages');
+
+    // Save the conversation
+    await conversation.save();
+
+    console.log('✅ Feedback saved successfully:', {
+      messageId,
+      vote,
+      issueType: message.feedback.issueType || 'none',
+      hasDetails: !!message.feedback.details,
+      detailsLength: message.feedback.details?.length || 0,
+      previousVote,
+      isChangingVote,
+      votedAt: message.feedback.votedAt
+    });
+
+    return NextResponse.json({
+      message: 'Feedback saved successfully',
+      feedback: {
+        userVote: message.feedback.userVote,
+        issueType: message.feedback.issueType,
+        hasDetails: !!message.feedback.details,
+        votedAt: message.feedback.votedAt,
+        isChangingVote
+      }
+    });
+
+  } catch (error) {
+    console.error('❌ User feedback API error:', error);
+
+    if (error.name === 'CastError') {
+      return NextResponse.json(
+        { error: 'Invalid conversation or message ID format' },
+        { status: 400 }
+      );
+    }
+
+    if (error.name === 'ValidationError') {
+      return NextResponse.json(
+        { error: 'Validation error: ' + error.message },
+        { status: 400 }
+      );
+    }
+
+    return NextResponse.json(
+      { 
+        error: 'An error occurred while saving feedback',
+        details: error.message
+      },
+      { status: 500 }
+    );
+  }
+}
+
+// GET endpoint to retrieve feedback for a specific message
+export async function GET(request) {
+  try {
+    // Get the current user from JWT token
+    const currentUser = await getAuthenticatedUser();
+
+    if (!currentUser) {
+      return NextResponse.json(
+        { error: 'Not authenticated' },
+        { status: 401 }
+      );
+    }
+
+    await connectToDatabase();
+
+    // Parse query parameters
+    const { searchParams } = new URL(request.url);
+    const conversationId = searchParams.get('conversationId');
+    const messageId = searchParams.get('messageId');
+
+    if (!conversationId || !messageId) {
+      return NextResponse.json(
+        { error: 'Conversation ID and message ID are required' },
+        { status: 400 }
+      );
+    }
+
+    // Find the conversation
+    const conversation = await Conversation.findOne({
+      _id: conversationId,
+      userId: currentUser.id
+    });
+
+    if (!conversation) {
+      return NextResponse.json(
+        { error: 'Conversation not found or access denied' },
+        { status: 404 }
+      );
+    }
+
+    // Find the message
+    const message = conversation.messages.id(messageId);
+
+    if (!message) {
+      return NextResponse.json(
+        { error: 'Message not found in conversation' },
+        { status: 404 }
+      );
+    }
+
+    return NextResponse.json({
+      feedback: message.feedback || { 
+        userVote: null, 
+        votedAt: null,
+        issueType: null,
+        details: null
+      }
+    });
+
+  } catch (error) {
+    console.error('❌ Get feedback error:', error);
+
+    return NextResponse.json(
+      { error: 'An error occurred while fetching feedback' },
+      { status: 500 }
+    );
+  }
 }

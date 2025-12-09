@@ -131,9 +131,14 @@ export async function GET(request) {
 
         const regulation = assistantResponse.regulation;
 
-        // Determine feedback based on confidence score
-        // confidence >= 0.7 = helpful, < 0.7 = unhelpful
-        const feedback = regulation.confidence >= 0.7 ? 'helpful' : 'unhelpful';
+        // Get user feedback from assistant message (if available)
+        const userFeedback = assistantResponse.feedback || {};
+        const feedbackVote = userFeedback.userVote || null;
+        const feedbackIssueType = userFeedback.issueType || null;
+        const feedbackDetails = userFeedback.details || null;
+
+        // Determine feedback based on user's actual vote (if available) or confidence score
+        const feedback = feedbackVote || (regulation.confidence >= 0.7 ? 'helpful' : 'unhelpful');
 
         // Response time from regulation data
         const responseTime = regulation.processingTime || 0;
@@ -156,7 +161,7 @@ export async function GET(request) {
           if (responseTimeFilter === 'slow' && responseTime < 5) continue;
         }
 
-        // Build query object
+        // Build query object with feedback details
         allQueries.push({
           id: `${conv._id}_${message._id}`,
           conversationId: conv._id,
@@ -170,7 +175,11 @@ export async function GET(request) {
           feedback,
           confidence: regulation.confidence,
           buildingType: regulation.queryMetadata?.buildingType || null,
-          codeType: regulation.queryMetadata?.codeType || null
+          codeType: regulation.queryMetadata?.codeType || null,
+          // 🆕 Add detailed feedback fields
+          feedbackIssueType,
+          feedbackDetails,
+          hasFeedbackDetails: !!(feedbackIssueType || feedbackDetails)
         });
       }
     }

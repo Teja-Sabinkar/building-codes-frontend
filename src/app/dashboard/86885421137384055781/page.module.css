@@ -2495,4 +2495,108 @@
 :global(.dark-mode) .tooltipGoal {
   border-top-color: #374151;
   color: #10b981;
+}/* ========================================
+   INLINE FEEDBACK DETAILS STYLES
+   (Displayed within the query cell)
+   ======================================== */
+
+/* Inline feedback details container */
+.feedbackDetailsInline {
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px solid #e5e7eb;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+:global(.dark-mode) .feedbackDetailsInline {
+  border-top-color: #374151;
+}
+
+/* Inline feedback issue section */
+.feedbackIssueInline {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+/* Inline feedback label */
+.feedbackLabelInline {
+  font-size: 11px;
+  font-weight: 600;
+  color: #6b7280;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+:global(.dark-mode) .feedbackLabelInline {
+  color: #9ca3af;
+}
+
+/* Inline issue type badge */
+.feedbackIssueTypeInline {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  background-color: #fef3c7;
+  color: #92400e;
+  border-radius: 3px;
+  font-size: 11px;
+  font-weight: 500;
+  border: 1px solid #fbbf24;
+}
+
+:global(.dark-mode) .feedbackIssueTypeInline {
+  background-color: #78350f;
+  color: #fbbf24;
+  border-color: #92400e;
+}
+
+/* Inline feedback details text section */
+.feedbackDetailsTextInline {
+  display: flex;
+  gap: 6px;
+  align-items: flex-start;
+}
+
+/* Inline feedback details content */
+.feedbackDetailsContentInline {
+  flex: 1;
+  color: #4b5563;
+  font-size: 12px;
+  line-height: 1.5;
+  font-style: italic;
+}
+
+:global(.dark-mode) .feedbackDetailsContentInline {
+  color: #9ca3af;
+}
+
+/* Mobile responsiveness for inline feedback */
+@media (max-width: 768px) {
+  .feedbackDetailsInline {
+    margin-top: 6px;
+    padding-top: 6px;
+    gap: 4px;
+  }
+  
+  .feedbackLabelInline {
+    font-size: 10px;
+  }
+  
+  .feedbackIssueTypeInline {
+    font-size: 10px;
+    padding: 2px 6px;
+  }
+  
+  .feedbackDetailsContentInline {
+    font-size: 11px;
+  }
+  
+  .feedbackDetailsTextInline {
+    flex-direction: column;
+    gap: 3px;
+  }
 }
