@@ -139,26 +139,26 @@ export async function POST(request) {
     // Parse the request body
     const { title, initialMessage, region, regionDisplayName } = await request.json();
 
-    console.log('🔧 Creating conversation with region data:', {
+    console.log('ðŸ”§ Creating conversation with region data:', {
       title,
       region,
       regionDisplayName,
       hasInitialMessage: !!initialMessage
     });
 
-    // 🔧 FIX: Handle region display name properly
+    // ðŸ”§ FIX: Handle region display name properly
     let finalRegionDisplayName;
 
     if (regionDisplayName && regionDisplayName !== 'undefined' && regionDisplayName.trim()) {
       finalRegionDisplayName = regionDisplayName.trim();
     } else {
-      // Fallback based on region - 🔥 UPDATED: Added Dubai support
+      // Fallback based on region - ðŸ”¥ UPDATED: Added Dubai support
       if (region === 'Scotland') {
-        finalRegionDisplayName = '🏴󠁧󠁢󠁳󠁣󠁴󠁿 Scottish Building Standards';
+        finalRegionDisplayName = 'ðŸ´ó §ó ¢ó ³ó £ó ´ó ¿ Scottish Building Standards';
       } else if (region === 'Dubai') {
-        finalRegionDisplayName = '🇦🇪 Dubai Building Code';
+        finalRegionDisplayName = 'ðŸ‡¦ðŸ‡ª Dubai Building Code';
       } else {
-        finalRegionDisplayName = '🇮🇳 Indian Building Codes';
+        finalRegionDisplayName = 'ðŸ‡®ðŸ‡³ Indian Building Codes';
       }
     }
 
@@ -180,7 +180,7 @@ export async function POST(request) {
       }
     };
 
-    console.log('🔧 Final conversation data before creation:', {
+    console.log('ðŸ”§ Final conversation data before creation:', {
       region: conversationData.region,
       regionDisplayName: conversationData.regionDisplayName,
       title: conversationData.title
@@ -189,7 +189,7 @@ export async function POST(request) {
     // Create the conversation
     const conversation = await Conversation.create(conversationData);
 
-    console.log('✅ Created new regulation conversation:', {
+    console.log('âœ… Created new regulation conversation:', {
       id: conversation._id,
       title: conversation.title,
       region: conversation.region,
@@ -205,7 +205,7 @@ export async function POST(request) {
         timestamp: new Date()
       });
 
-      console.log('✅ Added initial message to conversation');
+      console.log('âœ… Added initial message to conversation');
     }
 
     // Return the created conversation
@@ -215,7 +215,7 @@ export async function POST(request) {
     }, { status: 201 });
 
   } catch (error) {
-    console.error('❌ Create regulation conversation error:', error);
+    console.error('âŒ Create regulation conversation error:', error);
 
     return NextResponse.json(
       { error: 'An error occurred while creating the regulation conversation' },
@@ -262,13 +262,13 @@ export async function PATCH(request) {
       );
     }
 
-    console.log('📄 Updating regulation conversation:', {
+    console.log('ðŸ“„ Updating regulation conversation:', {
       conversationId,
       updates: Object.keys(updates),
       currentTitle: conversation.title
     });
 
-    // Apply allowed updates for regulation conversations - 🆕 ADD REGION FIELDS
+    // Apply allowed updates for regulation conversations - ðŸ†• ADD REGION FIELDS
     const allowedUpdates = ['title', 'metadata', 'region', 'regionDisplayName'];
     Object.keys(updates).forEach(key => {
       if (allowedUpdates.includes(key)) {
@@ -284,13 +284,13 @@ export async function PATCH(request) {
           if (newTitle.length > 0 && newTitle.length <= 100) {
             conversation.title = newTitle;
           }
-        } else if (key === 'region') {  // 🆕 ADD REGION VALIDATION
-          // Validate region is one of the allowed values - 🔥 UPDATED: Added Dubai
+        } else if (key === 'region') {  // ðŸ†• ADD REGION VALIDATION
+          // Validate region is one of the allowed values - ðŸ”¥ UPDATED: Added Dubai
           const allowedRegions = ['India', 'Scotland', 'Dubai'];
           if (allowedRegions.includes(updates.region)) {
             conversation.region = updates.region;
           }
-        } else if (key === 'regionDisplayName') {  // 🆕 ADD REGION DISPLAY VALIDATION
+        } else if (key === 'regionDisplayName') {  // ðŸ†• ADD REGION DISPLAY VALIDATION
           // Basic validation for regionDisplayName
           const newRegionDisplayName = updates.regionDisplayName.trim();
           if (newRegionDisplayName.length > 0 && newRegionDisplayName.length <= 50) {
@@ -304,7 +304,7 @@ export async function PATCH(request) {
 
     await conversation.save();
 
-    console.log('✅ Regulation conversation updated:', {
+    console.log('âœ… Regulation conversation updated:', {
       newTitle: conversation.title,
       messageCount: conversation.messages.length
     });
@@ -369,10 +369,10 @@ export async function DELETE(request) {
       msg.regulation && msg.regulation.answer
     ).length;
 
-    console.log('🗑️ Deleting regulation conversation:', {
+    console.log('ðŸ—‘ï¸ Deleting regulation conversation:', {
       conversationId,
       title: conversation.title,
-      region: conversation.region,  // 🆕 ADD REGION TO DELETE LOG
+      region: conversation.region,  // ðŸ†• ADD REGION TO DELETE LOG
       messageCount: conversation.messages.length,
       regulationCount,
       permanent
@@ -382,7 +382,7 @@ export async function DELETE(request) {
       // Permanently delete the conversation (admin only or special cases)
       await Conversation.findByIdAndDelete(conversationId);
 
-      console.log('💀 Permanently deleted regulation conversation');
+      console.log('ðŸ’€ Permanently deleted regulation conversation');
 
       return NextResponse.json({
         message: 'Regulation conversation permanently deleted'
@@ -392,7 +392,7 @@ export async function DELETE(request) {
       // This removes it from user's view but keeps regulation data for analytics
       await conversation.archive();
 
-      console.log('📦 Archived regulation conversation');
+      console.log('ðŸ“¦ Archived regulation conversation');
 
       return NextResponse.json({
         message: 'Regulation conversation deleted successfully',

@@ -17,7 +17,7 @@ export default function ConversationList({
 
   // Debug: Log current conversation changes
   useEffect(() => {
-    console.log('🔍 ConversationList - Current conversation changed:', {
+    console.log('ðŸ” ConversationList - Current conversation changed:', {
       currentId: currentConversation?._id,
       currentTitle: currentConversation?.title,
       totalConversations: conversations.length
@@ -70,7 +70,7 @@ export default function ConversationList({
   };
 
   const handleConversationClick = (conversation) => {
-    console.log('🔄 ConversationList - Conversation clicked:', {
+    console.log('ðŸ”„ ConversationList - Conversation clicked:', {
       id: conversation._id,
       title: conversation.title,
       isCurrentlyActive: currentConversation?._id === conversation._id
@@ -78,11 +78,11 @@ export default function ConversationList({
     onSelectConversation(conversation);
   };
 
-  // 🔧 FIX: Updated to match RegulationPanel logic - Database title first
+  // ðŸ”§ FIX: Updated to match RegulationPanel logic - Database title first
   const getConversationDisplayTitle = (conversation) => {
     if (!conversation) return 'New Regulation Query';
 
-    // 🔧 FIX: Always use database title if it exists and is not empty
+    // ðŸ”§ FIX: Always use database title if it exists and is not empty
     if (conversation.title && conversation.title.trim() && conversation.title !== 'New Regulation Query') {
       // Truncate for sidebar display
       const title = conversation.title.trim();
@@ -128,7 +128,7 @@ export default function ConversationList({
     const isActive = currentId === conversationId;
 
     if (isActive) {
-      console.log('✅ Active conversation found in list:', {
+      console.log('âœ… Active conversation found in list:', {
         currentId,
         conversationId,
         title: conversation.title
@@ -152,7 +152,7 @@ export default function ConversationList({
     );
   }
 
-  console.log('🔍 ConversationList render:', {
+  console.log('ðŸ” ConversationList render:', {
     totalConversations: conversations.length,
     currentConversationId: currentConversation?._id,
     conversationIds: conversations.map(c => c._id),

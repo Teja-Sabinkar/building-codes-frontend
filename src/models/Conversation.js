@@ -1,5 +1,13 @@
-// src/models/Conversation.js - Building Codes Assistant - UPDATED WITH DUBAI SUPPORT
+// src/models/Conversation.js - Building Codes Assistant - UPDATED WITH DUBAI SUPPORT + HIGHLIGHT MARKERS
 import mongoose from 'mongoose';
+
+// 🔥 CRITICAL FIX: Force clear cached model to ensure new schema is used
+if (mongoose.models.Conversation) {
+  delete mongoose.models.Conversation;
+}
+if (mongoose.connection.models && mongoose.connection.models.Conversation) {
+  delete mongoose.connection.models.Conversation;
+}
 
 const MessageSchema = new mongoose.Schema({
   role: {
@@ -50,13 +58,26 @@ const MessageSchema = new mongoose.Schema({
       default: null,
       enum: ['building_codes', 'not_available', 'out_of_scope', 'identity', null]
     },
+    // ✨✨✨ UPDATED: Added highlight_markers, country, display_text fields ✨✨✨
     references: [{
       id: Number,
       document: String,
       section: String,
       page: String,
       confidence: Number,
-      relevanceScore: Number
+      relevanceScore: Number,
+      country: String,                    // ✨ NEW: Country for multi-region support
+      display_text: String,               // ✨ NEW: Formatted display text
+      // ✨✨✨ NEW: HIGHLIGHT MARKERS for document viewer text highlighting ✨✨✨
+      highlight_markers: [{
+        start: String,                    // First 60 chars of section to highlight
+        end: String,                      // Last 60 chars of section to highlight
+        preview: String,                  // Preview text for fallback
+        start_normalized: String,         // Normalized version for matching
+        end_normalized: String,           // Normalized version for matching
+        section_length: Number,           // Total length of section
+        full_text_sample: String          // Sample of full text
+      }]
     }],
     relatedRegulations: [{
       title: String,
@@ -277,115 +298,91 @@ ConversationSchema.methods.categorizeQuery = function (queryText) {
     'Energy': ['energy', 'iecc', 'efficiency', 'insulation'],
     'Plumbing': ['plumbing', 'ipc', 'water', 'sewer'],
     'Mechanical': ['mechanical', 'imc', 'hvac', 'ventilation'],
-    'Electrical': ['electrical', 'nec', 'wiring', 'circuit']
+    'Electrical': ['electrical', 'nec', 'wiring', 'power']
   };
 
   const queryLower = queryText.toLowerCase();
 
-  // Determine building type
-  let buildingType = 'general';
+  // Find matching building type
+  let detectedBuildingType = 'general';
   for (const [type, keywords] of Object.entries(buildingTypes)) {
     if (keywords.some(keyword => queryLower.includes(keyword))) {
-      buildingType = type;
+      detectedBuildingType = type;
       break;
     }
   }
 
-  // Determine code type
-  let codeType = 'general';
+  // Find matching code type
+  let detectedCodeType = 'general';
   for (const [type, keywords] of Object.entries(codeTypes)) {
     if (keywords.some(keyword => queryLower.includes(keyword))) {
-      codeType = type;
+      detectedCodeType = type;
       break;
     }
   }
 
-  // Extract search terms (remove common words)
-  const commonWords = ['what', 'are', 'the', 'for', 'in', 'of', 'and', 'or', 'is', 'requirements', 'minimum', 'maximum'];
-  const searchTerms = queryText
-    .toLowerCase()
-    .replace(/[^\w\s]/g, '')
-    .split(' ')
-    .filter(word => word.length > 2 && !commonWords.includes(word));
-
   return {
-    buildingType,
-    codeType,
-    searchTerms: [...new Set(searchTerms)] // Remove duplicates
+    buildingType: detectedBuildingType,
+    codeType: detectedCodeType
   };
 };
 
-// Instance Methods
-ConversationSchema.methods.addMessage = function (messageData) {
-  console.log('📄 addMessage called for regulation query');
+// Instance methods
+ConversationSchema.methods.addMessage = async function (messageData) {
   try {
-    // Process regulation metadata if this message contains a regulation
-    if (messageData.regulation && messageData.regulation.answer) {
-      // Categorize the original user query
-      const userMessage = this.messages[this.messages.length - 1];
-      if (userMessage && userMessage.role === 'user') {
-        const queryMetadata = this.categorizeQuery(userMessage.content);
-        messageData.regulation.queryMetadata = {
-          ...queryMetadata,
-          lastUpdated: new Date()
-        };
-      }
+    console.log('📄 addMessage called for regulation query');
 
-      // Update conversation metadata
+    // Ensure the message data is valid
+    if (!messageData.role || !messageData.content) {
+      throw new Error('Invalid message data: role and content are required');
+    }
+
+    // Create the message
+    const message = {
+      role: messageData.role,
+      content: messageData.content,
+      timestamp: messageData.timestamp || new Date(),
+      isEdited: messageData.isEdited || false
+    };
+
+    // Add regulation data if provided
+    if (messageData.regulation) {
+      message.regulation = messageData.regulation;
+    }
+
+    // Add feedback data if provided
+    if (messageData.feedback) {
+      message.feedback = messageData.feedback;
+    }
+
+    // Add the message to the conversation
+    this.messages.push(message);
+    this.markModified('messages');
+
+    // Update metadata if regulation data is present
+    if (messageData.regulation && messageData.regulation.answer) {
       this.metadata.lastRegulationQuery = new Date();
       this.metadata.totalQueries = (this.metadata.totalQueries || 0) + 1;
 
-      // Update focus areas
-      if (messageData.regulation.queryMetadata) {
-        const focusAreas = this.metadata.focusAreas || new Map();
-        const { buildingType, codeType } = messageData.regulation.queryMetadata;
-
-        if (buildingType && buildingType !== 'general') {
-          const count = focusAreas.get(buildingType) || 0;
-          focusAreas.set(buildingType, count + 1);
-        }
-
-        if (codeType && codeType !== 'general') {
-          const count = focusAreas.get(codeType) || 0;
-          focusAreas.set(codeType, count + 1);
-        }
-
-        this.metadata.focusAreas = focusAreas;
+      // Calculate average confidence
+      const regulationMessages = this.messages.filter(msg => msg.regulation && msg.regulation.confidence);
+      if (regulationMessages.length > 0) {
+        const totalConfidence = regulationMessages.reduce((sum, msg) => sum + msg.regulation.confidence, 0);
+        this.metadata.averageConfidence = totalConfidence / regulationMessages.length;
       }
-
-      // Update average confidence
-      const allRegulations = this.messages
-        .filter(msg => msg.regulation && msg.regulation.confidence !== null)
-        .map(msg => msg.regulation.confidence);
-
-      allRegulations.push(messageData.regulation.confidence);
-
-      const avgConfidence = allRegulations.reduce((sum, conf) => sum + conf, 0) / allRegulations.length;
-      this.metadata.averageConfidence = avgConfidence;
     }
 
-    this.messages.push(messageData);
+    // Save and return the saved message
+    await this.save();
 
-    // Update conversation title based on first user message if still default
-    if (this.title === 'New Regulation Query' && messageData.role === 'user' && this.messages.length === 1) {
-      // Generate title from first message (truncate to 50 chars)
-      const title = messageData.content.length > 50
-        ? messageData.content.substring(0, 47) + '...'
-        : messageData.content;
-      this.title = title;
-    }
-
-    this.markModified('messages');
-    this.markModified('metadata');
-    return this.save();
+    return this.messages[this.messages.length - 1];
   } catch (error) {
-    console.error('Error in addMessage:', error);
+    console.error('❌ Error in addMessage:', error);
     throw error;
   }
 };
 
 ConversationSchema.methods.updateMessage = function (messageIndex, updates) {
-  console.log('📄 updateMessage called:', { messageIndex, updates });
   try {
     if (messageIndex < 0 || messageIndex >= this.messages.length) {
       throw new Error(`Invalid message index: ${messageIndex}. Message count: ${this.messages.length}`);
@@ -651,17 +648,8 @@ ConversationSchema.pre('save', function (next) {
   }
 });
 
-// Create the model
-let ConversationModel;
-
-try {
-  // Try to get existing model
-  ConversationModel = mongoose.model('Conversation');
-  console.log('✅ Using existing Conversation model');
-} catch (error) {
-  // Create new model if it doesn't exist
-  ConversationModel = mongoose.model('Conversation', ConversationSchema);
-  console.log('✅ Created new Conversation model');
-}
+// Create the model - FORCE RECREATION
+const ConversationModel = mongoose.model('Conversation', ConversationSchema);
+console.log('✅ Created/Recreated Conversation model with highlight_markers support');
 
 export default ConversationModel;

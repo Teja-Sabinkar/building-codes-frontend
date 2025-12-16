@@ -31,28 +31,28 @@ async function getAuthenticatedUser() {
 
 export async function PATCH(request) {
   try {
-    console.log('🔧 Regulation message edit API called');
+    console.log('ðŸ”§ Regulation message edit API called');
 
     // Change from cookie-based to JWT-based authentication
     const currentUser = await getAuthenticatedUser();
 
     if (!currentUser) {
-      console.log('❌ User not authenticated');
+      console.log('âŒ User not authenticated');
       return NextResponse.json(
         { error: 'Not authenticated' },
         { status: 401 }
       );
     }
 
-    console.log('✅ User authenticated:', currentUser.id);
+    console.log('âœ… User authenticated:', currentUser.id);
 
     await connectToDatabase();
-    console.log('✅ Database connected');
+    console.log('âœ… Database connected');
 
     const body = await request.json();
     const { conversationId, messageIndex, newContent, shouldRegenerate = true } = body;
 
-    console.log('📝 Regulation query edit request:', {
+    console.log('ðŸ“ Regulation query edit request:', {
       conversationId,
       messageIndex,
       shouldRegenerate,
@@ -62,7 +62,7 @@ export async function PATCH(request) {
 
     // Validate required fields
     if (!conversationId) {
-      console.log('❌ Missing conversationId');
+      console.log('âŒ Missing conversationId');
       return NextResponse.json(
         { error: 'Conversation ID is required' },
         { status: 400 }
@@ -70,7 +70,7 @@ export async function PATCH(request) {
     }
 
     if (messageIndex === undefined || messageIndex === null) {
-      console.log('❌ Missing messageIndex');
+      console.log('âŒ Missing messageIndex');
       return NextResponse.json(
         { error: 'Message index is required' },
         { status: 400 }
@@ -78,7 +78,7 @@ export async function PATCH(request) {
     }
 
     if (!newContent || typeof newContent !== 'string' || !newContent.trim()) {
-      console.log('❌ Invalid newContent:', { newContent, type: typeof newContent });
+      console.log('âŒ Invalid newContent:', { newContent, type: typeof newContent });
       return NextResponse.json(
         { error: 'New content is required and must be a non-empty regulation question' },
         { status: 400 }
@@ -86,21 +86,21 @@ export async function PATCH(request) {
     }
 
     // Find conversation
-    console.log('🔍 Finding regulation conversation...');
+    console.log('ðŸ” Finding regulation conversation...');
     const conversation = await Conversation.findOne({
       _id: conversationId,
       userId: currentUser.id
     });
 
     if (!conversation) {
-      console.log('❌ Regulation conversation not found:', { conversationId, userId: currentUser.id });
+      console.log('âŒ Regulation conversation not found:', { conversationId, userId: currentUser.id });
       return NextResponse.json(
         { error: 'Regulation conversation not found' },
         { status: 404 }
       );
     }
 
-    console.log('✅ Regulation conversation found:', {
+    console.log('âœ… Regulation conversation found:', {
       messageCount: conversation.messages.length,
       targetIndex: messageIndex,
       title: conversation.title,
@@ -109,7 +109,7 @@ export async function PATCH(request) {
 
     // Validate message index
     if (messageIndex < 0 || messageIndex >= conversation.messages.length) {
-      console.log('❌ Invalid message index:', {
+      console.log('âŒ Invalid message index:', {
         messageIndex,
         messageCount: conversation.messages.length
       });
@@ -120,7 +120,7 @@ export async function PATCH(request) {
     }
 
     const message = conversation.messages[messageIndex];
-    console.log('📨 Target message:', {
+    console.log('ðŸ“¨ Target message:', {
       role: message.role,
       contentLength: message.content?.length,
       isEdited: message.isEdited,
@@ -129,7 +129,7 @@ export async function PATCH(request) {
 
     // Only allow editing user messages (regulation questions)
     if (message.role !== 'user') {
-      console.log('❌ Cannot edit non-user message:', { role: message.role });
+      console.log('âŒ Cannot edit non-user message:', { role: message.role });
       return NextResponse.json(
         { error: 'Only user regulation questions can be edited' },
         { status: 400 }
@@ -139,10 +139,10 @@ export async function PATCH(request) {
     const originalMessageCount = conversation.messages.length;
 
     // Perform the edit operation
-    console.log('✏️ Starting regulation query edit operation...');
+    console.log('âœï¸ Starting regulation query edit operation...');
 
     if (shouldRegenerate) {
-      console.log('🔄 Will regenerate regulation answer after edit');
+      console.log('ðŸ”„ Will regenerate regulation answer after edit');
 
       try {
         // Store original content if first edit
@@ -155,13 +155,13 @@ export async function PATCH(request) {
         message.content = newContent.trim();
         message.editedAt = new Date();
 
-        // 🔧 FIX: Update timestamp to current time for edited messages
-        message.timestamp = new Date();  // ← ADD THIS LINE
+        // ðŸ”§ FIX: Update timestamp to current time for edited messages
+        message.timestamp = new Date();  // â† ADD THIS LINE
 
         // Remove all messages after the edited message (regulation answers need regeneration)
         conversation.messages = conversation.messages.slice(0, messageIndex + 1);
 
-        console.log('✂️ Messages truncated for regulation regeneration:', {
+        console.log('âœ‚ï¸ Messages truncated for regulation regeneration:', {
           originalCount: originalMessageCount,
           newCount: conversation.messages.length,
           removedCount: originalMessageCount - conversation.messages.length
@@ -171,15 +171,15 @@ export async function PATCH(request) {
         conversation.markModified('messages');
         await conversation.save();
 
-        console.log('✅ Regulation query edit operation completed');
+        console.log('âœ… Regulation query edit operation completed');
 
       } catch (error) {
-        console.error('❌ Error in regulation query edit operation:', error);
+        console.error('âŒ Error in regulation query edit operation:', error);
         throw new Error(`Failed to edit regulation query: ${error.message}`);
       }
 
     } else {
-      console.log('📝 Edit regulation query only, no regeneration');
+      console.log('ðŸ“ Edit regulation query only, no regeneration');
 
       try {
         // If content is being updated, track the edit
@@ -195,22 +195,22 @@ export async function PATCH(request) {
         conversation.markModified('messages');
         await conversation.save();
 
-        console.log('✅ Regulation query update operation completed');
+        console.log('âœ… Regulation query update operation completed');
 
       } catch (error) {
-        console.error('❌ Error in regulation query update operation:', error);
+        console.error('âŒ Error in regulation query update operation:', error);
         throw new Error(`Failed to update regulation query: ${error.message}`);
       }
     }
 
-    console.log('✅ Regulation query edit operation completed successfully');
+    console.log('âœ… Regulation query edit operation completed successfully');
 
     // Reload conversation to get updated data
-    console.log('🔄 Reloading regulation conversation...');
+    console.log('ðŸ”„ Reloading regulation conversation...');
     const updatedConversation = await Conversation.findById(conversation._id);
 
     if (!updatedConversation) {
-      console.log('❌ Failed to reload regulation conversation');
+      console.log('âŒ Failed to reload regulation conversation');
       throw new Error('Failed to reload regulation conversation after edit');
     }
 
@@ -219,7 +219,7 @@ export async function PATCH(request) {
       msg.regulation && msg.regulation.answer
     ).length;
 
-    console.log('✅ Regulation query edit completed successfully:', {
+    console.log('âœ… Regulation query edit completed successfully:', {
       originalMessageCount,
       newMessageCount: updatedConversation.messages.length,
       messagesRemoved: originalMessageCount - updatedConversation.messages.length,
@@ -241,7 +241,7 @@ export async function PATCH(request) {
     });
 
   } catch (error) {
-    console.error('❌ Edit regulation query API error:', {
+    console.error('âŒ Edit regulation query API error:', {
       message: error.message,
       stack: error.stack,
       name: error.name
@@ -330,7 +330,7 @@ export async function GET(request) {
       }
     }
 
-    console.log('📖 Retrieved regulation message edit history:', {
+    console.log('ðŸ“– Retrieved regulation message edit history:', {
       messageIndex,
       role: message.role,
       isEdited: message.isEdited,

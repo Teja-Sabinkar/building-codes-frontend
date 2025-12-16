@@ -6,7 +6,7 @@ import Link from 'next/link';
 import styles from './page.module.css';
 
 export default function Home() {
-  // 🆕 SMART PERSISTENCE: Apply guest theme on mount
+  // ðŸ†• SMART PERSISTENCE: Apply guest theme on mount
   useEffect(() => {
     const applyGuestTheme = () => {
       try {
@@ -14,7 +14,7 @@ export default function Home() {
         const guestTheme = localStorage.getItem('regGPT-guestTheme') || 'dark';
         const isDark = guestTheme === 'dark';
         
-        console.log('🎨 Landing page applying guest theme:', guestTheme);
+        console.log('ðŸŽ¨ Landing page applying guest theme:', guestTheme);
         
         // Apply theme to document body
         if (isDark) {
@@ -23,9 +23,9 @@ export default function Home() {
           document.body.classList.remove('dark-mode');
         }
         
-        console.log('✅ Guest theme applied to landing page:', isDark ? 'dark' : 'light');
+        console.log('âœ… Guest theme applied to landing page:', isDark ? 'dark' : 'light');
       } catch (error) {
-        console.error('❌ Error applying guest theme to landing page:', error);
+        console.error('âŒ Error applying guest theme to landing page:', error);
         // Default to light theme on error
         document.body.classList.remove('dark-mode');
       }
@@ -90,7 +90,7 @@ export default function Home() {
       <footer className={styles.footer}>
         <div className={styles.footerContent}>
           <p className={styles.footerText}>
-            © {new Date().getFullYear()} REG-GPT. Professional building code consultation for architecture firms.
+            Â© {new Date().getFullYear()} REG-GPT. Professional building code consultation for architecture firms.
           </p>
         </div>
       </footer>

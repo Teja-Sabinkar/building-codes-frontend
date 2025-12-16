@@ -18,7 +18,8 @@
   border-right: 1px solid #e2e8f0;
   display: flex;
   flex-direction: column;
-  transition: all 0.3s ease;
+  transition: width 0.3s ease;  /* ✅ Only animate width */
+  will-change: width;  /* ✅ GPU acceleration */
   overflow: hidden;
   position: relative;
   z-index: 20;
@@ -1059,5 +1060,81 @@
 
   .sidebarClosed {
     transform: none;
+  }
+}
+/* ===== SPLIT LAYOUT FOR DOCUMENT VIEWER ===== */
+.contentArea {
+  flex: 1;
+  display: flex;
+  min-height: 0;
+  overflow: hidden;
+  transition: all 0.3s ease;
+}
+
+.chatArea {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  will-change: flex;  /* ✅ GPU acceleration */
+  transition: all 0.3s ease;
+}
+
+.chatAreaSplit {
+  flex: 0 0 60%;
+  max-width: 60%;
+}
+
+.documentViewerArea {
+  flex: 0 0 40%;
+  max-width: 40%;
+  min-width: 400px;
+  display: flex;
+  will-change: transform, opacity;  /* ✅ GPU acceleration for slide animation */
+  flex-direction: column;
+  animation: slideIn 0.3s ease-out;
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateX(100%);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+/* Mobile: Document viewer becomes modal */
+@media (max-width: 768px) {
+  .contentArea {
+    position: relative;
+  }
+
+  .chatAreaSplit {
+    flex: 1;
+    max-width: 100%;
+  }
+
+  .documentViewerArea {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    max-width: 100vw;
+    min-width: 100vw;
+    z-index: 1000;
+    animation: slideInMobile 0.3s ease-out;
+  }
+
+  @keyframes slideInMobile {
+    from {
+      transform: translateY(100%);
+    }
+    to {
+      transform: translateY(0);
+    }
   }
 }

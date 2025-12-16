@@ -1,7 +1,7 @@
 // src/components/home/RegulationPanel/RegulationPanel.js - Building Codes Assistant - MOBILE RESPONSIVE
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, memo } from 'react';
 import { useRouter } from 'next/navigation';
 import ConversationList from './ConversationList';
 import MessageList from './MessageList';
@@ -9,7 +9,18 @@ import MessageInput from './MessageInput';
 import TitleEditModal from './TitleEditModal';
 import RegionSelector from './RegionSelector';
 import { saveThemeOnLogout } from '@/hooks/useGuestTheme';
+import DocumentViewer from '../DocumentViewer/DocumentViewer';
 import styles from './RegulationPanel.module.css';
+
+
+// ✅ Memoize DocumentViewer to prevent unnecessary re-renders during sidebar toggle
+const MemoizedDocumentViewer = memo(DocumentViewer, (prevProps, nextProps) => {
+  return (
+    prevProps.isOpen === nextProps.isOpen &&
+    prevProps.citation === nextProps.citation &&
+    prevProps.currentRegion === nextProps.currentRegion
+  );
+});
 
 export default function RegulationPanel({
   currentConversation,
@@ -32,6 +43,13 @@ export default function RegulationPanel({
   const [showRegionSelector, setShowRegionSelector] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(isSidebarOpen);
   const [isMobile, setIsMobile] = useState(false);
+  const [isToggling, setIsToggling] = useState(false);
+
+  // Document viewer state
+  const [documentViewer, setDocumentViewer] = useState({
+    isOpen: false,
+    citation: null
+  });
   const router = useRouter();
 
   // Handle mobile detection and sidebar state
@@ -211,12 +229,41 @@ export default function RegulationPanel({
     setShowRegionSelector(false);
   };
 
+  // NEW: Handle citation click from MessageList
+  const handleCitationClick = (citation) => {
+    console.log('📄 Opening document viewer:', citation);
+    
+    setDocumentViewer({
+      isOpen: true,
+      citation: citation
+    });
+  };
+
+  // NEW: Handle closing document viewer
+  const handleCloseDocumentViewer = () => {
+    console.log('🚫 Closing document viewer');
+    
+    setDocumentViewer({
+      isOpen: false,
+      citation: null
+    });
+  };
+
   const toggleSidebar = () => {
+    if (isToggling) return;  // ✅ Prevent rapid toggles during animation
+    
+    setIsToggling(true);
     const newState = !sidebarOpen;
     setSidebarOpen(newState);
+    
     if (onToggleSidebar) {
       onToggleSidebar();
     }
+    
+    // Reset after transition completes (matches CSS transition duration)
+    setTimeout(() => {
+      setIsToggling(false);
+    }, 300);
   };
 
   // Get the current display title
@@ -401,45 +448,65 @@ export default function RegulationPanel({
           </div>
         </div>
 
-        {/* Messages */}
-        <div className={styles.messagesContainer}>
-          {currentConversation ? (
-            <MessageList
-              messages={currentConversation.messages || []}
-              isGenerating={isGenerating}
-              onEditMessage={handleEditMessage}
-              user={user}
-              conversationId={currentConversation._id}
-            />
-          ) : (
-            <div className={styles.emptyState}>
-              <div className={styles.welcomeMessage}>
-                <h3>Welcome to REG-GPT!</h3>
-                <p>Get instant, professional building code compliance reports with AI-powered analysis and precise citations.</p>
+        {/* Content Area with Split Layout */}
+        <div className={styles.contentArea}>
+          {/* Chat Area */}
+          <div className={`${styles.chatArea} ${documentViewer.isOpen ? styles.chatAreaSplit : ''}`}>
+            
+            {/* Messages */}
+            <div className={styles.messagesContainer}>
+              {currentConversation ? (
+                <MessageList
+                  messages={currentConversation.messages || []}
+                  isGenerating={isGenerating}
+                  onEditMessage={handleEditMessage}
+                  user={user}
+                  conversationId={currentConversation._id}
+                  onCitationClick={handleCitationClick}
+                />
+              ) : (
+                <div className={styles.emptyState}>
+                  <div className={styles.welcomeMessage}>
+                    <h3>Welcome to REG-GPT!</h3>
+                    <p>Get instant, professional building code compliance reports with AI-powered analysis and precise citations.</p>
+                  </div>
+                  <div className={styles.getStartedMessage}>
+                    <h3>Select "New Query" with a region to get started</h3>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* FIXED: Only show MessageInput when there's a current conversation */}
+            {currentConversation && (
+              <div className={styles.inputContainer}>
+                <MessageInput
+                  onSendMessage={handleSendMessage}
+                  isGenerating={isGenerating}
+                  disabled={!canSendMessages()}
+                  placeholder={
+                    isGenerating
+                      ? "Searching regulations..."
+                      : "Ask about building codes, regulations, or compliance requirements..."
+                  }
+                  enableVoice={true}
+                />
               </div>
-              <div className={styles.getStartedMessage}>
-                <h3>Select "New Query" with a region to get started</h3>
-              </div>
+            )}
+          </div>
+
+          {/* Document Viewer Panel */}
+          {documentViewer.isOpen && (
+            <div className={styles.documentViewerArea}>
+              <MemoizedDocumentViewer
+                isOpen={documentViewer.isOpen}
+                onClose={handleCloseDocumentViewer}
+                citation={documentViewer.citation}
+                currentRegion={currentConversation?.region || 'Scotland'}
+              />
             </div>
           )}
         </div>
-
-        {/* FIXED: Only show MessageInput when there's a current conversation */}
-        {currentConversation && (
-          <div className={styles.inputContainer}>
-            <MessageInput
-              onSendMessage={handleSendMessage}
-              isGenerating={isGenerating}
-              disabled={!canSendMessages()}
-              placeholder={
-                isGenerating
-                  ? "Searching regulations..."
-                  : "Ask about building codes, regulations, or compliance requirements..."
-              }
-              enableVoice={true}
-            />
-          </div>
-        )}
       </div>
 
       {/* Title Edit Modal */}

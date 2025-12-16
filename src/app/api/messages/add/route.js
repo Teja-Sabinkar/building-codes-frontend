@@ -45,12 +45,12 @@ export async function POST(request) {
     
     const { conversationId, content, role, regulation } = await request.json();
     
-    console.log('📝 Adding message to regulation conversation:', {
+    console.log('ðŸ“ Adding message to regulation conversation:', {
       conversationId,
       role,
       contentLength: content?.length,
       hasRegulationData: !!regulation,
-      regulationQueryType: regulation?.query_type // ✅ Log the incoming query_type
+      regulationQueryType: regulation?.query_type // âœ… Log the incoming query_type
     });
     
     // Enhanced validation for regulation context
@@ -101,10 +101,10 @@ export async function POST(request) {
       regulation.processingTime = regulation.processingTime || 0;
       regulation.references = regulation.references || [];
       regulation.queryMetadata = regulation.queryMetadata || {};
-      // ✅ CRITICAL: Preserve the query_type field
+      // âœ… CRITICAL: Preserve the query_type field
       regulation.query_type = regulation.query_type || 'building_codes';
       
-      console.log('🔧 Processed regulation data with preserved query_type:', {
+      console.log('ðŸ”§ Processed regulation data with preserved query_type:', {
         query_type: regulation.query_type,
         hasAnswer: !!regulation.answer,
         referencesCount: regulation.references?.length || 0
@@ -123,7 +123,7 @@ export async function POST(request) {
       );
     }
     
-    console.log('✅ Found regulation conversation:', {
+    console.log('âœ… Found regulation conversation:', {
       title: conversation.title,
       currentMessageCount: conversation.messages.length,
       existingRegulationQueries: conversation.messages.filter(msg => 
@@ -140,7 +140,7 @@ export async function POST(request) {
     
     // Add regulation data if provided - PRESERVE ALL FIELDS
     if (regulation) {
-      // ✅ CRITICAL FIX: Use the complete regulation object with all fields preserved
+      // âœ… CRITICAL FIX: Use the complete regulation object with all fields preserved
       messageData.regulation = {
         ...regulation, // Spread all fields including query_type
         // Ensure core fields exist
@@ -148,10 +148,10 @@ export async function POST(request) {
         processingTime: regulation.processingTime || 0,
         references: regulation.references || [],
         queryMetadata: regulation.queryMetadata || {},
-        query_type: regulation.query_type || 'building_codes' // ✅ Explicitly preserve query_type
+        query_type: regulation.query_type || 'building_codes' // âœ… Explicitly preserve query_type
       };
       
-      console.log('📊 Adding regulation data with preserved query_type:', {
+      console.log('ðŸ“Š Adding regulation data with preserved query_type:', {
         query_type: messageData.regulation.query_type,
         hasAnswer: !!regulation.answer,
         confidence: regulation.confidence,
@@ -171,10 +171,10 @@ export async function POST(request) {
       throw new Error('Failed to reload conversation after adding message');
     }
     
-    // ✅ VERIFY: Log the saved message to confirm query_type was preserved
+    // âœ… VERIFY: Log the saved message to confirm query_type was preserved
     if (regulation && updatedConversation.messages.length > 0) {
       const savedMessage = updatedConversation.messages[updatedConversation.messages.length - 1];
-      console.log('✅ Verified saved message regulation data:', {
+      console.log('âœ… Verified saved message regulation data:', {
         messageId: savedMessage._id,
         hasRegulation: !!savedMessage.regulation,
         savedQueryType: savedMessage.regulation?.query_type,
@@ -197,7 +197,7 @@ export async function POST(request) {
         regulationMessages.reduce((sum, msg) => sum + (msg.regulation.confidence || 0), 0) / regulationMessages.length : null,
       lastQuery: regulationMessages.length > 0 ? 
         regulationMessages[regulationMessages.length - 1].regulation.queryMetadata : null,
-      // ✅ Add query_type tracking to stats
+      // âœ… Add query_type tracking to stats
       queryTypes: regulationMessages.reduce((types, msg) => {
         const queryType = msg.regulation?.query_type || 'unknown';
         types[queryType] = (types[queryType] || 0) + 1;
@@ -205,7 +205,7 @@ export async function POST(request) {
       }, {})
     };
     
-    console.log('✅ Message added to regulation conversation:', {
+    console.log('âœ… Message added to regulation conversation:', {
       newMessageCount: updatedConversation.messages.length,
       role: messageData.role,
       addedRegulationData: !!regulation,
@@ -224,13 +224,13 @@ export async function POST(request) {
         contentLength: messageData.content.length,
         hasRegulationData: !!regulation,
         timestamp: messageData.timestamp,
-        preservedQueryType: regulation?.query_type // ✅ Include in response for verification
+        preservedQueryType: regulation?.query_type // âœ… Include in response for verification
       },
       regulationStats: stats
     });
     
   } catch (error) {
-    console.error('❌ Add message to regulation conversation error:', error);
+    console.error('âŒ Add message to regulation conversation error:', error);
     
     // Enhanced error handling for regulation context
     if (error.name === 'ValidationError') {
@@ -309,7 +309,7 @@ export async function GET(request) {
       // Topic analysis
       topicBreakdown: {},
       codeTypeBreakdown: {},
-      // ✅ Add query_type analytics
+      // âœ… Add query_type analytics
       queryTypeBreakdown: {},
       
       // Timeline
@@ -336,18 +336,18 @@ export async function GET(request) {
           (analytics.codeTypeBreakdown[metadata.codeType] || 0) + 1;
       }
       
-      // ✅ Query type breakdown
+      // âœ… Query type breakdown
       analytics.queryTypeBreakdown[queryType] = 
         (analytics.queryTypeBreakdown[queryType] || 0) + 1;
     });
     
-    console.log('📊 Retrieved regulation conversation analytics:', {
+    console.log('ðŸ“Š Retrieved regulation conversation analytics:', {
       conversationId,
       totalMessages: analytics.totalMessages,
       regulationAnswers: analytics.regulationAnswers,
       averageConfidence: analytics.averageConfidence?.toFixed(2),
       topTopics: Object.keys(analytics.topicBreakdown).slice(0, 3),
-      queryTypes: analytics.queryTypeBreakdown // ✅ Log query type distribution
+      queryTypes: analytics.queryTypeBreakdown // âœ… Log query type distribution
     });
     
     return NextResponse.json({
@@ -356,13 +356,13 @@ export async function GET(request) {
         role: msg.role,
         timestamp: msg.timestamp,
         hasRegulationData: !!(msg.regulation),
-        queryType: msg.regulation?.query_type || 'none', // ✅ Include query_type in response
+        queryType: msg.regulation?.query_type || 'none', // âœ… Include query_type in response
         contentPreview: msg.content.substring(0, 100) + (msg.content.length > 100 ? '...' : '')
       }))
     });
     
   } catch (error) {
-    console.error('❌ Get regulation conversation analytics error:', error);
+    console.error('âŒ Get regulation conversation analytics error:', error);
     
     return NextResponse.json(
       { error: 'An error occurred while fetching regulation conversation analytics' },

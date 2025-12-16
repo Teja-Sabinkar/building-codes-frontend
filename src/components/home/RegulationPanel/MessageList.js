@@ -10,13 +10,14 @@ export default function MessageList({
   isGenerating,
   onEditMessage,
   user,
-  conversationId  // Add conversationId prop
+  conversationId,  // Add conversationId prop
+  onCitationClick  // NEW: Handle citation clicks to open document viewer
 }) {
   const messagesEndRef = useRef(null);
   const [editingMessageIndex, setEditingMessageIndex] = useState(null);
   const [editContent, setEditContent] = useState('');
   const [isEditing, setIsEditing] = useState(false);
-  
+
   // 🆕 Feedback state
   const [feedbackState, setFeedbackState] = useState({}); // { messageId: { userVote: 'helpful'|'unhelpful', isSubmitting: false } }
   const [feedbackErrors, setFeedbackErrors] = useState({});
@@ -83,9 +84,9 @@ export default function MessageList({
   // 🆕 Handle feedback modal submission
   const handleFeedbackSubmit = async (feedbackData) => {
     const { messageId, feedbackType } = feedbackData;
-    
+
     console.log('📝 Submitting feedback with details:', feedbackData);
-    
+
     // Set submitting state
     setFeedbackState(prev => ({
       ...prev,
@@ -102,7 +103,7 @@ export default function MessageList({
     try {
       // Get auth token
       const token = localStorage.getItem('authToken');
-      
+
       if (!token) {
         throw new Error('Not authenticated');
       }
@@ -136,13 +137,13 @@ export default function MessageList({
         ...prev,
         [messageId]: { userVote: feedbackType, isSubmitting: false }
       }));
-      
+
       // Close modal
       setFeedbackModal({ isOpen: false, messageId: null, feedbackType: null });
-      
+
       // Show success message
       setSuccessMessage({ messageId, show: true });
-      
+
       // Hide success message after 3 seconds
       setTimeout(() => {
         setSuccessMessage({ messageId: null, show: false });
@@ -152,7 +153,7 @@ export default function MessageList({
 
     } catch (error) {
       console.error('❌ Feedback error:', error);
-      
+
       // Revert to previous state on error
       const currentVote = feedbackState[messageId]?.userVote;
       setFeedbackState(prev => ({
@@ -165,7 +166,7 @@ export default function MessageList({
         ...prev,
         [messageId]: error.message
       }));
-      
+
       // Close modal on error too
       setFeedbackModal({ isOpen: false, messageId: null, feedbackType: null });
     }
@@ -267,49 +268,70 @@ export default function MessageList({
     return processedContent;
   };
 
+  // NEW: Handle citation click to open document viewer
+  const handleCitationClick = (ref) => {
+    if (onCitationClick) {
+      console.log('📄 Citation clicked - FULL OBJECT:', JSON.stringify(ref, null, 2));
+      console.log('📄 Has highlight_markers?', ref.highlight_markers ? 'YES' : 'NO');
+      if (ref.highlight_markers) {
+        console.log('📄 highlight_markers count:', ref.highlight_markers.length);
+      }
+
+      // Pass ALL fields including highlight_markers
+      onCitationClick({
+        document: ref.document,
+        page: ref.page,
+        country: ref.country,
+        source: ref.source,
+        highlight_markers: ref.highlight_markers  // ✨ CRITICAL: Pass highlight_markers!
+      });
+    }
+  };
+
+
   // NEW: Extract references from message content as fallback
   const extractReferencesFromContent = (messageContent) => {
     if (!messageContent) return [];
-    
+
     console.log('📋 Extracting references from content...');
-    
+
     // Look for reference patterns in the message content
     const referencePatterns = [
       /\*\*Reference:\s*([^*]+)\*\*/g,  // **Reference: Building standards... Page 32**
       /Reference:\s*([^*\n]+)/g,        // Reference: Building standards... Page 32
     ];
-    
+
     const foundReferences = [];
-    
+
     for (const pattern of referencePatterns) {
       let match;
       while ((match = pattern.exec(messageContent)) !== null) {
         const referenceText = match[1].trim();
         console.log('📋 Found reference text:', referenceText);
-        
+
         // Extract document and page from reference text
         const pageMatch = referenceText.match(/^(.+?)\s+Page\s+(\d+)$/i);
         if (pageMatch) {
           const document = pageMatch[1].trim();
           const page = pageMatch[2];
-          
+
           foundReferences.push({
             document: document,
             page: page,
             display_text: `${document} Page ${page}`,
             country: "Scotland" // Default for now - could be enhanced to detect country
           });
-          
+
           console.log('✅ Extracted reference:', `${document} Page ${page}`);
         }
       }
     }
-    
+
     // Remove duplicates
-    const uniqueReferences = foundReferences.filter((ref, index, self) => 
+    const uniqueReferences = foundReferences.filter((ref, index, self) =>
       index === self.findIndex((r) => r.display_text === ref.display_text)
     );
-    
+
     console.log('📋 Final extracted references:', uniqueReferences.length);
     return uniqueReferences;
   };
@@ -408,7 +430,7 @@ export default function MessageList({
           if (part.match(regex)) {
             // FIXED: Remove asterisks from display text
             const cleanReferenceText = part.replace(/\*\*/g, '').replace(/[()]/g, '');
-            
+
             // Apply reference styling with clean text
             return (
               <span
@@ -600,18 +622,18 @@ export default function MessageList({
             disabled={isSubmitting}
             title="This response was helpful"
           >
-            <svg 
-              xmlns="http://www.w3.org/2000/svg" 
-              className={styles.feedbackIcon} 
-              fill={userVote === 'helpful' ? 'currentColor' : 'none'} 
-              viewBox="0 0 24 24" 
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              className={styles.feedbackIcon}
+              fill={userVote === 'helpful' ? 'currentColor' : 'none'}
+              viewBox="0 0 24 24"
               stroke="currentColor"
             >
-              <path 
-                strokeLinecap="round" 
-                strokeLinejoin="round" 
-                strokeWidth={2} 
-                d="M14 10h4.764a2 2 0 011.789 2.894l-3.5 7A2 2 0 0115.263 21h-4.017c-.163 0-.326-.02-.485-.06L7 20m7-10V5a2 2 0 00-2-2h-.095c-.5 0-.905.405-.905.905 0 .714-.211 1.412-.608 2.006L7 11v9m7-10h-2M7 20H5a2 2 0 01-2-2v-6a2 2 0 012-2h2.5" 
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M14 10h4.764a2 2 0 011.789 2.894l-3.5 7A2 2 0 0115.263 21h-4.017c-.163 0-.326-.02-.485-.06L7 20m7-10V5a2 2 0 00-2-2h-.095c-.5 0-.905.405-.905.905 0 .714-.211 1.412-.608 2.006L7 11v9m7-10h-2M7 20H5a2 2 0 01-2-2v-6a2 2 0 012-2h2.5"
               />
             </svg>
             <span className={styles.feedbackLabel}>Helpful</span>
@@ -624,31 +646,31 @@ export default function MessageList({
             disabled={isSubmitting}
             title="This response was not helpful"
           >
-            <svg 
-              xmlns="http://www.w3.org/2000/svg" 
-              className={styles.feedbackIcon} 
-              fill={userVote === 'unhelpful' ? 'currentColor' : 'none'} 
-              viewBox="0 0 24 24" 
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              className={styles.feedbackIcon}
+              fill={userVote === 'unhelpful' ? 'currentColor' : 'none'}
+              viewBox="0 0 24 24"
               stroke="currentColor"
             >
-              <path 
-                strokeLinecap="round" 
-                strokeLinejoin="round" 
-                strokeWidth={2} 
-                d="M10 14H5.236a2 2 0 01-1.789-2.894l3.5-7A2 2 0 018.736 3h4.018a2 2 0 01.485.06l3.76.94m-7 10v5a2 2 0 002 2h.096c.5 0 .905-.405.905-.904 0-.715.211-1.413.608-2.008L17 13V4m-7 10h2m5-10h2a2 2 0 012 2v6a2 2 0 01-2 2h-2.5" 
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M10 14H5.236a2 2 0 01-1.789-2.894l3.5-7A2 2 0 018.736 3h4.018a2 2 0 01.485.06l3.76.94m-7 10v5a2 2 0 002 2h.096c.5 0 .905-.405.905-.904 0-.715.211-1.413.608-2.008L17 13V4m-7 10h2m5-10h2a2 2 0 012 2v6a2 2 0 01-2 2h-2.5"
               />
             </svg>
             <span className={styles.feedbackLabel}>Not Helpful</span>
           </button>
         </div>
-        
+
         {/* Success message */}
         {successMessage.show && successMessage.messageId === messageId && (
           <div className={styles.feedbackSuccess}>
             ✓ Thank you for your feedback!
           </div>
         )}
-        
+
         {/* Error message */}
         {error && (
           <div className={styles.feedbackError}>
@@ -717,7 +739,7 @@ export default function MessageList({
 
     // Get references - either from regulation object or extract from content
     let referencesToShow = regulation.references || [];
-    
+
     if (referencesToShow.length === 0 && messageContent) {
       // Use content extraction as fallback
       referencesToShow = extractReferencesFromContent(messageContent);
@@ -734,7 +756,18 @@ export default function MessageList({
             <div className={styles.headerReferencesList}>
               {/* Display as bullet points */}
               {referencesToShow.map((ref, index) => (
-                <div key={index} className={styles.headerReferenceItem}>
+                <div
+                  key={index}
+                  className={`${styles.headerReferenceItem} ${styles.clickableReference}`}
+                  onClick={() => handleCitationClick(ref)}
+                  role="button"
+                  tabIndex={0}
+                  onKeyPress={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      handleCitationClick(ref);
+                    }
+                  }}
+                >
                   • {ref.display_text || `${ref.document} Page ${ref.page}`}
                 </div>
               ))}
@@ -872,7 +905,7 @@ export default function MessageList({
       )}
 
       <div ref={messagesEndRef} />
-      
+
       {/* Feedback Modal */}
       <FeedbackModal
         isOpen={feedbackModal.isOpen}
