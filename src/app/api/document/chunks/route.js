@@ -10,7 +10,7 @@ export async function GET(request) {
     const country = searchParams.get('country');
     const page = searchParams.get('page'); // Optional: specific page only
 
-    console.log('ðŸ“„ Document chunks request:', { document, country, page });
+    console.log('Document chunks request:', { document, country, page });
 
     if (!document || !country) {
       return NextResponse.json(
@@ -21,25 +21,25 @@ export async function GET(request) {
 
     // Convert document name to filename format
     // "Building standards technical handbook January 2025 domestic" 
-    // â†’ "Building_standards_technical_handbook_January_2025_domestic_chunks.json"
+    // -> "Building_standards_technical_handbook_January_2025_domestic_chunks.json"
     const filename = document
       .trim()
       .replace(/\s+/g, '_') // Replace spaces with underscores
       .replace(/[^\w\-]/g, '_') // Replace special chars with underscores
       + '_chunks.json';
 
-    console.log('ðŸ” Looking for chunk file:', filename);
+    console.log('Looking for chunk file:', filename);
 
     // Construct path to chunks file based on country
     // Path structure: building-codes-backend/app/data/regulations_database/{Country}/building_regulations/
     const baseDir = process.env.CHUNKS_BASE_DIR || path.join(process.cwd(), '..', 'building-codes-backend', 'app', 'data', 'regulations_database');
     const chunkFilePath = path.join(baseDir, country, 'building_regulations', filename);
 
-    console.log('ðŸ“‚ Full path:', chunkFilePath);
+    console.log('Full path:', chunkFilePath);
 
     // Check if file exists
     if (!fs.existsSync(chunkFilePath)) {
-      console.error('âŒ Chunk file not found:', chunkFilePath);
+      console.error('Chunk file not found:', chunkFilePath);
       
       // Try alternative paths (in case file is in subdirectory)
       const alternativePaths = [
@@ -52,7 +52,7 @@ export async function GET(request) {
       for (const altPath of alternativePaths) {
         if (fs.existsSync(altPath)) {
           foundPath = altPath;
-          console.log('âœ… Found in alternative path:', altPath);
+          console.log('Found in alternative path:', altPath);
           break;
         }
       }
@@ -72,7 +72,7 @@ export async function GET(request) {
       const fileContent = fs.readFileSync(foundPath, 'utf8');
       const chunks = JSON.parse(fileContent);
 
-      console.log('âœ… Loaded chunks from alternative path:', {
+      console.log('Loaded chunks from alternative path:', {
         totalChunks: chunks.length,
         path: foundPath
       });
@@ -84,7 +84,7 @@ export async function GET(request) {
     const fileContent = fs.readFileSync(chunkFilePath, 'utf8');
     const chunks = JSON.parse(fileContent);
 
-    console.log('âœ… Loaded chunks:', {
+    console.log('Loaded chunks:', {
       totalChunks: chunks.length,
       firstPage: chunks[0]?.metadata?.page,
       lastPage: chunks[chunks.length - 1]?.metadata?.page
@@ -93,7 +93,7 @@ export async function GET(request) {
     return processAndReturnChunks(chunks, document, country, page);
 
   } catch (error) {
-    console.error('âŒ Error fetching document chunks:', error);
+    console.error('Error fetching document chunks:', error);
     
     return NextResponse.json(
       { 
@@ -121,7 +121,7 @@ function processAndReturnChunks(chunks, document, country, requestedPage) {
       );
     }
 
-    console.log('ðŸ“„ Returning single page:', requestedPage);
+    console.log('Returning single page:', requestedPage);
 
     return NextResponse.json({
       document,
@@ -141,7 +141,7 @@ function processAndReturnChunks(chunks, document, country, requestedPage) {
     extractionMethod: chunk.metadata?.extraction_method || 'unknown'
   }));
 
-  console.log('ðŸ“š Returning full document:', {
+  console.log('Returning full document:', {
     totalPages: formattedChunks.length,
     samplePages: formattedChunks.slice(0, 3).map(c => c.page)
   });
