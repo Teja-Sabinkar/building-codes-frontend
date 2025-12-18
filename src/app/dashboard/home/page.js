@@ -327,8 +327,19 @@ export default function HomePage() {
         console.log('✅ Conversation created:', data);
 
         const newConversation = data.conversation;
+        
+        // 🔧 FIX: Set the conversation directly instead of searching in array
+        // This works immediately, unlike selectConversation which relies on state update
+        setCurrentConversation(newConversation);
+        localStorage.setItem('currentConversationId', newConversation._id);
+        
+        // Add to conversations list
         setConversations(prev => [newConversation, ...prev]);
-        selectConversation(newConversation._id);
+        
+        console.log('✅ New conversation set as current:', {
+          id: newConversation._id,
+          title: newConversation.title
+        });
       } else {
         const errorData = await response.json();
         console.error('❌ Failed to create conversation:', errorData);
