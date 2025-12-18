@@ -75,7 +75,7 @@ export default function ConversationList({
       title: conversation.title,
       isCurrentlyActive: currentConversation?._id === conversation._id
     });
-    onSelectConversation(conversation);
+    onSelectConversation(conversation._id);
   };
 
   // ðŸ”§ FIX: Updated to match RegulationPanel logic - Database title first
