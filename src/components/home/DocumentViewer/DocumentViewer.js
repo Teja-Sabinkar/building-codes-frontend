@@ -1,12 +1,14 @@
 // src/components/home/DocumentViewer/DocumentViewer.js
-// COMPLETE REPLACEMENT - Smart Marker-Based Highlighting
-// Version: 2.0 with highlighting support
+// HYBRID VERSION: PDF.js Rendering + Text-Based Highlighting
+// PERFORMANCE FIX: Renders ONLY the current page instead of all pages
+// ZOOM FEATURE: Supports zoom in/out with keyboard shortcuts (FIXED: Zoom applied to pages, not container)
 
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
 import DocumentHeader from './DocumentHeader';
 import PageNavigation from './PageNavigation';
+import PDFPageViewer from './PDFPageViewer';
 import styles from './DocumentViewer.module.css';
 
 export default function DocumentViewer({ 
@@ -19,11 +21,105 @@ export default function DocumentViewer({
   const [documentData, setDocumentData] = useState(null);
   const [error, setError] = useState(null);
   const [currentPage, setCurrentPage] = useState(null);
+  const [pdfUrl, setPdfUrl] = useState(null);
+  const [zoom, setZoom] = useState(1.0);
   const [highlightedSections, setHighlightedSections] = useState([]);
   const [highlightStats, setHighlightStats] = useState({ attempted: 0, successful: 0, failed: 0 });
   
   const documentContentRef = useRef(null);
   const pageRefs = useRef({});
+
+  /**
+   * Map document name to PDF filename
+   * EXACT mappings from your backend
+   */
+  const getPdfFilename = (document, country) => {
+    const pdfMappings = {
+      'India': {
+        'NBC 2016-VOL.1': 'NBC 2016-VOL.1.pdf',
+        'NBC 2016-VOL.2': 'NBC 2016-VOL.2.pdf',
+      },
+      'Scotland': {
+        'Building standards technical handbook January 2025 domestic': 'Building standards technical handbook January 2025 domestic.pdf',
+        'Building standards technical handbook January 2025 non-domestic': 'Building standards technical handbook January 2025 non-domestic.pdf',
+        'single-building-assessment-specification-sba': 'single-building-assessment-specification-sba.pdf',
+        'standards-single-building-assessments-additional-work-assessments': 'standards-single-building-assessments-additional-work-assessments.pdf',
+        'task-group-recommendations-march-2024': 'task-group-recommendations-march-2024.pdf',
+        'draft-scottish-advice-note-external-wall-systems-version-3-0': 'draft-scottish-advice-note-external-wall-systems-version-3-0.pdf',
+        'determining-fire-risk-posed-external-wall-systems-existing-multistorey-residential-buildings': 'determining-fire-risk-posed-external-wall-systems-existing-multistorey-residential-buildings.pdf',
+      },
+      'Dubai': {
+        'Dubai Building Code English 2021 Edition': 'Dubai Building Code_English_2021 Edition.pdf',
+      }
+    };
+
+    const countryMappings = pdfMappings[country];
+    if (!countryMappings) {
+      console.warn(`⚠️ No PDF mappings for country: ${country}`);
+      return null;
+    }
+
+    const pdfFilename = countryMappings[document];
+    if (!pdfFilename) {
+      console.warn(`⚠️ No PDF mapping for document: "${document}" in ${country}`);
+      console.warn(`Available mappings:`, Object.keys(countryMappings));
+      return null;
+    }
+
+    return pdfFilename;
+  };
+
+  /**
+   * Zoom Controls
+   */
+  const handleZoomIn = () => {
+    setZoom(prev => Math.min(prev + 0.25, 3.0)); // Max 300%
+  };
+
+  const handleZoomOut = () => {
+    setZoom(prev => Math.max(prev - 0.25, 0.5)); // Min 50%
+  };
+
+  const handleZoomReset = () => {
+    setZoom(1.0); // Reset to 100%
+  };
+
+  /**
+   * Keyboard shortcuts
+   */
+  useEffect(() => {
+    if (!isOpen) return;
+
+    const handleKeyDown = (e) => {
+      // Zoom shortcuts: Ctrl/Cmd + Plus/Minus
+      if ((e.ctrlKey || e.metaKey) && e.key === '+') {
+        e.preventDefault();
+        handleZoomIn();
+      } else if ((e.ctrlKey || e.metaKey) && e.key === '-') {
+        e.preventDefault();
+        handleZoomOut();
+      } else if ((e.ctrlKey || e.metaKey) && e.key === '0') {
+        e.preventDefault();
+        handleZoomReset();
+      }
+      // Page navigation: Arrow keys
+      else if (e.key === 'ArrowLeft') {
+        e.preventDefault();
+        handlePreviousPage();
+      } else if (e.key === 'ArrowRight') {
+        e.preventDefault();
+        handleNextPage();
+      }
+      // Close: Escape key
+      else if (e.key === 'Escape') {
+        e.preventDefault();
+        onClose();
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isOpen, currentPage, documentData]);
 
   // Update current page when citation changes
   useEffect(() => {
@@ -45,16 +141,29 @@ export default function DocumentViewer({
       try {
         const country = citation.country || currentRegion || 'Scotland';
         
-        console.log('📄 Fetching document chunks:', {
+        console.log('📄 Fetching document:', {
           document: citation.document,
           page: citation.page,
           country: country,
           hasHighlightMarkers: !!citation.highlight_markers
         });
 
-        // Fetch all chunks for the document
+        // Get PDF filename
+        const pdfFilename = getPdfFilename(citation.document, country);
+        if (!pdfFilename) {
+          throw new Error(`PDF not configured for "${citation.document}"`);
+        }
+
+        // Construct PDF URL
+        const backendUrl = process.env.NEXT_PUBLIC_RAG_BACKEND_URL || 'http://localhost:8000';
+        const pdfUrl = `${backendUrl}/api/pdf/${country}/${encodeURIComponent(pdfFilename)}`;
+        
+        setPdfUrl(pdfUrl);
+        console.log('📄 PDF URL:', pdfUrl);
+
+        // Fetch chunks for metadata (page count, sections)
         const response = await fetch(
-          `/api/document/chunks?document=${encodeURIComponent(citation.document)}&country=${encodeURIComponent(country)}`
+          `${backendUrl}/api/document/chunks?document=${encodeURIComponent(citation.document)}&country=${encodeURIComponent(country)}`
         );
 
         if (!response.ok) {
@@ -94,15 +203,10 @@ export default function DocumentViewer({
         if (citation.highlight_markers && citation.highlight_markers.length > 0) {
           console.log('📍 Highlight markers received:', {
             count: citation.highlight_markers.length,
-            markers: citation.highlight_markers.map((m, i) => ({
-              index: i,
-              start: m.start?.substring(0, 30) + '...',
-              end: m.end?.substring(m.end?.length - 30),
-              hasPreview: !!m.preview
-            }))
+            markers: citation.highlight_markers
           });
         } else {
-          console.warn('⚠️ No highlight markers provided in citation');
+          console.warn('⚠️ No highlight markers provided');
         }
 
       } catch (err) {
@@ -116,310 +220,8 @@ export default function DocumentViewer({
     fetchDocument();
   }, [citation, isOpen, currentRegion]);
 
-  // Scroll to cited page after document loads (ONE TIME ONLY)
-  useEffect(() => {
-    if (!documentData || !currentPage || !documentContentRef.current) return;
-
-    const scrollTimer = setTimeout(() => {
-      scrollToPage(currentPage);
-    }, 300);
-
-    return () => clearTimeout(scrollTimer);
-  }, [documentData]); // ✅ Only scroll when document loads, prevents re-scroll
-
-  // Apply highlighting after document loads and citation has markers
-  useEffect(() => {
-    if (!documentData || !citation || !citation.highlight_markers) return;
-    
-    const highlightTimer = setTimeout(() => {
-      applySmartHighlighting(citation.highlight_markers, citation.page);
-    }, 500);
-
-    return () => clearTimeout(highlightTimer);
-  }, [documentData, citation]);
-
   /**
-   * Normalize text for reliable matching
-   */
-  const normalizeText = (text) => {
-    if (!text) return '';
-    
-    return text
-      .toLowerCase()
-      .replace(/\u00a0/g, ' ')  // Non-breaking space
-      .replace(/\u2013/g, '-')  // En dash
-      .replace(/\u2014/g, '-')  // Em dash
-      .replace(/\u2018/g, "'")  // Left single quote
-      .replace(/\u2019/g, "'")  // Right single quote
-      .replace(/\u201c/g, '"')  // Left double quote
-      .replace(/\u201d/g, '"')  // Right double quote
-      .replace(/\s+/g, ' ')      // Multiple spaces to single
-      .replace(/[^\w\s.,;:()\-]/g, '')  // Remove special chars
-      .trim();
-  };
-
-  /**
-   * Find text position in content using normalized matching
-   */
-  const findTextPosition = (content, searchText, startFrom = 0) => {
-    const normalizedContent = normalizeText(content);
-    const normalizedSearch = normalizeText(searchText);
-    
-    if (!normalizedSearch) return -1;
-    
-    const position = normalizedContent.indexOf(normalizedSearch, startFrom);
-    
-    if (position === -1) {
-      console.warn('Text not found:', {
-        searchText: searchText.substring(0, 50),
-        searchLength: searchText.length,
-        contentLength: content.length
-      });
-    }
-    
-    return position;
-  };
-
-  /**
-   * Apply smart highlighting using markers
-   */
-  const applySmartHighlighting = (markers, targetPage) => {
-    if (!markers || markers.length === 0) {
-      console.warn('⚠️ No markers provided for highlighting');
-      return;
-    }
-
-    console.log(`🎨 Starting smart highlighting with ${markers.length} markers on page ${targetPage}`);
-
-    const pageElement = pageRefs.current[targetPage];
-    if (!pageElement) {
-      console.error('❌ Page element not found for highlighting:', targetPage);
-      return;
-    }
-
-    const contentElement = pageElement.querySelector('[data-page-content]');
-    if (!contentElement) {
-      console.error('❌ Content element not found in page');
-      return;
-    }
-
-    const pageContent = contentElement.textContent;
-    let stats = { attempted: 0, successful: 0, failed: 0 };
-    const successfulSections = [];
-
-    // Remove any existing highlights
-    removeExistingHighlights(contentElement);
-
-    // Process each marker
-    markers.forEach((marker, index) => {
-      stats.attempted++;
-      
-      console.log(`\n📍 Processing marker ${index + 1}/${markers.length}:`);
-      console.log(`   Start: "${marker.start?.substring(0, 40)}..."`);
-      console.log(`   End: "...${marker.end?.substring(marker.end?.length - 40)}"`);
-
-      try {
-        const startText = marker.start_normalized || marker.start;
-        const endText = marker.end_normalized || marker.end;
-
-        // Find start position
-        const startPos = findTextPosition(pageContent, startText);
-        if (startPos === -1) {
-          console.warn(`   ⚠️ Start marker not found`);
-          stats.failed++;
-          return;
-        }
-
-        // Calculate end position using section_length if available
-        let actualEndPos;
-
-        if (marker.section_length && marker.section_length > 0) {
-          // Use the full section length from backend
-          actualEndPos = startPos + marker.section_length;
-          console.log(`   📏 Using section_length: ${marker.section_length} chars`);
-          
-          // Validate the range
-          if (actualEndPos > pageContent.length) {
-            actualEndPos = pageContent.length;
-            console.warn(`   ⚠️ Clamped end position to content length`);
-          }
-        } else {
-          // Fallback: find end marker
-          const endPos = findTextPosition(pageContent, endText, startPos);
-          if (endPos === -1) {
-            console.warn(`   ⚠️ End marker not found`);
-            stats.failed++;
-            return;
-          }
-          actualEndPos = endPos + endText.length;
-          console.log(`   📏 Using end marker position`);
-        }
-
-        const highlightSuccess = highlightTextRange(
-          contentElement, 
-          startPos, 
-          actualEndPos,
-          `section-${index}`
-        );
-
-        if (highlightSuccess) {
-          stats.successful++;
-          successfulSections.push({
-            index,
-            start: startPos,
-            end: actualEndPos,
-            length: actualEndPos - startPos
-          });
-          console.log(`   ✅ Highlighted ${actualEndPos - startPos} characters`);
-        } else {
-          stats.failed++;
-          console.warn(`   ❌ Failed to apply highlight`);
-        }
-
-      } catch (error) {
-        console.error(`   ❌ Error processing marker ${index}:`, error);
-        stats.failed++;
-      }
-    });
-
-    setHighlightStats(stats);
-    setHighlightedSections(successfulSections);
-
-    console.log(`\n📊 Highlighting complete:`, {
-      attempted: stats.attempted,
-      successful: stats.successful,
-      failed: stats.failed,
-      successRate: `${((stats.successful / stats.attempted) * 100).toFixed(1)}%`
-    });
-
-    if (successfulSections.length > 0) {
-      setTimeout(() => {
-        const firstHighlight = contentElement.querySelector('.text-highlight');
-        if (firstHighlight && documentContentRef.current) {
-          // Check if highlight is already visible
-          const highlightRect = firstHighlight.getBoundingClientRect();
-          const containerRect = documentContentRef.current.getBoundingClientRect();
-          
-          const isVisible = (
-            highlightRect.top >= containerRect.top &&
-            highlightRect.bottom <= containerRect.bottom
-          );
-          
-          if (!isVisible) {
-            firstHighlight.scrollIntoView({ 
-              behavior: 'smooth', 
-              block: 'center' 
-            });
-            console.log('📜 Scrolled to first highlighted section');
-          } else {
-            console.log('📍 Highlight already visible, no scroll needed');
-          }
-        }
-      }, 100);
-    }
-
-  };
-
-  /**
-   * Remove existing highlights from element
-   */
-  const removeExistingHighlights = (element) => {
-    const existingHighlights = element.querySelectorAll('.text-highlight');
-    existingHighlights.forEach(highlight => {
-      const parent = highlight.parentNode;
-      parent.replaceChild(document.createTextNode(highlight.textContent), highlight);
-      parent.normalize();
-    });
-  };
-
-  /**
-   * Highlight text range using character positions
-   */
-  const highlightTextRange = (element, startPos, endPos, sectionId) => {
-    try {
-      const range = document.createRange();
-      let currentPos = 0;
-      let startNode = null;
-      let startOffset = 0;
-      let endNode = null;
-      let endOffset = 0;
-      let found = false;
-
-      const walker = document.createTreeWalker(
-        element,
-        NodeFilter.SHOW_TEXT,
-        null,
-        false
-      );
-
-      let node;
-      while (node = walker.nextNode()) {
-        const nodeLength = node.textContent.length;
-        
-        if (!startNode && currentPos + nodeLength >= startPos) {
-          startNode = node;
-          startOffset = startPos - currentPos;
-        }
-        
-        if (!endNode && currentPos + nodeLength >= endPos) {
-          endNode = node;
-          endOffset = endPos - currentPos;
-          found = true;
-          break;
-        }
-        
-        currentPos += nodeLength;
-      }
-
-      if (!found || !startNode || !endNode) {
-        console.warn('Could not find text nodes for range');
-        return false;
-      }
-
-      range.setStart(startNode, startOffset);
-      range.setEnd(endNode, endOffset);
-
-      const highlightSpan = document.createElement('span');
-      highlightSpan.className = 'text-highlight';
-      highlightSpan.setAttribute('data-section-id', sectionId);
-      
-      try {
-        range.surroundContents(highlightSpan);
-        return true;
-      } catch (e) {
-        const fragment = range.extractContents();
-        highlightSpan.appendChild(fragment);
-        range.insertNode(highlightSpan);
-        return true;
-      }
-
-    } catch (error) {
-      console.error('Error highlighting range:', error);
-      return false;
-    }
-  };
-
-  /**
-   * Scroll to specific page
-   */
-  const scrollToPage = (pageNumber) => {
-    const pageElement = pageRefs.current[pageNumber];
-    if (pageElement && documentContentRef.current) {
-      const containerTop = documentContentRef.current.getBoundingClientRect().top;
-      const elementTop = pageElement.getBoundingClientRect().top;
-      const scrollPosition = elementTop - containerTop + documentContentRef.current.scrollTop - 20;
-
-      documentContentRef.current.scrollTo({
-        top: scrollPosition,
-        behavior: 'smooth'
-      });
-
-      console.log('📜 Scrolled to page:', pageNumber);
-    }
-  };
-
-  /**
-   * Navigate to previous page
+   * Handle page navigation
    */
   const handlePreviousPage = () => {
     if (!documentData || !currentPage) return;
@@ -430,13 +232,9 @@ export default function DocumentViewer({
     if (currentIndex > 0) {
       const newPage = pageNumbers[currentIndex - 1];
       setCurrentPage(newPage);
-      scrollToPage(newPage);
     }
   };
 
-  /**
-   * Navigate to next page
-   */
   const handleNextPage = () => {
     if (!documentData || !currentPage) return;
     
@@ -446,56 +244,15 @@ export default function DocumentViewer({
     if (currentIndex < pageNumbers.length - 1) {
       const newPage = pageNumbers[currentIndex + 1];
       setCurrentPage(newPage);
-      scrollToPage(newPage);
     }
   };
 
-  /**
-   * Jump to specific page
-   */
   const handleJumpToPage = (pageNumber) => {
     if (!documentData) return;
     
-    const pageExists = documentData.pageMap[pageNumber];
+    const pageExists = documentData.pages.find(p => String(p.number) === String(pageNumber));
     if (pageExists) {
       setCurrentPage(pageNumber);
-      scrollToPage(pageNumber);
-    } else {
-      console.warn('⚠️ Page not found:', pageNumber);
-    }
-  };
-
-  /**
-   * Handle scroll to update current page indicator
-   */
-  const handleScroll = () => {
-    if (!documentContentRef.current || !documentData) return;
-
-    const container = documentContentRef.current;
-    const scrollTop = container.scrollTop;
-    const containerHeight = container.clientHeight;
-    const scrollMiddle = scrollTop + containerHeight / 2;
-
-    let closestPage = null;
-    let closestDistance = Infinity;
-
-    Object.keys(pageRefs.current).forEach(pageNumber => {
-      const pageElement = pageRefs.current[pageNumber];
-      if (pageElement) {
-        const pageTop = pageElement.offsetTop;
-        const pageHeight = pageElement.offsetHeight;
-        const pageMiddle = pageTop + pageHeight / 2;
-        const distance = Math.abs(scrollMiddle - pageMiddle);
-
-        if (distance < closestDistance) {
-          closestDistance = distance;
-          closestPage = pageNumber;
-        }
-      }
-    });
-
-    if (closestPage && closestPage !== currentPage) {
-      setCurrentPage(closestPage);
     }
   };
 
@@ -538,18 +295,22 @@ export default function DocumentViewer({
           onJumpToPage={handleJumpToPage}
           hasPrevious={hasPrevious}
           hasNext={hasNext}
+          zoom={zoom}
+          onZoomIn={handleZoomIn}
+          onZoomOut={handleZoomOut}
+          onZoomReset={handleZoomReset}
         />
       )}
 
+      {/* ZOOM FIX: No inline transform on documentContent - it should fill 100% */}
       <div 
         className={styles.documentContent}
         ref={documentContentRef}
-        onScroll={handleScroll}
       >
         {isLoading && (
           <div className={styles.loadingState}>
             <div className={styles.spinner}></div>
-            <p>Loading document...</p>
+            <p>Loading PDF...</p>
           </div>
         )}
 
@@ -566,47 +327,29 @@ export default function DocumentViewer({
           </div>
         )}
 
-        {!isLoading && !error && documentData && (
-          <div className={styles.documentPages}>
-            {documentData.pages.map((page) => {
-              const hasHighlights = highlightedSections.some(s => 
-                pageRefs.current[page.number]?.contains(
-                  document.querySelector(`[data-section-id="section-${s.index}"]`)
-                )
-              );
-
-              return (
-                <div 
-                  key={page.number} 
-                  className={styles.pageContainer}
-                  ref={el => pageRefs.current[page.number] = el}
-                  data-page-number={page.number}
-                >
-                  <div className={styles.pageHeader}>
-                    <span className={styles.pageNumber}>
-                      Page {page.number}
-                      {hasHighlights && (
-                        <span className={styles.highlightIndicator} title="Contains AI-used content">
-                          ✨
-                        </span>
-                      )}
-                    </span>
-                    {page.section && (
-                      <span className={styles.pageSection}>{page.section}</span>
-                    )}
-                  </div>
-                  <div className={styles.pageContent}>
-                    <pre 
-                      className={styles.textContent}
-                      data-page-content
-                      data-page-number={page.number}
-                    >
-                      {page.content || 'Content not available for this page'}
-                    </pre>
-                  </div>
-                </div>
-              );
-            })}
+        {/* ZOOM FIX: Apply transform to documentPages instead of documentContent */}
+        {!isLoading && !error && documentData && pdfUrl && currentPage && (
+          <div 
+            className={styles.documentPages}
+            style={{
+              transform: `scale(${zoom})`,
+              transformOrigin: 'top center',
+              transition: 'transform 0.2s ease-in-out'
+            }}
+          >
+            <div 
+              key={currentPage} 
+              ref={el => pageRefs.current[currentPage] = el}
+              data-page-number={currentPage}
+            >
+              <PDFPageViewer
+                pdfUrl={pdfUrl}
+                pageNumber={parseInt(currentPage)}
+                highlights={citation?.highlight_markers || []} // Pass highlight markers from citation
+                onPageRendered={(pageNum) => console.log(`✅ Page ${pageNum} rendered`)}
+                onError={(error) => console.error(`❌ Page ${currentPage} error:`, error)}
+              />
+            </div>
           </div>
         )}
 
