@@ -462,6 +462,7 @@ export default function RegulationPanel({
                   onEditMessage={handleEditMessage}
                   user={user}
                   conversationId={currentConversation._id}
+                  currentConversation={currentConversation}
                   onCitationClick={handleCitationClick}
                 />
               ) : (

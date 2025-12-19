@@ -11,6 +11,7 @@ export default function MessageList({
   onEditMessage,
   user,
   conversationId,  // Add conversationId prop
+  currentConversation,  // 🆕 NEW: Get conversation with region info
   onCitationClick  // NEW: Handle citation clicks to open document viewer
 }) {
   const messagesEndRef = useRef(null);
@@ -315,14 +316,17 @@ export default function MessageList({
           const document = pageMatch[1].trim();
           const page = pageMatch[2];
 
+          // 🔧 FIX: Get country from conversation region
+          const country = currentConversation?.region || "Scotland";
+
           foundReferences.push({
             document: document,
             page: page,
             display_text: `${document} Page ${page}`,
-            country: "Scotland" // Default for now - could be enhanced to detect country
+            country: country  // Use actual region from conversation
           });
 
-          console.log('✅ Extracted reference:', `${document} Page ${page}`);
+          console.log('✅ Extracted reference:', `${document} Page ${page} (${country})`);
         }
       }
     }

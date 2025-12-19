@@ -11,6 +11,19 @@ import PageNavigation from './PageNavigation';
 import PDFPageViewer from './PDFPageViewer';
 import styles from './DocumentViewer.module.css';
 
+// 🔧 FIX: Get backend URL with proper fallback (same as page.js)
+const getBackendUrl = () => {
+  // First try the environment variable
+  if (process.env.NEXT_PUBLIC_RAG_BACKEND_URL) {
+    return process.env.NEXT_PUBLIC_RAG_BACKEND_URL;
+  }
+  
+  // Fallback for production if env var is missing
+  return 'https://building-codes-backend.onrender.com';
+};
+
+const BACKEND_URL = getBackendUrl();
+
 export default function DocumentViewer({ 
   isOpen, 
   onClose,
@@ -28,6 +41,12 @@ export default function DocumentViewer({
   
   const documentContentRef = useRef(null);
   const pageRefs = useRef({});
+
+  // 🔧 Debug: Log backend URL on mount
+  useEffect(() => {
+    console.log('🔧 DocumentViewer Backend URL:', BACKEND_URL);
+    console.log('🔧 DocumentViewer Env Var:', process.env.NEXT_PUBLIC_RAG_BACKEND_URL || 'NOT SET');
+  }, []);
 
   /**
    * Map document name to PDF filename
@@ -155,15 +174,14 @@ export default function DocumentViewer({
         }
 
         // Construct PDF URL
-        const backendUrl = process.env.NEXT_PUBLIC_RAG_BACKEND_URL || 'http://localhost:8000';
-        const pdfUrl = `${backendUrl}/api/pdf/${country}/${encodeURIComponent(pdfFilename)}`;
+        const pdfUrl = `${BACKEND_URL}/api/pdf/${country}/${encodeURIComponent(pdfFilename)}`;
         
         setPdfUrl(pdfUrl);
         console.log('📄 PDF URL:', pdfUrl);
 
         // Fetch chunks for metadata (page count, sections)
         const response = await fetch(
-          `${backendUrl}/api/document/chunks?document=${encodeURIComponent(citation.document)}&country=${encodeURIComponent(country)}`
+          `${BACKEND_URL}/api/document/chunks?document=${encodeURIComponent(citation.document)}&country=${encodeURIComponent(country)}`
         );
 
         if (!response.ok) {

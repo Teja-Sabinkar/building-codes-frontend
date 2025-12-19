@@ -20,13 +20,25 @@ export async function GET(request) {
     }
 
     // Convert document name to filename format
-    // "Building standards technical handbook January 2025 domestic" 
-    // -> "Building_standards_technical_handbook_January_2025_domestic_chunks.json"
-    const filename = document
-      .trim()
-      .replace(/\s+/g, '_') // Replace spaces with underscores
-      .replace(/[^\w\-]/g, '_') // Replace special chars with underscores
-      + '_chunks.json';
+    // Handle different naming patterns:
+    // "NBC 2016-VOL.1" -> "NBC_2016-VOL_1_chunks.json"
+    // "Building standards technical handbook January 2025 domestic" -> "Building_standards_technical_handbook_January_2025_domestic_chunks.json"
+    
+    let filename = document.trim();
+    
+    // Special handling for NBC documents (keep hyphens, convert periods to underscores)
+    if (filename.startsWith('NBC')) {
+      filename = filename
+        .replace(/\s+/g, '_')           // Spaces to underscores
+        .replace(/\./g, '_')            // Periods to underscores (VOL.1 -> VOL_1)
+        + '_chunks.json';
+    } else {
+      // Standard handling for other documents (spaces to underscores, keep hyphens)
+      filename = filename
+        .replace(/\s+/g, '_')           // Spaces to underscores
+        .replace(/[^\w\-]/g, '_')       // Special chars to underscores (keeps hyphens)
+        + '_chunks.json';
+    }
 
     console.log('Looking for chunk file:', filename);
 
