@@ -718,6 +718,11 @@
   transition: color 0.3s ease;
 }
 
+/* 🆕 Hide QUOTED_TEXT internal markers from user display */
+.contentParagraph[data-is-quoted-text="true"] {
+  display: none !important;
+}
+
 :global(.dark-mode) .contentParagraph {
   color: #d1d5db;
 }

@@ -69,7 +69,15 @@ const MessageSchema = new mongoose.Schema({
       country: String,                    // ✨ NEW: Country for multi-region support
       display_text: String,               // ✨ NEW: Formatted display text
       // ✨✨✨ NEW: HIGHLIGHT MARKERS for document viewer text highlighting ✨✨✨
+      // ✨✨✨ NEW: HIGHLIGHT MARKERS for document viewer text highlighting ✨✨✨
       highlight_markers: [{
+        // 🔥 NEW ORDER-BASED MATCHING FIELDS (January 2026)
+        word_pairs: [[String]],           // Ordered 3-word triplets for sequence matching
+        start_phrase: String,             // First 3-4 words for quick positioning
+        expected_length: Number,          // Approximate character length of highlighted text
+        original_text: String,            // Original quoted text from Claude (for debugging)
+        
+        // LEGACY FIELDS (fallback for old markers)
         start: String,                    // First 60 chars of section to highlight
         end: String,                      // Last 60 chars of section to highlight
         preview: String,                  // Preview text for fallback

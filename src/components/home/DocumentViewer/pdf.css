@@ -1,0 +1,82 @@
+/* ============================================================================
+   PDF.CSS - Global PDF Text Layer Styles
+   ============================================================================
+   Location: src/components/home/DocumentViewer/pdf.css
+   
+   This file contains global styles for react-pdf text layer highlighting.
+   Must be imported in a component to apply globally.
+   ============================================================================ */
+
+/* PDF highlight class - applied to text layer spans */
+.pdf-highlight {
+  background-color: rgba(255, 235, 59, 0.4) !important;
+  border-bottom: 2px solid rgba(255, 235, 59, 0.8);
+  padding: 2px 0;
+  box-shadow: 0 0 8px rgba(255, 235, 59, 0.3);
+  border-radius: 2px;
+  transition: background-color 0.2s ease;
+}
+
+.pdf-highlight:hover {
+  background-color: rgba(255, 235, 59, 0.6) !important;
+  cursor: pointer;
+}
+
+/* React-PDF text layer enhancement */
+.react-pdf__Page__textContent {
+  /* Enable text selection */
+  user-select: text;
+  -webkit-user-select: text;
+  -moz-user-select: text;
+  -ms-user-select: text;
+}
+
+.react-pdf__Page__textContent span {
+  /* Ensure text is selectable */
+  cursor: text;
+  color: transparent;
+  position: absolute;
+  white-space: pre;
+  transform-origin: 0% 0%;
+}
+
+/* Make highlighted text visible */
+.react-pdf__Page__textContent span.pdf-highlight {
+  color: inherit !important;
+  opacity: 1 !important;
+}
+
+/* Annotation layer z-index fix */
+.react-pdf__Page__annotations {
+  z-index: 1;
+}
+
+.react-pdf__Page__textContent {
+  z-index: 2;
+}
+
+/* PDF page container */
+.react-pdf__Page {
+  position: relative;
+  display: inline-block;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.react-pdf__Page__canvas {
+  display: block;
+  user-select: none;
+}
+
+/* Loading states for react-pdf */
+.react-pdf__Document {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.react-pdf__message {
+  padding: 20px;
+  color: #6b7280;
+}

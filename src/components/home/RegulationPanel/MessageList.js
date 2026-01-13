@@ -259,6 +259,9 @@ export default function MessageList({
     // Also remove "Citation:" lines
     processedContent = processedContent.replace(/^Citation:.*$/gmi, '');
 
+    // 🆕 Remove QUOTED_TEXT lines (internal highlighting markers)
+    processedContent = processedContent.replace(/QUOTED_TEXT:\s*"[^"]*"\n?/gi, '');
+
     // Clean up extra whitespace and newlines
     processedContent = processedContent
       .replace(/\n\s*\n\s*\n+/g, '\n\n')
@@ -592,8 +595,16 @@ export default function MessageList({
       // Regular content - this is where most references will be processed
       flushBullets();
       const formattedContent = parseBoldMarkdown(trimmedLine);
+      
+      // 🆕 Check if this line is a QUOTED_TEXT marker (for CSS hiding)
+      const isQuotedText = trimmedLine.trim().startsWith('QUOTED_TEXT:');
+      
       elements.push(
-        <div key={`content-${index}`} className={styles.contentParagraph}>
+        <div 
+          key={`content-${index}`} 
+          className={styles.contentParagraph}
+          data-is-quoted-text={isQuotedText ? 'true' : undefined}
+        >
           {formattedContent}
         </div>
       );

@@ -363,7 +363,7 @@ export default function DocumentViewer({
               <PDFPageViewer
                 pdfUrl={pdfUrl}
                 pageNumber={parseInt(currentPage)}
-                highlights={citation?.highlight_markers || []} // Pass highlight markers from citation
+                highlightMarkers={citation?.highlight_markers || []} // ✅ FIXED: Pass highlight markers in correct camelCase format
                 onPageRendered={(pageNum) => console.log(`✅ Page ${pageNum} rendered`)}
                 onError={(error) => console.error(`❌ Page ${currentPage} error:`, error)}
               />
