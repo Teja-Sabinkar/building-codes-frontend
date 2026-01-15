@@ -1,4 +1,5 @@
-// src/components/home/RegulationPanel/MessageList.js - Building Codes Assistant - UPDATED WITH FEEDBACK MODAL
+// src/components/home/RegulationPanel/MessageList.js - Building Codes Assistant
+// UPDATED: Tooltip support for hovering over references
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
@@ -10,41 +11,47 @@ export default function MessageList({
   isGenerating,
   onEditMessage,
   user,
-  conversationId,  // Add conversationId prop
-  currentConversation,  // 🆕 NEW: Get conversation with region info
-  onCitationClick  // NEW: Handle citation clicks to open document viewer
+  conversationId,
+  currentConversation,
+  onCitationClick
 }) {
   const messagesEndRef = useRef(null);
   const [editingMessageIndex, setEditingMessageIndex] = useState(null);
   const [editContent, setEditContent] = useState('');
   const [isEditing, setIsEditing] = useState(false);
 
-  // 🆕 Feedback state
-  const [feedbackState, setFeedbackState] = useState({}); // { messageId: { userVote: 'helpful'|'unhelpful', isSubmitting: false } }
+  // Feedback state
+  const [feedbackState, setFeedbackState] = useState({});
   const [feedbackErrors, setFeedbackErrors] = useState({});
 
-  // 🆕 Feedback modal state
+  // Feedback modal state
   const [feedbackModal, setFeedbackModal] = useState({
     isOpen: false,
     messageId: null,
-    feedbackType: null // 'helpful' or 'unhelpful'
+    feedbackType: null
   });
 
-  // 🆕 Success message state
+  // Success message state
   const [successMessage, setSuccessMessage] = useState({
     messageId: null,
     show: false
   });
 
+  // 🆕 Store QUOTED_TEXT for tooltips
+  const [referenceTooltips, setReferenceTooltips] = useState({});
+
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
+
+  // ADD THIS STATE at the top of MessageList component (after line 41):
+  const [loadingPhase, setLoadingPhase] = useState(0);
 
   useEffect(() => {
     scrollToBottom();
   }, [messages, isGenerating]);
 
-  // 🆕 Initialize feedback state from messages
+  // Initialize feedback state from messages
   useEffect(() => {
     const initialFeedbackState = {};
     messages.forEach((message) => {
@@ -58,14 +65,138 @@ export default function MessageList({
     setFeedbackState(initialFeedbackState);
   }, [messages]);
 
-  // 🆕 Handle feedback button click - UPDATED to show modal
+  // ADD THIS EFFECT after line 63 (with other useEffects):
+  // Progressive loading phases
+  useEffect(() => {
+    if (isGenerating) {
+      setLoadingPhase(0);
+
+      // Phase 1 → Phase 2 after 3 seconds
+      const timer1 = setTimeout(() => {
+        setLoadingPhase(1);
+      }, 3000);
+
+      // Phase 2 → Phase 3 after 6 seconds total
+      const timer2 = setTimeout(() => {
+        setLoadingPhase(2);
+      }, 6000);
+
+      return () => {
+        clearTimeout(timer1);
+        clearTimeout(timer2);
+      };
+    } else {
+      setLoadingPhase(0);
+    }
+  }, [isGenerating]);
+
+  // 🔥 FIXED: Extract QUOTED_TEXT from RAW content BEFORE cleaning
+  useEffect(() => {
+    const tooltips = {};
+
+    messages.forEach((message, messageIndex) => {
+      if (message.role === 'assistant' && message.content) {
+        // 🔥 USE RAW CONTENT - Don't clean it first!
+        const rawContent = message.content;
+
+        console.log(`🔍 Processing message ${messageIndex}...`);
+        console.log(`📄 RAW Content (first 300 chars): ${rawContent.substring(0, 300)}...`);
+        console.log(`🔍 Contains QUOTED_TEXT? ${rawContent.includes('QUOTED_TEXT')}`);
+
+        // Split content into lines
+        const lines = rawContent.split('\n');
+
+        // Look for QUOTED_TEXT followed by Reference
+        for (let i = 0; i < lines.length; i++) {
+          const currentLine = lines[i].trim();
+
+          // Check if this line contains QUOTED_TEXT
+          if (currentLine.includes('QUOTED_TEXT:')) {
+            console.log(`📝 Found QUOTED_TEXT at line ${i}: ${currentLine.substring(0, 100)}`);
+
+            // Extract the quoted text (between any type of quotes)
+            // 🔥 HANDLE **QUOTED_TEXT:** with bold markers
+            const quotePatterns = [
+              /\*\*QUOTED_TEXT:\*\*\s*"([^"]*)"/,     // **QUOTED_TEXT:** with standard quotes
+              /\*\*QUOTED_TEXT:\*\*\s*"([^"]*)"/,     // **QUOTED_TEXT:** with curly quotes
+              /QUOTED_TEXT:\s*"([^"]*)"/,                  // QUOTED_TEXT: without bold
+              /QUOTED_TEXT:\s*"([^"]*)"/,                  // QUOTED_TEXT: with curly quotes
+              /QUOTED_TEXT:\s*'([^']*)'/,                  // QUOTED_TEXT: with single quotes
+            ];
+
+            let quotedText = null;
+            for (const pattern of quotePatterns) {
+              const match = currentLine.match(pattern);
+              if (match) {
+                quotedText = match[1].trim();
+                console.log(`   ✅ Extracted quote (${quotedText.length} chars): "${quotedText.substring(0, 100)}..."`);
+                break;
+              }
+            }
+
+            if (!quotedText) {
+              console.log(`   ❌ Could not extract quote from line`);
+              continue;
+            }
+
+            // Look for Reference in the next few lines
+            for (let j = i + 1; j < Math.min(i + 4, lines.length); j++) {
+              const nextLine = lines[j].trim();
+
+              if (nextLine.includes('Reference:')) {
+                console.log(`📍 Found Reference at line ${j}: ${nextLine}`);
+
+                // 🔥 CRITICAL: Extract ONLY "Reference: Document Page X"
+                // Remove ** and anything after the page number
+                let referenceText = nextLine;
+
+                // Remove leading/trailing **
+                referenceText = referenceText.replace(/^\*\*/g, '').replace(/\*\*$/g, '');
+
+                // Extract just "Reference: ... Page NUMBER" (stop at the page number)
+                const refMatch = referenceText.match(/(Reference:[^P]*Page\s+\d+)/i);
+                if (refMatch) {
+                  referenceText = refMatch[1].trim();
+                }
+
+                console.log(`   📍 Cleaned reference: "${referenceText}"`);
+
+                // Create the key
+                const referenceKey = `${messageIndex}-${referenceText}`;
+                tooltips[referenceKey] = quotedText;
+
+                console.log(`   ✅ Created tooltip mapping:`);
+                console.log(`      Key: "${referenceKey}"`);
+                console.log(`      Value: "${quotedText.substring(0, 80)}..."`);
+
+                break;
+              }
+            }
+          }
+        }
+      }
+    });
+
+    setReferenceTooltips(tooltips);
+    console.log(`\n✅ EXTRACTION COMPLETE`);
+    console.log(`📊 Total tooltips extracted: ${Object.keys(tooltips).length}`);
+    console.log(`🔑 Tooltip keys:`, Object.keys(tooltips));
+
+    // Log each tooltip
+    Object.entries(tooltips).forEach(([key, value]) => {
+      console.log(`\n🎯 Tooltip Mapping:`);
+      console.log(`   Key: ${key}`);
+      console.log(`   Value: ${value.substring(0, 150)}...`);
+    });
+  }, [messages]);
+
+  // Handle feedback button click
   const handleFeedbackClick = async (messageId, vote) => {
     if (!conversationId || !messageId) {
       console.error('Missing conversationId or messageId');
       return;
     }
 
-    // Check if user is trying to click the same vote again
     const currentVote = feedbackState[messageId]?.userVote;
     if (currentVote === vote) {
       console.log('User clicked the same vote - no action needed');
@@ -74,7 +205,6 @@ export default function MessageList({
 
     console.log('👍 Opening feedback modal:', { messageId, vote, currentVote });
 
-    // Open feedback modal
     setFeedbackModal({
       isOpen: true,
       messageId: messageId,
@@ -82,19 +212,17 @@ export default function MessageList({
     });
   };
 
-  // 🆕 Handle feedback modal submission
+  // Handle feedback modal submission
   const handleFeedbackSubmit = async (feedbackData) => {
     const { messageId, feedbackType } = feedbackData;
 
     console.log('📝 Submitting feedback with details:', feedbackData);
 
-    // Set submitting state
     setFeedbackState(prev => ({
       ...prev,
       [messageId]: { userVote: feedbackType, isSubmitting: true }
     }));
 
-    // Clear any previous errors
     setFeedbackErrors(prev => {
       const newErrors = { ...prev };
       delete newErrors[messageId];
@@ -102,15 +230,12 @@ export default function MessageList({
     });
 
     try {
-      // Get auth token
       const token = localStorage.getItem('authToken');
-
       if (!token) {
-        throw new Error('Not authenticated');
+        throw new Error('No authentication token found');
       }
 
-      // Send feedback to API with detailed feedback
-      const response = await fetch('/api/messages/feedback', {
+      const response = await fetch('/api/conversations/feedback', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -119,148 +244,115 @@ export default function MessageList({
         body: JSON.stringify({
           conversationId,
           messageId,
-          vote: feedbackType,
-          issueType: feedbackData.issueType || null,
-          details: feedbackData.details || null
+          ...feedbackData
         })
       });
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to save feedback');
+        throw new Error(errorData.error || 'Failed to submit feedback');
       }
 
-      const data = await response.json();
-      console.log('✅ Feedback saved to database:', data);
+      const result = await response.json();
+      console.log('✅ Feedback submitted successfully:', result);
 
-      // Update local state with success
       setFeedbackState(prev => ({
         ...prev,
         [messageId]: { userVote: feedbackType, isSubmitting: false }
       }));
 
-      // Close modal
-      setFeedbackModal({ isOpen: false, messageId: null, feedbackType: null });
+      setSuccessMessage({
+        messageId,
+        show: true
+      });
 
-      // Show success message
-      setSuccessMessage({ messageId, show: true });
-
-      // Hide success message after 3 seconds
       setTimeout(() => {
         setSuccessMessage({ messageId: null, show: false });
       }, 3000);
 
-      console.log('✅ Feedback saved successfully');
+      setFeedbackModal({ isOpen: false, messageId: null, feedbackType: null });
 
     } catch (error) {
-      console.error('❌ Feedback error:', error);
-
-      // Revert to previous state on error
-      const currentVote = feedbackState[messageId]?.userVote;
-      setFeedbackState(prev => ({
-        ...prev,
-        [messageId]: { userVote: currentVote, isSubmitting: false }
-      }));
-
-      // Set error message
+      console.error('❌ Error submitting feedback:', error);
       setFeedbackErrors(prev => ({
         ...prev,
-        [messageId]: error.message
+        [messageId]: error.message || 'Failed to submit feedback'
       }));
-
-      // Close modal on error too
-      setFeedbackModal({ isOpen: false, messageId: null, feedbackType: null });
+      setFeedbackState(prev => ({
+        ...prev,
+        [messageId]: { userVote: null, isSubmitting: false }
+      }));
     }
   };
 
-  // 🆕 Handle feedback modal close
-  const handleFeedbackModalClose = () => {
+  const handleFeedbackCancel = () => {
     setFeedbackModal({ isOpen: false, messageId: null, feedbackType: null });
   };
 
-  const formatTime = (timestamp) => {
-    if (!timestamp) return 'Just now';
-
-    try {
-      // Handle both string and Date object formats
-      const date = timestamp instanceof Date ? timestamp : new Date(timestamp);
-
-      if (isNaN(date.getTime())) {
-        console.warn('formatTime: Invalid date:', timestamp);
-        return 'Just now';
-      }
-
-      return date.toLocaleTimeString([], {
-        hour: '2-digit',
-        minute: '2-digit'
-      });
-    } catch (error) {
-      console.error('formatTime error:', error, 'Input:', timestamp);
-      return 'Just now';
+  const getUserInitial = () => {
+    if (user?.name) {
+      return user.name.charAt(0).toUpperCase();
     }
+    if (user?.email) {
+      return user.email.charAt(0).toUpperCase();
+    }
+    return 'U';
   };
 
-  const handleEditStart = (messageIndex, currentContent) => {
-    console.log('Starting edit for message:', messageIndex);
+  const handleStartEdit = (messageIndex) => {
     setEditingMessageIndex(messageIndex);
-    setEditContent(currentContent);
-    setIsEditing(false);
+    setEditContent(messages[messageIndex].content);
   };
 
-  const handleEditSave = async () => {
-    if (editContent.trim() && editingMessageIndex !== null && !isEditing) {
-      console.log('Saving edit:', { editingMessageIndex, editContent });
-      setIsEditing(true);
-
-      try {
-        await onEditMessage(editingMessageIndex, editContent.trim());
-        setEditingMessageIndex(null);
-        setEditContent('');
-      } catch (error) {
-        console.error('Error editing message:', error);
-      } finally {
-        setIsEditing(false);
-      }
-    }
-  };
-
-  const handleEditCancel = () => {
-    console.log('Canceling edit');
+  const handleCancelEdit = () => {
     setEditingMessageIndex(null);
     setEditContent('');
-    setIsEditing(false);
+  };
+
+  const handleSaveEdit = async () => {
+    if (editContent.trim() && editingMessageIndex !== null) {
+      setIsEditing(true);
+      await onEditMessage(editingMessageIndex, editContent.trim());
+      setIsEditing(false);
+      setEditingMessageIndex(null);
+      setEditContent('');
+    }
   };
 
   const handleKeyDown = (e) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
+    if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) {
       e.preventDefault();
-      handleEditSave();
+      handleSaveEdit();
     } else if (e.key === 'Escape') {
-      handleEditCancel();
+      handleCancelEdit();
     }
   };
 
-  // Get user initials for avatar
-  const getUserInitial = () => {
-    if (!user || !user.name) return 'U';
-    return user.name.charAt(0).toUpperCase();
-  };
+  // Clean content - remove QUOTED_TEXT lines and asterisks
+  const cleanMessageContent = (content) => {
+    if (!content) return '';
 
-  // Process message content to clean for display
-  const processMessageContent = (content) => {
-    // Remove code blocks and technical formatting
-    let processedContent = content
-      .replace(/```[\s\S]*?```/gi, '')
-      .replace(/`[^`]*`/gi, '');
+    let processedContent = content;
 
-    // Remove CITATION section and everything after it
-    processedContent = processedContent.replace(/\*\*CITATION\*\*[\s\S]*$/gi, '');
-
-    // Also remove "Citation:" lines
+    // Remove Citation: lines
     processedContent = processedContent.replace(/^Citation:.*$/gmi, '');
 
-    // 🆕 Remove QUOTED_TEXT lines (internal highlighting markers)
-    processedContent = processedContent.replace(/QUOTED_TEXT:\s*"[^"]*"\n?/gi, '');
+    // Remove QUOTED_TEXT lines (all formats)
+    processedContent = processedContent.replace(/QUOTED_TEXT:\s*[""'].*?[""']/g, '');
+    processedContent = processedContent.replace(/^QUOTED_TEXT:.*$/gm, '');
+    processedContent = processedContent.replace(/QUOTED_TEXT:[^\n]*/g, '');
+
+    // Remove standalone ** lines (left after QUOTED_TEXT removal)
+    processedContent = processedContent.replace(/^\*\*\s*$/gm, '');
+
+    // Remove lines that are ONLY asterisks and whitespace
+    processedContent = processedContent.replace(/^[\*\s]+$/gm, '');
+
+    // Remove ** that appear on their own line
+    processedContent = processedContent.replace(/\n\*\*\n/g, '\n');
+
+    // Remove multiple consecutive ** on same line
+    processedContent = processedContent.replace(/\*\*\s*\*\*/g, '');
 
     // Clean up extra whitespace and newlines
     processedContent = processedContent
@@ -272,7 +364,7 @@ export default function MessageList({
     return processedContent;
   };
 
-  // NEW: Handle citation click to open document viewer
+  // Handle citation click to open document viewer
   const handleCitationClick = (ref) => {
     if (onCitationClick) {
       console.log('📄 Citation clicked - FULL OBJECT:', JSON.stringify(ref, null, 2));
@@ -281,28 +373,24 @@ export default function MessageList({
         console.log('📄 highlight_markers count:', ref.highlight_markers.length);
       }
 
-      // Pass ALL fields including highlight_markers
       onCitationClick({
         document: ref.document,
         page: ref.page,
         country: ref.country,
         source: ref.source,
-        highlight_markers: ref.highlight_markers  // ✨ CRITICAL: Pass highlight_markers!
+        highlight_markers: ref.highlight_markers
       });
     }
   };
 
-
-  // NEW: Extract references from message content as fallback
+  // Extract references from message content as fallback
   const extractReferencesFromContent = (messageContent) => {
     if (!messageContent) return [];
 
     console.log('📋 Extracting references from content...');
 
-    // Look for reference patterns in the message content
     const referencePatterns = [
-      /\*\*Reference:\s*([^*]+)\*\*/g,  // **Reference: Building standards... Page 32**
-      /Reference:\s*([^*\n]+)/g,        // Reference: Building standards... Page 32
+      /Reference:\s*([^\n]+)/gi,
     ];
 
     const foundReferences = [];
@@ -313,20 +401,18 @@ export default function MessageList({
         const referenceText = match[1].trim();
         console.log('📋 Found reference text:', referenceText);
 
-        // Extract document and page from reference text
         const pageMatch = referenceText.match(/^(.+?)\s+Page\s+(\d+)$/i);
         if (pageMatch) {
           const document = pageMatch[1].trim();
           const page = pageMatch[2];
 
-          // 🔧 FIX: Get country from conversation region
           const country = currentConversation?.region || "Scotland";
 
           foundReferences.push({
             document: document,
             page: page,
             display_text: `${document} Page ${page}`,
-            country: country  // Use actual region from conversation
+            country: country
           });
 
           console.log('✅ Extracted reference:', `${document} Page ${page} (${country})`);
@@ -334,7 +420,6 @@ export default function MessageList({
       }
     }
 
-    // Remove duplicates
     const uniqueReferences = foundReferences.filter((ref, index, self) =>
       index === self.findIndex((r) => r.display_text === ref.display_text)
     );
@@ -344,7 +429,6 @@ export default function MessageList({
   };
 
   const renderMessageContent = (message, messageIndex) => {
-    // If this message is being edited
     if (editingMessageIndex === messageIndex) {
       return (
         <div className={styles.editingContainer}>
@@ -359,32 +443,13 @@ export default function MessageList({
           />
           <div className={styles.editActions}>
             <button
-              onClick={handleEditSave}
-              className={`${styles.editButton} ${styles.saveButton}`}
-              disabled={!editContent.trim() || isEditing}
+              onClick={handleSaveEdit}
+              disabled={isEditing || !editContent.trim()}
+              className={styles.saveButton}
             >
-              {isEditing ? (
-                <>
-                  <div className={styles.editSpinner}></div>
-                  Saving...
-                </>
-              ) : (
-                <>
-                  <svg xmlns="http://www.w3.org/2000/svg" className={styles.editIcon} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                  </svg>
-                  Save & Regenerate
-                </>
-              )}
+              {isEditing ? 'Saving...' : 'Save'}
             </button>
-            <button
-              onClick={handleEditCancel}
-              className={`${styles.editButton} ${styles.cancelButton}`}
-              disabled={isEditing}
-            >
-              <svg xmlns="http://www.w3.org/2000/svg" className={styles.editIcon} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-              </svg>
+            <button onClick={handleCancelEdit} className={styles.cancelButton}>
               Cancel
             </button>
           </div>
@@ -392,91 +457,121 @@ export default function MessageList({
       );
     }
 
-    const cleanContent = processMessageContent(message.content);
+    if (message.role === 'user') {
+      return <div className={styles.userMessageText}>{message.content}</div>;
+    }
 
-    // Enhanced message display with professional building code formatting
-    return (
-      <div className={styles.textContent}>
-        {parseAndFormatBuildingCodeContent(cleanContent)}
-      </div>
-    );
+    if (message.role === 'assistant') {
+      const cleanContent = cleanMessageContent(message.content);
+      return (
+        <div className={styles.assistantContent}>
+          {parseAndFormatBuildingCodeContent(cleanContent, messageIndex)}
+        </div>
+      );
+    }
   };
 
-  // Function to parse bold markdown and format text - FIXED VERSION
-  const parseBoldMarkdown = (text) => {
-    // Debug logging - remove these console.log statements after fixing
-    if (text.includes('Reference') || text.includes('Source')) {
-      console.log('🔍 Processing text with reference:', text);
+  // 🔥 UPDATED: Parse bold markdown with tooltip support
+  const parseBoldMarkdown = (text, messageIndex) => {
+    // Check for Reference patterns
+    const hasReference = text.includes('Reference:');
+
+    if (hasReference) {
+      console.log('🔍 Processing reference text:', text);
     }
 
-    // Multiple reference patterns to support different formats
-    const referencePatterns = [
-      {
-        regex: /(\*\*Reference:[^*]+\*\*)/g,
-        name: 'Standard format'
-      },
-      {
-        regex: /(\(Reference:[^)]+\))/g,
-        name: 'Parentheses format'
-      },
-      {
-        regex: /(\*\*Source:[^*]+\*\*)/g,
-        name: 'Source format'
-      }
-    ];
+    // Reference pattern - match "Reference: Document Page X"
+    const referencePattern = /(Reference:\s*[^\n]+)/gi;
 
-    // Try each pattern until we find a match
-    for (const { regex, name } of referencePatterns) {
-      const matches = text.match(regex);
-      if (matches) {
-        console.log(`✅ Found ${name} references:`, matches);
+    if (referencePattern.test(text)) {
+      // Reset regex
+      referencePattern.lastIndex = 0;
+      const parts = text.split(referencePattern);
 
-        const parts = text.split(regex);
+      return parts.map((part, index) => {
+        if (part.match(/^\*\*Reference:/i) || part.match(/^Reference:/i)) {
+          // 🔥 CRITICAL: Clean the reference text for display
+          let referenceText = part.trim();
 
-        return parts.map((part, index) => {
-          if (part.match(regex)) {
-            // FIXED: Remove asterisks from display text
-            const cleanReferenceText = part.replace(/\*\*/g, '').replace(/[()]/g, '');
+          // Remove ALL ** markers (beginning, middle, end)
+          referenceText = referenceText.replace(/\*\*/g, '');
 
-            // Apply reference styling with clean text
-            return (
-              <span
-                key={index}
-                className={styles.referenceText}
-                style={{
-                  color: '#059669',
-                  fontWeight: '600',
-                  backgroundColor: 'rgba(5, 150, 105, 0.1)',
-                  padding: '0.125rem 0.25rem',
-                  borderRadius: '0.25rem',
-                  fontSize: '0.85rem',
-                  border: '1px solid rgba(5, 150, 105, 0.2)',
-                  display: 'inline',
-                  margin: '0 0.125rem'
-                }}
-                data-reference="true"
-              >
-                {cleanReferenceText}
-              </span>
-            );
-          } else {
-            // Process non-reference text for bold formatting
-            const boldPattern = /(\*\*(?!Reference:)(?!Source:)[^*]+\*\*)/g;
-            const boldParts = part.split(boldPattern);
-
-            return boldParts.map((boldPart, boldIndex) => {
-              if (boldPart.match(boldPattern)) {
-                const boldText = boldPart.replace(/\*\*/g, '');
-                return <strong key={`${index}-${boldIndex}`}>{boldText}</strong>;
-              }
-              return boldPart;
-            });
+          // Extract ONLY "Reference: ... Page NUMBER" (stop at page number)
+          const refMatch = referenceText.match(/(Reference:[^P]*Page\s+\d+)/i);
+          if (refMatch) {
+            referenceText = refMatch[1].trim();
           }
-        });
-      }
+
+          // Final cleanup: remove any remaining asterisks
+          referenceText = referenceText.replace(/\*/g, '');
+
+          console.log(`   🔑 Cleaned for lookup: "${referenceText}"`);
+
+          // 🔥 FINAL DISPLAY CLEANING - Remove ALL asterisks before rendering
+          const displayText = referenceText.replace(/\*\*/g, '').replace(/\*/g, '');
+          console.log(`   🎨 DISPLAY TEXT: "${displayText}"`);
+          console.log(`   🔍 Has asterisks in display? ${displayText.includes('*')}`);
+
+          // Get tooltip text for this reference
+          const referenceKey = `${messageIndex}-${referenceText}`;
+          const tooltipText = referenceTooltips[referenceKey];
+
+          console.log(`🔑 Looking for tooltip: "${referenceKey}"`);
+          console.log(`📝 Found: ${tooltipText ? 'YES' : 'NO'}`);
+
+          if (tooltipText) {
+            console.log(`✅ Tooltip content: "${tooltipText.substring(0, 100)}..."`);
+          }
+
+          return (
+            <span
+              key={index}
+              className={styles.referenceText}
+              style={{
+                color: '#10b981',
+                fontWeight: '600',
+                backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                padding: '2px 6px',
+                borderRadius: '4px',
+                fontSize: '0.9em',
+                border: '1px solid rgba(16, 185, 129, 0.2)',
+                display: 'inline-block',
+                margin: '0 4px',
+                position: 'relative',
+                cursor: tooltipText ? 'help' : 'default'
+              }}
+            /* No title attribute to avoid duplicate tooltips */
+            >
+              {displayText}
+              {tooltipText && (
+                <span className={styles.referenceTooltip}>
+                  <span className={styles.tooltipContent}>
+                    <span style={{ fontWeight: '600', color: '#10b981', marginBottom: '6px', display: 'block' }}>
+                      Regulation States:
+                    </span>
+                    "{tooltipText}"
+                  </span>
+                </span>
+              )}
+            </span>
+          );
+        } else {
+          // Process non-reference text for bold formatting
+          const boldPattern = /(\*\*(?!Reference:)[^*]+\*\*)/g;
+          const boldParts = part.split(boldPattern);
+
+          return boldParts.map((boldPart, boldIndex) => {
+            if (boldPart.match(boldPattern)) {
+              const boldText = boldPart.replace(/\*\*/g, '');
+              return <strong key={`${index}-${boldIndex}`}>{boldText}</strong>;
+            }
+            return boldPart;
+          });
+        }
+      });
     }
 
-    // No references found - process normally for bold text only
+    // No references - process normally for bold text only
     const boldPattern = /(\*\*[^*]+\*\*)/g;
     const parts = text.split(boldPattern);
 
@@ -489,8 +584,8 @@ export default function MessageList({
     });
   };
 
-  // Parse and format building code responses
-  const parseAndFormatBuildingCodeContent = (content) => {
+  // 🔥 UPDATED: Parse and format building code responses with messageIndex
+  const parseAndFormatBuildingCodeContent = (content, messageIndex) => {
     const lines = content.split('\n');
     const elements = [];
     let bullets = [];
@@ -498,14 +593,13 @@ export default function MessageList({
     const flushBullets = () => {
       if (bullets.length > 0) {
         elements.push(
-          <div key={`bullets-${elements.length}`} className={styles.bulletsContainer}>
+          <ul key={`bullets-${elements.length}`} className={styles.bulletList}>
             {bullets.map((bullet, idx) => (
-              <div key={idx} className={styles.bulletItem}>
-                <span className={styles.bulletMarker}>•</span>
-                <div className={styles.bulletContent}>{bullet}</div>
-              </div>
+              <li key={idx} className={styles.bulletItem}>
+                {parseBoldMarkdown(bullet, messageIndex)}
+              </li>
             ))}
-          </div>
+          </ul>
         );
         bullets = [];
       }
@@ -514,96 +608,41 @@ export default function MessageList({
     lines.forEach((line, index) => {
       const trimmedLine = line.trim();
 
-      if (trimmedLine === '') return;
-
-      // Log lines that might contain references for debugging
-      if (trimmedLine.includes('Reference') || trimmedLine.includes('Source')) {
-        console.log(`📋 Line ${index} might contain reference:`, trimmedLine);
+      if (!trimmedLine) {
+        flushBullets();
+        return;
       }
 
-      // Check for bold headers (like **CLEAR FLOOR SPACE**)
-      if (trimmedLine.match(/^\*\*[^*]+\*\*$/) && !trimmedLine.includes('Reference')) {
+      // Skip QUOTED_TEXT lines
+      if (trimmedLine.startsWith('QUOTED_TEXT:') || trimmedLine.includes('QUOTED_TEXT:')) {
+        console.log('⏭️ Skipping QUOTED_TEXT line');
+        return;
+      }
+
+      if (trimmedLine.startsWith('•')) {
+        const bulletText = trimmedLine.substring(1).trim();
+        bullets.push(bulletText);
+        return;
+      }
+
+      if (trimmedLine.match(/^\d+\./)) {
         flushBullets();
-        const headerText = trimmedLine.replace(/\*\*/g, '');
         elements.push(
-          <div key={`bold-header-${index}`} className={styles.mainHeader}>
-            <h3 className={styles.mainTitle}>
-              {headerText}
-            </h3>
+          <div key={`numbered-${index}`} className={styles.numberedItem}>
+            {parseBoldMarkdown(trimmedLine, messageIndex)}
           </div>
         );
         return;
       }
 
-      // Headers (end with colon)
-      if (trimmedLine.endsWith(':') &&
-        !trimmedLine.includes('Citation:') &&
-        !trimmedLine.includes('Applicability:')) {
-
-        flushBullets();
-        const headerContent = parseBoldMarkdown(trimmedLine.replace(':', ''));
-        elements.push(
-          <div key={`header-${index}`} className={styles.mainHeader}>
-            <h3 className={styles.mainTitle}>
-              {headerContent}
-            </h3>
-          </div>
-        );
-        return;
-      }
-
-      // Bullet points
-      if (trimmedLine.startsWith('- ') || trimmedLine.startsWith('• ')) {
-        const bulletText = trimmedLine.substring(2).trim();
-        const formattedBulletText = parseBoldMarkdown(bulletText);
-        bullets.push(formattedBulletText);
-        return;
-      }
-
-      // Citation
-      if (trimmedLine.startsWith('Citation:')) {
-        flushBullets();
-        const citationText = trimmedLine.replace('Citation:', '').trim();
-        const formattedCitation = parseBoldMarkdown(citationText);
-        elements.push(
-          <div key={`citation-${index}`} className={styles.fieldContainer}>
-            <div className={styles.fieldRow}>
-              <div className={styles.fieldLabel}>Source:</div>
-              <div className={styles.fieldValue}>{formattedCitation}</div>
-            </div>
-          </div>
-        );
-        return;
-      }
-
-      // Applicability
-      if (trimmedLine.startsWith('Applicability:')) {
-        flushBullets();
-        const applicabilityText = trimmedLine.replace('Applicability:', '').trim();
-        const formattedApplicability = parseBoldMarkdown(applicabilityText);
-        elements.push(
-          <div key={`applicability-${index}`} className={styles.fieldContainer}>
-            <div className={styles.fieldRow}>
-              <div className={styles.fieldLabel}>Applies to:</div>
-              <div className={styles.fieldValue}>{formattedApplicability}</div>
-            </div>
-          </div>
-        );
-        return;
-      }
-
-      // Regular content - this is where most references will be processed
       flushBullets();
-      const formattedContent = parseBoldMarkdown(trimmedLine);
-      
-      // 🆕 Check if this line is a QUOTED_TEXT marker (for CSS hiding)
-      const isQuotedText = trimmedLine.trim().startsWith('QUOTED_TEXT:');
-      
+
+      const formattedContent = parseBoldMarkdown(trimmedLine, messageIndex);
+
       elements.push(
-        <div 
-          key={`content-${index}`} 
+        <div
+          key={`content-${index}`}
           className={styles.contentParagraph}
-          data-is-quoted-text={isQuotedText ? 'true' : undefined}
         >
           {formattedContent}
         </div>
@@ -614,7 +653,7 @@ export default function MessageList({
     return elements;
   };
 
-  // 🆕 Render feedback buttons for assistant messages
+  // Render feedback buttons for assistant messages
   const renderFeedbackButtons = (message) => {
     if (!message._id || message.role !== 'assistant') {
       return null;
@@ -630,7 +669,6 @@ export default function MessageList({
       <div className={styles.feedbackContainer}>
         <div className={styles.feedbackQuestion}>Was this response helpful?</div>
         <div className={styles.feedbackButtons}>
-          {/* Helpful Button */}
           <button
             onClick={() => handleFeedbackClick(messageId, 'helpful')}
             className={`${styles.feedbackButton} ${userVote === 'helpful' ? styles.feedbackButtonActive : ''}`}
@@ -654,7 +692,6 @@ export default function MessageList({
             <span className={styles.feedbackLabel}>Helpful</span>
           </button>
 
-          {/* Not Helpful Button */}
           <button
             onClick={() => handleFeedbackClick(messageId, 'unhelpful')}
             className={`${styles.feedbackButton} ${userVote === 'unhelpful' ? styles.feedbackButtonActive : ''}`}
@@ -679,21 +716,18 @@ export default function MessageList({
           </button>
         </div>
 
-        {/* Success message */}
         {successMessage.show && successMessage.messageId === messageId && (
           <div className={styles.feedbackSuccess}>
             ✓ Thank you for your feedback!
           </div>
         )}
 
-        {/* Error message */}
         {error && (
           <div className={styles.feedbackError}>
             {error}
           </div>
         )}
 
-        {/* Submitting indicator */}
         {isSubmitting && (
           <div className={styles.feedbackSubmitting}>
             Saving...
@@ -703,19 +737,17 @@ export default function MessageList({
     );
   };
 
-  // UPDATED: Smart function to determine if references should be shown (with fallback)
+  // Smart function to determine if references should be shown
   const shouldShowReferences = (regulation, messageContent) => {
     if (!regulation || regulation.query_type !== "building_codes") {
       return false;
     }
 
-    // Check if we have references in the regulation object
     if (regulation.references && regulation.references.length > 0) {
       console.log('✅ Showing references from regulation object');
       return true;
     }
 
-    // FALLBACK: Check if we can extract references from message content
     if (messageContent) {
       const contentReferences = extractReferencesFromContent(messageContent);
       if (contentReferences.length > 0) {
@@ -728,7 +760,7 @@ export default function MessageList({
     return false;
   };
 
-  // UPDATED: renderRegulationResult with content fallback
+  // Render regulation result with references section
   const renderRegulationResult = (message, messageIndex) => {
     if (!message.regulation || !message.regulation.answer) {
       console.log(`❌ No regulation data for message ${messageIndex}`);
@@ -738,7 +770,6 @@ export default function MessageList({
     const regulation = message.regulation;
     const messageContent = message.content;
 
-    // Log query type detection (console only - not visible to users)
     console.log(`🔍 Message ${messageIndex} regulation analysis:`, {
       queryType: regulation.query_type,
       hasReferences: !!regulation.references,
@@ -746,17 +777,14 @@ export default function MessageList({
       shouldShow: shouldShowReferences(regulation, messageContent)
     });
 
-    // Check if we should show references (with fallback)
     if (!shouldShowReferences(regulation, messageContent)) {
       console.log(`📝 No regulation container needed for query type: ${regulation.query_type}`);
       return null;
     }
 
-    // Get references - either from regulation object or extract from content
     let referencesToShow = regulation.references || [];
 
     if (referencesToShow.length === 0 && messageContent) {
-      // Use content extraction as fallback
       referencesToShow = extractReferencesFromContent(messageContent);
       console.log('🔄 Using content-extracted references as fallback:', referencesToShow.length);
     }
@@ -769,23 +797,27 @@ export default function MessageList({
           <div className={styles.headerReferencesSection}>
             <div className={styles.headerReferencesTitle}>Also refer these pages:</div>
             <div className={styles.headerReferencesList}>
-              {/* Display as bullet points */}
-              {referencesToShow.map((ref, index) => (
-                <div
-                  key={index}
-                  className={`${styles.headerReferenceItem} ${styles.clickableReference}`}
-                  onClick={() => handleCitationClick(ref)}
-                  role="button"
-                  tabIndex={0}
-                  onKeyPress={(e) => {
-                    if (e.key === 'Enter' || e.key === ' ') {
-                      handleCitationClick(ref);
-                    }
-                  }}
-                >
-                  • {ref.display_text || `${ref.document} Page ${ref.page}`}
-                </div>
-              ))}
+              {referencesToShow.map((ref, index) => {
+                const displayText = ref.display_text || `${ref.document} Page ${ref.page}`;
+
+                return (
+                  <div
+                    key={index}
+                    className={`${styles.headerReferenceItem} ${styles.clickableReference}`}
+                    onClick={() => handleCitationClick(ref)}
+                    role="button"
+                    tabIndex={0}
+                    onKeyPress={(e) => {
+                      if (e.key === 'Enter' || e.key === ' ') {
+                        handleCitationClick(ref);
+                      }
+                    }}
+                    title="Click to view document"
+                  >
+                    • {displayText}
+                  </div>
+                );
+              })}
             </div>
           </div>
         </div>
@@ -797,7 +829,6 @@ export default function MessageList({
     return (
       <div className={styles.emptyMessages}>
         <div className={styles.welcomeMessage}>
-
           <div className={styles.examplePrompts}>
             <p className={styles.exampleTitle}>Try asking:</p>
             <ul className={styles.exampleList}>
@@ -818,11 +849,9 @@ export default function MessageList({
       {messages.map((message, index) => (
         <div
           key={index}
-          className={`${styles.message} ${message.role === 'user' ? styles.userMessage : styles.assistantMessage
-            }`}
+          className={`${styles.message} ${message.role === 'user' ? styles.userMessage : styles.assistantMessage}`}
         >
           <div className={styles.messageLayout}>
-            {/* Avatar */}
             <div className={styles.messageAvatar}>
               {message.role === 'user' ? (
                 <div className={styles.userAvatar}>
@@ -839,59 +868,35 @@ export default function MessageList({
               )}
             </div>
 
-            {/* Message content area */}
             <div className={styles.messageContentArea}>
-              {/* Message Content */}
               <div className={styles.messageContent}>
                 {renderMessageContent(message, index)}
               </div>
 
-              {/* Message Header with actions */}
               <div className={styles.messageContentHeader}>
-                <div className={styles.contentHeaderLeft}>
-                  <span className={styles.messageTime}>
-                    {formatTime(message.timestamp)}
-                  </span>
-                  {message.isEdited && (
-                    <span className={styles.editedBadge} title={`Edited ${formatTime(message.editedAt)}`}>
-                      Edited
-                    </span>
-                  )}
-                </div>
-
-
-                <div className={styles.contentHeaderRight}>
-                  {/* Edit button for user messages */}
-                  {/* 
-                  {message.role === 'user' && editingMessageIndex !== index && !isGenerating && (
-                    <button
-                      onClick={() => handleEditStart(index, message.content)}
-                      className={styles.actionButton}
-                      title="Edit message"
-                    >
-                      <svg xmlns="http://www.w3.org/2000/svg" className={styles.actionIcon} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                      </svg>
-                    </button>
-                  )}
-                    */}
-                </div>
-
+                {message.role === 'user' && (
+                  <button
+                    onClick={() => handleStartEdit(index)}
+                    className={styles.editButton}
+                    title="Edit message"
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" className={styles.editIcon} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                    </svg>
+                    Edit
+                  </button>
+                )}
               </div>
 
-              {/* Render regulation result for assistant messages with query type awareness */}
               {message.role === 'assistant' && renderRegulationResult(message, index)}
-
-              {/* 🆕 Render feedback buttons for assistant messages */}
               {message.role === 'assistant' && renderFeedbackButtons(message)}
             </div>
           </div>
         </div>
       ))}
 
-      {/* Generating indicator */}
       {isGenerating && (
-        <div className={`${styles.message} ${styles.assistantMessage} ${styles.generatingMessage}`}>
+        <div className={styles.message}>
           <div className={styles.messageLayout}>
             <div className={styles.messageAvatar}>
               <div className={styles.assistantAvatar}>
@@ -903,15 +908,38 @@ export default function MessageList({
 
             <div className={styles.messageContentArea}>
               <div className={styles.messageContent}>
-                <div className={styles.generatingIndicator}>
-                  <div className={styles.typingDots}>
-                    <span></span>
-                    <span></span>
-                    <span></span>
+                {/* ✅ SIMPLIFIED: Just icon + rotating text */}
+                <div className={styles.progressiveLoadingContainer}>
+                  {/* Icon that changes based on phase */}
+                  <div className={styles.loadingIconWrapper}>
+                    {loadingPhase === 0 && (
+                      <svg className={styles.loadingIcon} xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                      </svg>
+                    )}
+                    {loadingPhase === 1 && (
+                      <svg className={styles.loadingIcon} xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                      </svg>
+                    )}
+                    {loadingPhase === 2 && (
+                      <svg className={styles.loadingIcon} xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                      </svg>
+                    )}
                   </div>
-                  <span className={styles.generatingText}>
-                    Analyzing building regulations and preparing professional compliance report...
-                  </span>
+
+                  {/* Text with 3D cylindrical rotation - NO DOTS, NO PROGRESS BAR */}
+                  <div className={styles.progressiveTextContainer}>
+                    <div
+                      key={loadingPhase}
+                      className={styles.progressiveText}
+                    >
+                      {loadingPhase === 0 && "Analyzing query requirements..."}
+                      {loadingPhase === 1 && "Searching building regulations database..."}
+                      {loadingPhase === 2 && "Compiling regulatory compliance report..."}
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
@@ -921,14 +949,15 @@ export default function MessageList({
 
       <div ref={messagesEndRef} />
 
-      {/* Feedback Modal */}
-      <FeedbackModal
-        isOpen={feedbackModal.isOpen}
-        onClose={handleFeedbackModalClose}
-        onSubmit={handleFeedbackSubmit}
-        feedbackType={feedbackModal.feedbackType}
-        messageId={feedbackModal.messageId}
-      />
+      {feedbackModal.isOpen && (
+        <FeedbackModal
+          isOpen={feedbackModal.isOpen}
+          onClose={handleFeedbackCancel}
+          onSubmit={handleFeedbackSubmit}
+          messageId={feedbackModal.messageId}
+          feedbackType={feedbackModal.feedbackType}
+        />
+      )}
     </div>
   );
 }

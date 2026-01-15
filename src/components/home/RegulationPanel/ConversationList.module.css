@@ -11,7 +11,7 @@
 .conversationItem {
   position: relative;
   padding: 1rem;
-  border-radius: 0.75rem;
+  border-radius: 0.35rem;
   /* FIXED: Use consistent border without override conflicts */
   border: 2px solid #e5e7eb;
   background: #ffffff;

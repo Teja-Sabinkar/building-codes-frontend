@@ -14,7 +14,7 @@ const getBackendUrl = () => {
   if (process.env.NEXT_PUBLIC_RAG_BACKEND_URL) {
     return process.env.NEXT_PUBLIC_RAG_BACKEND_URL;
   }
-  
+
   // Fallback for production if env var is missing
   // This ensures the code works even if Vercel environment variable isn't set
   return 'https://building-codes-backend.onrender.com';
@@ -207,21 +207,21 @@ export default function HomePage() {
         const filteredConversations = allConversations.filter(conversation => {
           const isDeleted = currentDeletedIds.has(conversation._id);
           const isArchived = conversation.metadata?.isArchived;
-          
+
           if (isDeleted) {
             console.log('⏭️ FILTERING OUT user-deleted conversation:', {
               id: conversation._id,
               title: conversation.title
             });
           }
-          
+
           if (isArchived) {
             console.log('⏭️ FILTERING OUT archived conversation:', {
               id: conversation._id,
               title: conversation.title
             });
           }
-          
+
           return !isDeleted && !isArchived;
         });
 
@@ -243,12 +243,12 @@ export default function HomePage() {
 
         // Try to restore saved conversation
         const savedConversationId = localStorage.getItem('currentConversationId');
-        
+
         if (savedConversationId) {
           console.log('🔍 Trying to restore saved conversation:', savedConversationId);
-          
+
           const savedConversation = sortedConversations.find(c => c._id === savedConversationId);
-          
+
           if (savedConversation) {
             console.log('✅ Successfully restored saved conversation:', {
               id: savedConversation._id,
@@ -296,7 +296,7 @@ export default function HomePage() {
         conversationData.region = regionData.code;
         const flag = regionData.flag || (regionData.code === 'Scotland' ? '🏴󠁧󠁢󠁳󠁣󠁴󠁿' : '🇮🇳');
         const name = regionData.name || (regionData.code === 'Scotland' ? 'Scottish Building Standards' : 'Indian Building Codes');
-        
+
         conversationData.regionDisplayName = `${flag} ${name}`;
         conversationData.title = `New ${name} Query`;
       } else {
@@ -327,15 +327,15 @@ export default function HomePage() {
         console.log('✅ Conversation created:', data);
 
         const newConversation = data.conversation;
-        
+
         // 🔧 FIX: Set the conversation directly instead of searching in array
         // This works immediately, unlike selectConversation which relies on state update
         setCurrentConversation(newConversation);
         localStorage.setItem('currentConversationId', newConversation._id);
-        
+
         // Add to conversations list
         setConversations(prev => [newConversation, ...prev]);
-        
+
         console.log('✅ New conversation set as current:', {
           id: newConversation._id,
           title: newConversation.title
@@ -365,7 +365,7 @@ export default function HomePage() {
       const latestRegulationMessage = conversation.messages
         ?.slice().reverse()
         .find(msg => msg.regulation && msg.regulation.answer);
-      
+
       if (latestRegulationMessage) {
         setCurrentRegulationResult(latestRegulationMessage.regulation);
       } else {
@@ -384,7 +384,7 @@ export default function HomePage() {
   // Delete conversation
   const deleteConversation = async (conversationId) => {
     console.log('🗑️ Attempting to delete conversation:', conversationId);
-    
+
     // Add to deleted list IMMEDIATELY
     addDeletedConversationId(conversationId);
 
@@ -429,7 +429,23 @@ export default function HomePage() {
     console.log('📤 Sending regulation query:', message);
 
     try {
+      // ✅ FIX: Add user message to UI IMMEDIATELY (before any API calls)
+      const tempUserMessage = {
+        role: 'user',
+        content: message,
+        timestamp: new Date().toISOString(),
+        _id: 'temp-' + Date.now() // Temporary ID until we get real one from DB
+      };
+
+      // ✅ Update UI immediately - query stays visible
+      setCurrentConversation(prev => ({
+        ...prev,
+        messages: [...(prev?.messages || []), tempUserMessage]
+      }));
+
+      // Now set loading state - loading will appear BELOW the query
       setIsGenerating(true);
+
       const token = localStorage.getItem('authToken');
       const conversation = currentConversation;
 
@@ -461,7 +477,7 @@ export default function HomePage() {
       const conversationHistory = [];
       if (conversation.messages && conversation.messages.length > 0) {
         const recentMessages = conversation.messages.slice(-4);
-        
+
         for (const msg of recentMessages) {
           conversationHistory.push({
             role: msg.role,
@@ -483,7 +499,7 @@ export default function HomePage() {
       // STEP 2: Send query to Python backend - 🔧 FIXED: Use constant instead of env var
       console.log('🤖 Step 2: Sending query to Python backend with conversation context...');
       console.log('🔧 Using backend URL:', BACKEND_URL);
-      
+
       const aiResponse = await fetch(`${BACKEND_URL}/api/query`, {
         method: 'POST',
         headers: {
@@ -575,6 +591,13 @@ export default function HomePage() {
 
     } catch (error) {
       console.error('❌ Error in message flow:', error);
+
+      // ✅ FIX: Remove temp message on error
+      setCurrentConversation(prev => ({
+        ...prev,
+        messages: (prev?.messages || []).filter(m => !m._id?.toString().startsWith('temp-'))
+      }));
+
     } finally {
       setIsGenerating(false);
     }

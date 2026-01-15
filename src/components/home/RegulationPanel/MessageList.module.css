@@ -220,7 +220,7 @@
 
 :global(.dark-mode) .userMessage .messageContent {
   background-color: transparent;
-  color: #1a1a1a;
+  color: #ffffff;
   border-color: #10b981;
 }
 
@@ -269,17 +269,14 @@
 
 /* Edit functionality */
 .editingContainer {
-  background-color: #f0fdf4;
-  border: 2px solid #059669;
+  background-color: transparent;
   border-radius: 0.5rem;
-  padding: 0.75rem;
   margin: -0.125rem;
   transition: all 0.3s ease;
 }
 
 :global(.dark-mode) .editingContainer {
-  background-color: #1a3a2e;
-  border: 2px solid #10b981;
+  background-color: transparent;
 }
 
 .editTextarea {
@@ -340,25 +337,21 @@
 }
 
 .saveButton {
-  background-color: #059669;
-  border-color: #059669;
+  background-color: transparent;
   color: white;
 }
 
 :global(.dark-mode) .saveButton {
-  background-color: #10b981;
-  border-color: #10b981;
+  background-color: transparent;
   color: #1a1a1a;
 }
 
 .saveButton:hover:not(:disabled) {
-  background-color: #047857;
-  border-color: #047857;
+  background-color: transparent;
 }
 
 :global(.dark-mode) .saveButton:hover:not(:disabled) {
-  background-color: #059669;
-  border-color: #059669;
+  background-color: transparent;
 }
 
 .cancelButton {
@@ -1394,4 +1387,1022 @@
 
 :global(.dark-mode) .clickableReference:focus-visible {
   outline: 2px solid #10b981;
+}
+
+.loadingContainer {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px 20px;
+}
+
+.loadingText {
+  color: #6b7280;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.typingIndicator {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.typingDot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background-color: #059669;
+  animation: typingBounce 1.4s infinite ease-in-out;
+}
+
+.typingDot:nth-child(1) { animation-delay: 0s; }
+.typingDot:nth-child(2) { animation-delay: 0.2s; }
+.typingDot:nth-child(3) { animation-delay: 0.4s; }
+
+@keyframes typingBounce {
+  0%, 60%, 100% {
+    transform: translateY(0);
+    opacity: 0.4;
+  }
+  30% {
+    transform: translateY(-8px);
+    opacity: 1;
+  }
+}
+
+:global(.dark-mode) .typingDot {
+  background-color: #10b981;
+}
+
+
+/* ============================================
+   TOOLTIP STYLES - WITH "QUOTED FROM:" LABEL
+   Replace tooltip section in MessageList.module.css
+   ============================================ */
+
+/* Reference text with tooltip container */
+.referenceText {
+  position: relative;
+  display: inline-block;
+  color: #10b981;
+  font-weight: 600;
+  background-color: rgba(16, 185, 129, 0.1);
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 0.9em;
+  border: 1px solid rgba(16, 185, 129, 0.2);
+  margin: 0 4px;
+  cursor: help;
+  transition: all 0.2s ease;
+  z-index: 1;
+}
+
+.referenceText:hover {
+  background-color: rgba(16, 185, 129, 0.2);
+  border-color: rgba(16, 185, 129, 0.4);
+  transform: translateY(-1px);
+  z-index: 9999;
+}
+
+/* Tooltip container with very high z-index */
+.referenceTooltip {
+  position: absolute;
+  left: 50%;
+  top: 100%;
+  transform: translateX(-50%) translateY(8px);
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.3s ease, visibility 0.3s ease;
+  z-index: 99999;
+  pointer-events: none;
+  white-space: normal;
+  min-width: 300px;
+  max-width: 500px;
+}
+
+/* Show tooltip on hover */
+.referenceText:hover .referenceTooltip {
+  opacity: 1;
+  visibility: visible;
+  z-index: 99999;
+}
+
+/* Tooltip content box */
+.tooltipContent {
+  display: block;
+  background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+  color: #e2e8f0;
+  padding: 14px 18px; /* Slightly more padding for the label */
+  border-radius: 8px;
+  font-size: 0.875rem;
+  line-height: 1.6;
+  font-weight: 400;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3), 0 0 0 1px rgba(5, 150, 105, 0.3);
+  border: 1px solid rgba(5, 150, 105, 0.3);
+  position: relative;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  z-index: 99999;
+}
+
+/* 🆕 Style for "Quoted from:" label */
+.tooltipContent > span:first-child {
+  font-weight: 600;
+  color: #10b981;
+  margin-bottom: 8px;
+  display: block;
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  border-bottom: 1px solid rgba(16, 185, 129, 0.2);
+  padding-bottom: 6px;
+}
+
+/* Tooltip arrow pointing UP to the reference */
+.tooltipContent::before {
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: 0;
+  transform: translateX(-50%) translateY(-100%);
+  border: 8px solid transparent;
+  border-bottom-color: #1e293b;
+  filter: drop-shadow(0 -1px 0 rgba(5, 150, 105, 0.3));
+  z-index: 99999;
+}
+
+/* Dark mode adjustments */
+:global(.dark-mode) .tooltipContent {
+  background: linear-gradient(135deg, #0f172a 0%, #020617 100%);
+  color: #cbd5e1;
+  border-color: rgba(5, 150, 105, 0.4);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(5, 150, 105, 0.4);
+}
+
+:global(.dark-mode) .tooltipContent::before {
+  border-bottom-color: #0f172a;
+  filter: drop-shadow(0 -1px 0 rgba(5, 150, 105, 0.4));
+}
+
+:global(.dark-mode) .tooltipContent > span:first-child {
+  color: #34d399;
+  border-bottom-color: rgba(52, 211, 153, 0.2);
+}
+
+:global(.dark-mode) .referenceText {
+  background-color: rgba(16, 185, 129, 0.15);
+  border-color: rgba(16, 185, 129, 0.3);
+}
+
+:global(.dark-mode) .referenceText:hover {
+  background-color: rgba(16, 185, 129, 0.25);
+  border-color: rgba(16, 185, 129, 0.5);
+}
+
+/* Animation for tooltip appearance */
+@keyframes tooltipFadeIn {
+  from {
+    opacity: 0;
+    transform: translateX(-50%) translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(-50%) translateY(8px);
+  }
+}
+
+.referenceText:hover .referenceTooltip {
+  animation: tooltipFadeIn 0.3s ease forwards;
+}
+
+/* Ensure all parent containers allow overflow */
+.messageContent,
+.assistantContent,
+.contentParagraph,
+.messageLayout,
+.messageContentArea,
+.message,
+.assistantMessage {
+  overflow: visible !important;
+  position: relative;
+  z-index: auto;
+}
+
+
+/* ============================================================================
+   3D CYLINDRICAL VERTICAL ROTATION - No Dots, No Progress Bar
+   Add to MessageList.module.css
+   ============================================================================
+   Text rotates vertically upward in a 3D cylindrical motion
+   ============================================================================ */
+
+/* Main container - just icon and rotating text */
+.progressiveLoadingContainer {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 12px; 
+  perspective: 500px; /* ✅ Enable 3D perspective for cylinder effect */
+}
+
+/* Icon wrapper */
+.loadingIconWrapper {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.loadingIcon {
+  width: 20px;
+  height: 20px;
+  color: #10b981;
+  animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.7;
+    transform: scale(1.05);
+  }
+}
+
+/* Text container with overflow hidden for cylinder effect */
+.progressiveTextContainer {
+  display: flex;
+  align-items: center;
+  height: 20px; /* ✅ Fixed height to clip text during rotation */
+  overflow: hidden; /* ✅ Hide text when it rotates out of view */
+  position: relative;
+}
+
+/* The rotating text with 3D cylindrical animation */
+.progressiveText {
+  color: #f9fafb;
+  font-size: 14px;
+  font-weight: 500;
+  white-space: nowrap;
+  /* ✅ 3D CYLINDRICAL ROTATION - Rotates vertically upward */
+  animation: cylinderRotateUp 0.6s ease-out forwards;
+  transform-style: preserve-3d;
+}
+
+/* ✅ 3D Cylindrical Rotation Animation - Vertical Upward */
+@keyframes cylinderRotateUp {
+  0% {
+    transform: translateY(30px) rotateX(-90deg);
+    opacity: 0;
+  }
+  50% {
+    opacity: 0.7;
+  }
+  100% {
+    transform: translateY(0) rotateX(0deg);
+    opacity: 1;
+  }
+}
+
+/* Alternative: Even more pronounced cylinder effect */
+/*
+@keyframes cylinderRotateUp {
+  0% {
+    transform: translateY(40px) rotateX(-120deg) scale(0.8);
+    opacity: 0;
+  }
+  60% {
+    opacity: 0.8;
+  }
+  100% {
+    transform: translateY(0) rotateX(0deg) scale(1);
+    opacity: 1;
+  }
+}
+*/
+
+/* Light mode */
+:global(:not(.dark-mode)) .progressiveText {
+  color: #1f2937;
+}
+
+:global(:not(.dark-mode)) .loadingIcon {
+  color: #059669;
+}
+
+/* Dark mode */
+:global(.dark-mode) .progressiveText {
+  color: #f9fafb !important;
+}
+
+:global(.dark-mode) .loadingIcon {
+  color: #10b981 !important;
+}
+
+/* Mobile responsive */
+@media (max-width: 480px) {
+  .progressiveLoadingContainer {
+    padding: 16px 18px;
+    gap: 10px;
+  }
+
+  .progressiveText {
+    font-size: 13px;
+  }
+
+  .loadingIcon {
+    width: 18px;
+    height: 18px;
+  }
+}
+
+/* Accessibility - reduce motion */
+@media (prefers-reduced-motion: reduce) {
+  .progressiveText {
+    animation: fadeIn 0.3s ease-out forwards !important;
+  }
+  
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/* ============================================================================
+   EDIT BUTTON - Only Text Brightens on Hover
+   Add to MessageList.module.css
+   ============================================================================ */
+
+/* Edit button - transparent with green text */
+.editButton {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  background: transparent; /* ✅ Always transparent */
+  color: #10b981; /* ✅ Base green color */
+  border: none;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: color 0.3s ease; /* ✅ Only color transitions */
+}
+
+/* Edit icon */
+.editIcon {
+  width: 14px;
+  height: 14px;
+  color: #10b981;
+  transition: color 0.3s ease; /* ✅ Only color transitions */
+}
+
+/* ✅ HOVER - Only text/icon brightens, nothing else */
+.editButton:hover {
+  color: #6ee7b7; /* ✅ Brighter green text */
+  background: transparent; /* ✅ Stay transparent */
+  border: none; /* ✅ No border */
+  box-shadow: none; /* ✅ No glow */
+  transform: none; /* ✅ No movement */
+}
+
+.editButton:hover .editIcon {
+  color: #6ee7b7; /* ✅ Icon brightens too */
+}
+
+/* Active/pressed state - slightly darker */
+.editButton:active {
+  color: #34d399;
+  background: transparent;
+}
+
+.editButton:active .editIcon {
+  color: #34d399;
+}
+
+/* Focus state */
+.editButton:focus {
+  outline: 2px solid rgba(16, 185, 129, 0.3);
+  outline-offset: 2px;
+}
+
+/* Disabled state */
+.editButton:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.editButton:disabled:hover {
+  color: #10b981; /* No brightening when disabled */
+}
+
+/* ============================================================================
+   LIGHT MODE
+   ============================================================================ */
+
+:global(:not(.dark-mode)) .editButton {
+  color: #059669; /* Darker green for light mode */
+}
+
+:global(:not(.dark-mode)) .editIcon {
+  color: #059669;
+}
+
+:global(:not(.dark-mode)) .editButton:hover {
+  color: #10b981; /* Brightens to medium green */
+  background: transparent;
+}
+
+:global(:not(.dark-mode)) .editButton:hover .editIcon {
+  color: #10b981;
+}
+
+/* ============================================================================
+   DARK MODE
+   ============================================================================ */
+
+:global(.dark-mode) .editButton {
+  color: #10b981; /* Base green */
+}
+
+:global(.dark-mode) .editIcon {
+  color: #10b981;
+}
+
+:global(.dark-mode) .editButton:hover {
+  color: #6ee7b7 !important; /* ✅ Bright light green */
+  background: transparent !important; /* ✅ No background */
+}
+
+:global(.dark-mode) .editButton:hover .editIcon {
+  color: #6ee7b7 !important; /* ✅ Icon brightens */
+}
+
+/* Mobile */
+@media (max-width: 480px) {
+  .editButton {
+    padding: 5px 10px;
+    font-size: 12px;
+    gap: 5px;
+  }
+
+  .editIcon {
+    width: 13px;
+    height: 13px;
+  }
+}
+
+/* Accessibility */
+@media (prefers-reduced-motion: reduce) {
+  .editButton,
+  .editIcon {
+    transition: color 0.2s ease !important;
+  }
+}
+
+
+/* ============================================================================
+   SAVE & CANCEL BUTTONS - Matching Edit Button Style
+   Add to MessageList.module.css
+   ============================================================================ */
+
+/* ============================================================================
+   SAVE BUTTON - Green with brightening hover
+   ============================================================================ */
+
+.saveButton {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  background: transparent; /* ✅ Transparent */
+  color: #10b981; /* ✅ Green text */
+  border: none;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: color 0.3s ease; /* ✅ Only color transitions */
+}
+
+.saveButton:hover {
+  color: #6ee7b7; /* ✅ Brightens on hover */
+  background: transparent;
+}
+
+.saveButton:active {
+  color: #34d399;
+}
+
+.saveButton:focus {
+  outline: 2px solid rgba(16, 185, 129, 0.3);
+  outline-offset: 2px;
+}
+
+.saveButton:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.saveButton:disabled:hover {
+  color: #10b981;
+}
+
+/* ============================================================================
+   CANCEL BUTTON - Red with brightening hover
+   ============================================================================ */
+
+.cancelButton {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  background: transparent; /* ✅ Transparent */
+  color: #ef4444; /* ✅ Red text */
+  border: none;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: color 0.3s ease; /* ✅ Only color transitions */
+}
+
+.cancelButton:hover {
+  color: #fca5a5; /* ✅ Brightens to light red on hover */
+  background: transparent;
+}
+
+.cancelButton:active {
+  color: #f87171;
+}
+
+.cancelButton:focus {
+  outline: 2px solid rgba(239, 68, 68, 0.3);
+  outline-offset: 2px;
+}
+
+.cancelButton:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.cancelButton:disabled:hover {
+  color: #ef4444;
+}
+
+/* ============================================================================
+   EDIT BUTTON - For reference/consistency
+   ============================================================================ */
+
+.editButton {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  background: transparent;
+  color: #10b981;
+  border: none;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: color 0.3s ease;
+}
+
+.editButton:hover {
+  color: #6ee7b7;
+  background: transparent;
+}
+
+.editButton:active {
+  color: #34d399;
+}
+
+.editButton:focus {
+  outline: 2px solid rgba(16, 185, 129, 0.3);
+  outline-offset: 2px;
+}
+
+.editButton:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+.messageContent,
+.messageContent *,
+.messageContent ul,
+.messageContent ol,
+.messageContent li,
+.messageContent p {
+  color: #dedfe2 !important; /* Bright white-gray */
+  opacity: 1 !important;
+}
+
+/* Fix list markers */
+.messageContent li::marker {
+  color: #dedfe2 !important;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/* ============================================================================
+   SAVE & CANCEL BUTTONS - With Borders and Background Hover
+   Add to MessageList.module.css
+   ============================================================================ */
+
+/* ============================================================================
+   SAVE BUTTON - Green with border, background on hover
+   ============================================================================ */
+
+.saveButton {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  background: transparent; /* ✅ Transparent when not hovering */
+  color: #10b981; /* ✅ Green text */
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease; /* ✅ Smooth transitions */
+}
+
+.saveButton:hover {
+  color: #6ee7b7; /* ✅ Brighter green text */
+  background: rgba(16, 185, 129, 0.15); /* ✅ Light green background */
+}
+
+.saveButton:active {
+  color: #34d399;
+  background: rgba(16, 185, 129, 0.2);
+  border: 1px solid #34d399;
+}
+
+.saveButton:focus {
+  outline: 2px solid rgba(16, 185, 129, 0.4);
+  outline-offset: 2px;
+}
+
+.saveButton:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.saveButton:disabled:hover {
+  color: #10b981;
+  background: transparent;
+}
+
+/* ============================================================================
+   CANCEL BUTTON - Red with border, background on hover
+   ============================================================================ */
+
+.cancelButton {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  background: transparent; /* ✅ Transparent when not hovering */
+  color: #ef4444; /* ✅ Red text */
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease; /* ✅ Smooth transitions */
+}
+
+.cancelButton:hover {
+  color: #fca5a5; /* ✅ Brighter red text */
+  background: rgba(239, 68, 68, 0.15); /* ✅ Light red background */
+  border: 1px solid #fca5a5; /* ✅ Brighter red border */
+}
+
+.cancelButton:active {
+  color: #f87171;
+  background: rgba(239, 68, 68, 0.2);
+  border: 1px solid #f87171;
+}
+
+.cancelButton:focus {
+  outline: 2px solid rgba(239, 68, 68, 0.4);
+  outline-offset: 2px;
+}
+
+.cancelButton:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.cancelButton:disabled:hover {
+  color: #ef4444;
+  background: transparent;
+  border: 1px solid #ef4444;
+}
+
+/* ============================================================================
+   ICONS for Save/Cancel buttons
+   ============================================================================ */
+
+.saveIcon {
+  width: 14px;
+  height: 14px;
+  color: #10b981;
+  transition: color 0.3s ease;
+}
+
+.saveButton:hover .saveIcon {
+  color: #6ee7b7;
+}
+
+.cancelIcon {
+  width: 14px;
+  height: 14px;
+  color: #ef4444;
+  transition: color 0.3s ease;
+}
+
+.cancelButton:hover .cancelIcon {
+  color: #fca5a5;
+}
+
+/* ============================================================================
+   LIGHT MODE
+   ============================================================================ */
+
+:global(:not(.dark-mode)) .saveButton {
+  color: #059669;
+  border: 1px solid #059669;
+}
+
+:global(:not(.dark-mode)) .saveIcon {
+  color: #059669;
+}
+
+:global(:not(.dark-mode)) .saveButton:hover {
+  color: #10b981;
+  background: rgba(5, 150, 105, 0.1);
+  border: 1px solid #10b981;
+}
+
+:global(:not(.dark-mode)) .saveButton:hover .saveIcon {
+  color: #10b981;
+}
+
+:global(:not(.dark-mode)) .cancelButton {
+  color: #dc2626;
+  border: 1px solid #dc2626;
+}
+
+:global(:not(.dark-mode)) .cancelIcon {
+  color: #dc2626;
+}
+
+:global(:not(.dark-mode)) .cancelButton:hover {
+  color: #ef4444;
+  background: rgba(220, 38, 38, 0.1);
+  border: 1px solid #ef4444;
+}
+
+:global(:not(.dark-mode)) .cancelButton:hover .cancelIcon {
+  color: #ef4444;
+}
+
+/* ============================================================================
+   DARK MODE
+   ============================================================================ */
+
+:global(.dark-mode) .saveButton {
+  color: #10b981 !important;
+  background: transparent !important;
+}
+
+:global(.dark-mode) .saveIcon {
+  color: #10b981 !important;
+}
+
+:global(.dark-mode) .saveButton:hover {
+  color: #6ee7b7 !important;
+  background: rgba(16, 185, 129, 0.15) !important;
+  border: 1px solid #6ee7b7 !important;
+}
+
+:global(.dark-mode) .saveButton:hover .saveIcon {
+  color: #6ee7b7 !important;
+}
+
+:global(.dark-mode) .cancelButton {
+  color: #ef4444 !important;
+  border: 1px solid #ef4444 !important;
+  background: transparent !important;
+}
+
+:global(.dark-mode) .cancelIcon {
+  color: #ef4444 !important;
+}
+
+:global(.dark-mode) .cancelButton:hover {
+  color: #fca5a5 !important;
+  background: rgba(239, 68, 68, 0.15) !important;
+  border: 1px solid #fca5a5 !important;
+}
+
+:global(.dark-mode) .cancelButton:hover .cancelIcon {
+  color: #fca5a5 !important;
+}
+
+/* ============================================================================
+   MOBILE RESPONSIVE
+   ============================================================================ */
+
+@media (max-width: 480px) {
+  .saveButton,
+  .cancelButton {
+    padding: 5px 10px;
+    font-size: 12px;
+    gap: 5px;
+  }
+
+  .saveIcon,
+  .cancelIcon {
+    width: 13px;
+    height: 13px;
+  }
+}
+
+/* ============================================================================
+   ACCESSIBILITY
+   ============================================================================ */
+
+@media (prefers-reduced-motion: reduce) {
+  .saveButton,
+  .cancelButton,
+  .saveIcon,
+  .cancelIcon {
+    transition: color 0.2s ease, background 0.2s ease, border 0.2s ease !important;
+  }
+}
+
+/* ============================================================================
+   BUTTON GROUP (when Save & Cancel appear together)
+   ============================================================================ */
+
+.buttonGroup {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* ============================================================================
+   EDIT BUTTON - Updated to match (transparent, no border, no background)
+   ============================================================================ */
+
+.editButton {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  background: transparent;
+  color: #10b981;
+  border: none; /* ✅ Edit stays borderless */
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: color 0.3s ease;
+}
+
+.editButton:hover {
+  color: #6ee7b7;
+  background: transparent; /* ✅ Edit stays transparent on hover */
+}
+
+.editButton:active {
+  color: #34d399;
+}
+
+.editButton:focus {
+  outline: 2px solid rgba(16, 185, 129, 0.3);
+  outline-offset: 2px;
+}
+
+.editButton:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.editIcon {
+  width: 14px;
+  height: 14px;
+  color: #10b981;
+  transition: color 0.3s ease;
+}
+
+.editButton:hover .editIcon {
+  color: #6ee7b7;
+}
+
+:global(.dark-mode) .editButton {
+  color: #10b981 !important;
+}
+
+:global(.dark-mode) .editIcon {
+  color: #10b981 !important;
+}
+
+:global(.dark-mode) .editButton:hover {
+  color: #6ee7b7 !important;
+  background: transparent !important;
+}
+
+:global(.dark-mode) .editButton:hover .editIcon {
+  color: #6ee7b7 !important;
 }
