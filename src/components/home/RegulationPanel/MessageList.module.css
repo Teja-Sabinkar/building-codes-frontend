@@ -318,23 +318,6 @@
   justify-content: flex-end;
 }
 
-.editButton {
-  display: flex;
-  align-items: center;
-  gap: 0.375rem;
-  padding: 0.375rem 0.75rem;
-  border-radius: 0.375rem;
-  font-size: 0.75rem;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  border: 1px solid;
-}
-
-.editButton:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
 
 .saveButton {
   background-color: transparent;
@@ -1782,74 +1765,6 @@
 
 
 /* ============================================================================
-   EDIT BUTTON - Only Text Brightens on Hover
-   Add to MessageList.module.css
-   ============================================================================ */
-
-/* Edit button - transparent with green text */
-.editButton {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  padding: 6px 12px;
-  background: transparent; /* ✅ Always transparent */
-  color: #10b981; /* ✅ Base green color */
-  border: none;
-  border-radius: 6px;
-  font-size: 13px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: color 0.3s ease; /* ✅ Only color transitions */
-}
-
-/* Edit icon */
-.editIcon {
-  width: 14px;
-  height: 14px;
-  color: #10b981;
-  transition: color 0.3s ease; /* ✅ Only color transitions */
-}
-
-/* ✅ HOVER - Only text/icon brightens, nothing else */
-.editButton:hover {
-  color: #6ee7b7; /* ✅ Brighter green text */
-  background: transparent; /* ✅ Stay transparent */
-  border: none; /* ✅ No border */
-  box-shadow: none; /* ✅ No glow */
-  transform: none; /* ✅ No movement */
-}
-
-.editButton:hover .editIcon {
-  color: #6ee7b7; /* ✅ Icon brightens too */
-}
-
-/* Active/pressed state - slightly darker */
-.editButton:active {
-  color: #34d399;
-  background: transparent;
-}
-
-.editButton:active .editIcon {
-  color: #34d399;
-}
-
-/* Focus state */
-.editButton:focus {
-  outline: 2px solid rgba(16, 185, 129, 0.3);
-  outline-offset: 2px;
-}
-
-/* Disabled state */
-.editButton:disabled {
-  opacity: 0.4;
-  cursor: not-allowed;
-}
-
-.editButton:disabled:hover {
-  color: #10b981; /* No brightening when disabled */
-}
-
-/* ============================================================================
    LIGHT MODE
    ============================================================================ */
 
@@ -2002,94 +1917,6 @@
 .cancelButton:disabled:hover {
   color: #ef4444;
 }
-
-/* ============================================================================
-   EDIT BUTTON - For reference/consistency
-   ============================================================================ */
-
-.editButton {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  padding: 6px 12px;
-  background: transparent;
-  color: #10b981;
-  border: none;
-  border-radius: 6px;
-  font-size: 13px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: color 0.3s ease;
-}
-
-.editButton:hover {
-  color: #6ee7b7;
-  background: transparent;
-}
-
-.editButton:active {
-  color: #34d399;
-}
-
-.editButton:focus {
-  outline: 2px solid rgba(16, 185, 129, 0.3);
-  outline-offset: 2px;
-}
-
-.editButton:disabled {
-  opacity: 0.4;
-  cursor: not-allowed;
-}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-.messageContent,
-<<<<<<< HEAD
-=======
-
->>>>>>> 6d55e9bc8779db1cc13d3e62ec8f76eaffde680b
-.messageContent ul,
-.messageContent ol,
-.messageContent li,
-.messageContent p {
-  color: #dedfe2 !important; /* Bright white-gray */
-  opacity: 1 !important;
-}
-
-/* Fix list markers */
-.messageContent li::marker {
-  color: #dedfe2 !important;
-}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
