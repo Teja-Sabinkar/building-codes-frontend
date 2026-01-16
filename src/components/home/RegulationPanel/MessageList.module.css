@@ -1573,6 +1573,26 @@
 }
 
 
+
+
+
+
+.messageContent,
+
+.messageContent ul,
+.messageContent ol,
+.messageContent li,
+.messageContent p {
+  color: #f3f4f6 !important; /* Bright white-gray */
+  opacity: 1 !important;
+}
+
+/* Fix list markers */
+.messageContent li::marker {
+  color: #f3f4f6 !important;
+}
+
+
 /* ============================================================================
    3D CYLINDRICAL VERTICAL ROTATION - No Dots, No Progress Bar
    Add to MessageList.module.css
@@ -1716,6 +1736,8 @@
     }
   }
 }
+
+
 
 
 
@@ -2235,4 +2257,59 @@
 
 :global(.dark-mode) .editButton:hover .editIcon {
   color: #6ee7b7 !important;
+}
+/* ============================================================================
+   TIMESTAMP DISPLAY STYLES (Replaces Edit Button)
+   ============================================================================ */
+
+.messageTimestamp {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  color: #6b7280;
+  font-size: 12px;
+  font-weight: 500;
+  border-radius: 6px;
+  transition: color 0.2s ease;
+}
+
+.timestampIcon {
+  width: 14px;
+  height: 14px;
+  color: #9ca3af;
+  transition: color 0.2s ease;
+}
+
+.messageTimestamp:hover {
+  color: #4b5563;
+}
+
+.messageTimestamp:hover .timestampIcon {
+  color: #6b7280;
+}
+
+:global(.dark-mode) .messageTimestamp {
+  color: #9ca3af !important;
+}
+
+:global(.dark-mode) .timestampIcon {
+  color: #6b7280 !important;
+}
+
+:global(.dark-mode) .messageTimestamp:hover {
+  color: #d1d5db !important;
+}
+
+:global(.dark-mode) .messageTimestamp:hover .timestampIcon {
+  color: #9ca3af !important;
+}
+
+/* Hide edit button if it still appears anywhere */
+.editButton {
+  display: none !important;
+}
+
+.editIcon {
+  display: none !important;
 }

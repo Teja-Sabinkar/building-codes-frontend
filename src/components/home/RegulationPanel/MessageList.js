@@ -299,6 +299,43 @@ export default function MessageList({
     return 'U';
   };
 
+  // Format timestamp for display
+  const formatTimestamp = (timestamp) => {
+    if (!timestamp) return '';
+    
+    const date = new Date(timestamp);
+    const now = new Date();
+    const diffInSeconds = Math.floor((now - date) / 1000);
+    
+    // Hours old (less than 24 hours) - show time only: "02:30pm"
+    if (diffInSeconds < 86400) {
+      let hours = date.getHours();
+      const minutes = date.getMinutes();
+      const ampm = hours >= 12 ? 'pm' : 'am';
+      
+      // Convert to 12-hour format
+      hours = hours % 12;
+      hours = hours ? hours : 12; // 0 should be 12
+      
+      const minutesStr = minutes.toString().padStart(2, '0');
+      return `${hours.toString().padStart(2, '0')}:${minutesStr}${ampm}`;
+    }
+    
+    // Days/months/years old - show date: "16 jan 2026" or "16 jan"
+    const day = date.getDate().toString().padStart(2, '0');
+    const monthNames = ['jan', 'feb', 'mar', 'apr', 'may', 'jun', 'jul', 'aug', 'sep', 'oct', 'nov', 'dec'];
+    const month = monthNames[date.getMonth()];
+    const year = date.getFullYear();
+    
+    // Same year - no year suffix: "16 jan"
+    if (year === now.getFullYear()) {
+      return `${day} ${month}`;
+    }
+    
+    // Different year - include year: "16 jan 2026"
+    return `${day} ${month} ${year}`;
+  };
+
   const handleStartEdit = (messageIndex) => {
     setEditingMessageIndex(messageIndex);
     setEditContent(messages[messageIndex].content);
@@ -875,16 +912,19 @@ export default function MessageList({
 
               <div className={styles.messageContentHeader}>
                 {message.role === 'user' && (
-                  <button
-                    onClick={() => handleStartEdit(index)}
-                    className={styles.editButton}
-                    title="Edit message"
-                  >
-                    <svg xmlns="http://www.w3.org/2000/svg" className={styles.editIcon} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                  <div className={styles.messageTimestamp} title={new Date(message.timestamp).toLocaleString('en-GB', { 
+                    day: 'numeric', 
+                    month: 'long', 
+                    year: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit',
+                    second: '2-digit'
+                  })}>
+                    <svg xmlns="http://www.w3.org/2000/svg" className={styles.timestampIcon} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                     </svg>
-                    Edit
-                  </button>
+                    {formatTimestamp(message.timestamp)}
+                  </div>
                 )}
               </div>
 
