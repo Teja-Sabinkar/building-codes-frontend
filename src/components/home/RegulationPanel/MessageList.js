@@ -16,6 +16,12 @@ export default function MessageList({
   onCitationClick
 }) {
   const messagesEndRef = useRef(null);
+  const renderOccurrencesRef = useRef({}); // 🔥 NEW: Track occurrences across entire component
+  
+  // 🔥 CRITICAL: Reset occurrence counter at the start of EVERY render
+  // This ensures each render cycle starts fresh with occurrence-1
+  renderOccurrencesRef.current = {};
+  
   const [editingMessageIndex, setEditingMessageIndex] = useState(null);
   const [editContent, setEditContent] = useState('');
   const [isEditing, setIsEditing] = useState(false);
@@ -93,6 +99,7 @@ export default function MessageList({
   // 🔥 FIXED: Extract QUOTED_TEXT from RAW content BEFORE cleaning
   useEffect(() => {
     const tooltips = {};
+    const referenceOccurrences = {}; // 🔥 NEW: Track occurrences per reference
 
     messages.forEach((message, messageIndex) => {
       if (message.role === 'assistant' && message.content) {
@@ -161,13 +168,21 @@ export default function MessageList({
 
                 console.log(`   📍 Cleaned reference: "${referenceText}"`);
 
-                // Create the key
-                const referenceKey = `${messageIndex}-${referenceText}`;
+                // 🔥 NEW: Track occurrence count for this reference
+                const baseKey = `${messageIndex}-${referenceText}`;
+                if (!referenceOccurrences[baseKey]) {
+                  referenceOccurrences[baseKey] = 0;
+                }
+                referenceOccurrences[baseKey]++;
+                
+                // Create unique key with occurrence number
+                const referenceKey = `${baseKey}-occurrence-${referenceOccurrences[baseKey]}`;
                 tooltips[referenceKey] = quotedText;
 
                 console.log(`   ✅ Created tooltip mapping:`);
                 console.log(`      Key: "${referenceKey}"`);
                 console.log(`      Value: "${quotedText.substring(0, 80)}..."`);
+                console.log(`      Occurrence #: ${referenceOccurrences[baseKey]}`);
 
                 break;
               }
@@ -178,6 +193,7 @@ export default function MessageList({
     });
 
     setReferenceTooltips(tooltips);
+    
     console.log(`\n✅ EXTRACTION COMPLETE`);
     console.log(`📊 Total tooltips extracted: ${Object.keys(tooltips).length}`);
     console.log(`🔑 Tooltip keys:`, Object.keys(tooltips));
@@ -549,12 +565,20 @@ export default function MessageList({
           console.log(`   🎨 DISPLAY TEXT: "${displayText}"`);
           console.log(`   🔍 Has asterisks in display? ${displayText.includes('*')}`);
 
-          // Get tooltip text for this reference
-          const referenceKey = `${messageIndex}-${referenceText}`;
+          // 🔥 NEW: Track occurrence count for tooltip lookup (using ref)
+          const baseKey = `${messageIndex}-${referenceText}`;
+          if (!renderOccurrencesRef.current[baseKey]) {
+            renderOccurrencesRef.current[baseKey] = 0;
+          }
+          renderOccurrencesRef.current[baseKey]++;
+          
+          // Get tooltip text using occurrence-specific key
+          const referenceKey = `${baseKey}-occurrence-${renderOccurrencesRef.current[baseKey]}`;
           const tooltipText = referenceTooltips[referenceKey];
 
           console.log(`🔑 Looking for tooltip: "${referenceKey}"`);
           console.log(`📝 Found: ${tooltipText ? 'YES' : 'NO'}`);
+          console.log(`   Occurrence #: ${renderOccurrencesRef.current[baseKey]}`);
 
           if (tooltipText) {
             console.log(`✅ Tooltip content: "${tooltipText.substring(0, 100)}..."`);
