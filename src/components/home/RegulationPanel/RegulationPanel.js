@@ -18,7 +18,8 @@ const MemoizedDocumentViewer = memo(DocumentViewer, (prevProps, nextProps) => {
   return (
     prevProps.isOpen === nextProps.isOpen &&
     prevProps.citation === nextProps.citation &&
-    prevProps.currentRegion === nextProps.currentRegion
+    prevProps.currentRegion === nextProps.currentRegion &&
+    prevProps.onSummarizePage === nextProps.onSummarizePage
   );
 });
 
@@ -34,6 +35,7 @@ export default function RegulationPanel({
   isGenerating,
   onEditMessage,
   currentRegulationResult,
+  onSummarizePage,
   isSidebarOpen = true,
   onToggleSidebar
 }) {
@@ -503,6 +505,7 @@ export default function RegulationPanel({
                 isOpen={documentViewer.isOpen}
                 onClose={handleCloseDocumentViewer}
                 citation={documentViewer.citation}
+                onSummarizePage={onSummarizePage}
                 currentRegion={currentConversation?.region || 'Scotland'}
               />
             </div>

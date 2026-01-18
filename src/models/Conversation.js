@@ -56,7 +56,7 @@ const MessageSchema = new mongoose.Schema({
     query_type: {
       type: String,
       default: null,
-      enum: ['building_codes', 'not_available', 'out_of_scope', 'identity', null]
+      enum: ['building_codes', 'not_available', 'out_of_scope', 'identity', 'page_summary', null]
     },
     // ✨✨✨ UPDATED: Added highlight_markers, country, display_text fields ✨✨✨
     references: [{

@@ -1189,3 +1189,497 @@
 .documentPages[data-zooming="true"] .highlightedText {
   transition: none !important;
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/* ============================================================================
+   📝 SUMMARIZE PAGE BUTTON - GRADIENT RING DESIGN (Green/Black)
+   Continuous rotating gradient ring with very light green background
+   ============================================================================ */
+
+/* Main Button Container */
+.summarizeButton {
+  position: absolute;
+  top: 24px;
+  left: 24px;
+  z-index: 100;
+  
+  /* Size */
+  width: 56px;
+  height: 56px;
+  
+  /* Remove default button styles */
+  border: none;
+  padding: 0;
+  background: transparent;
+  cursor: pointer;
+  
+  /* Smooth transitions */
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  
+  /* Center the icon */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  
+  /* Appear animation */
+  animation: summarizeButtonAppear 0.4s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+  
+  /* Focus styles for accessibility */
+  outline: none;
+  
+  /* For layering */
+  position: relative;
+  isolation: isolate;
+}
+
+/* Rotating gradient border - ALWAYS ROTATING */
+.summarizeButton::before {
+  content: '';
+  position: absolute;
+  inset: -2px;
+  border-radius: 50%;
+  
+  /* Green rotating gradient */
+  background: conic-gradient(
+    from 0deg,
+    #10b981 0deg,      /* Emerald green start */
+    #34d399 60deg,     /* Light green */
+    #10b981 120deg,    /* Emerald again */
+    #059669 180deg,    /* Deep green */
+    #047857 240deg,    /* Darker green */
+    #065f46 300deg,    /* Forest green */
+    #1a1a1a 330deg,    /* Near black */
+    #10b981 360deg     /* Back to emerald (smooth loop) */
+  );
+  
+  /* CONTINUOUS rotation - always spinning */
+  animation: rotateGradient 3s linear infinite;
+  
+  z-index: -1;
+}
+
+/* Inner gray background - creates the border effect */
+.summarizeButton::after {
+  content: '';
+  position: absolute;
+  inset: 3px; /* Border thickness = 3px */
+  border-radius: 50%;
+  background: #f3f4f6; /* Gray background */
+  z-index: -1;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Dark mode - darker gray center */
+@media (prefers-color-scheme: dark) {
+  .summarizeButton::after {
+    background: #374151; /* Dark gray */
+  }
+}
+
+/* Icon Styling - WHITE on gray background */
+.summarizeIcon {
+  width: 28px;
+  height: 28px;
+  stroke: #ffffff; /* White icon */
+  fill: none;
+  stroke-width: 2.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  position: relative;
+  z-index: 1;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Dark mode icon - stays white */
+@media (prefers-color-scheme: dark) {
+  .summarizeIcon {
+    stroke: #ffffff; /* White icon in dark mode too */
+  }
+}
+
+/* Hover Effects */
+.summarizeButton:hover {
+  transform: translateY(-2px) scale(1.08);
+}
+
+.summarizeButton:hover::before {
+  /* Make gradient rotate FASTER on hover */
+  animation: rotateGradient 1.5s linear infinite;
+  inset: -3px; /* Slightly larger ring */
+}
+
+.summarizeButton:hover::after {
+  /* Slightly darker gray on hover */
+  background: #e5e7eb; /* Darker gray */
+  box-shadow: 0 8px 24px rgba(16, 185, 129, 0.3);
+  inset: 4px; /* Thicker ring on hover */
+}
+
+/* Dark mode hover */
+@media (prefers-color-scheme: dark) {
+  .summarizeButton:hover::after {
+    background: #4b5563; /* Lighter dark gray */
+    box-shadow: 0 8px 24px rgba(16, 185, 129, 0.4);
+  }
+}
+
+.summarizeButton:hover .summarizeIcon {
+  transform: scale(1.1);
+  /* Icon stays white on hover */
+}
+
+/* Active/Click Effect */
+.summarizeButton:active {
+  transform: translateY(0) scale(1);
+}
+
+.summarizeButton:active::after {
+  background: #d1d5db; /* Light gray when pressed */
+}
+
+/* Disabled State */
+.summarizeButton:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.summarizeButton:disabled::before {
+  animation: none; /* Stop rotation when disabled */
+}
+
+.summarizeButton:disabled:hover {
+  transform: none;
+}
+
+/* ============================================================================
+   CUSTOM POPUP TOOLTIP - STATIC (NO ROTATION)
+   ============================================================================ */
+
+/* Tooltip container - appears to the RIGHT of button */
+.tooltipPopup {
+  position: absolute;
+  left: calc(100% + 24px); /* 24px gap from button - no overlap */
+  top: 50%;
+  transform: translateY(-50%) translateX(-10px);
+  
+  /* Styling */
+  background: #f3f4f6; /* Light gray background */
+  color: #1f2937; /* Dark gray text */
+  padding: 10px 18px;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 500;
+  white-space: nowrap;
+  letter-spacing: 0.3px;
+  
+  /* Simple static green border - NO ROTATION */
+  border: 2px solid #10b981; /* Solid green border */
+  
+  /* Shadow */
+  box-shadow: 
+    0 4px 12px rgba(16, 185, 129, 0.2),
+    0 2px 4px rgba(0, 0, 0, 0.1);
+  
+  /* Hidden by default */
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  
+  /* Smooth transition */
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  
+  z-index: 1001;
+}
+
+/* NO ::before pseudo-element - no rotating border */
+
+/* NO ::after pseudo-element - background is on main element */
+
+/* Show tooltip on hover with slide-in animation from left */
+.summarizeButton:hover .tooltipPopup {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(-50%) translateX(0); /* Slide in from left */
+  transition-delay: 0.4s; /* Delay before showing */
+  
+  /* Slightly brighter border on hover */
+  border-color: #059669;
+  box-shadow: 
+    0 6px 16px rgba(16, 185, 129, 0.3),
+    0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* Arrow pointing to the button */
+.tooltipArrow {
+  position: absolute;
+  left: -8px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 0;
+  height: 0;
+  border-top: 6px solid transparent;
+  border-bottom: 6px solid transparent;
+  border-right: 8px solid #f3f4f6;
+  z-index: 1;
+}
+
+/* Optional: Very subtle scale pulse - barely noticeable */
+.summarizeButton:hover .tooltipPopup {
+  animation: tooltipScalePulse 3s ease-in-out infinite;
+  animation-delay: 0.7s;
+}
+
+@keyframes tooltipScalePulse {
+  0%, 100% {
+    transform: translateY(-50%) translateX(0) scale(1);
+  }
+  50% {
+    transform: translateY(-50%) translateX(0) scale(1.01);
+  }
+}
+
+/* Removed: rotateGradientBorder animation - NO ROTATION */
+
+.summarizeButton:hover .tooltipPopup {
+  animation: tooltipScalePulse 2s ease-in-out infinite;
+  animation-delay: 0.7s; /* Start pulsing after it appears */
+}
+
+
+/* Dark mode tooltip */
+@media (prefers-color-scheme: dark) {
+  .tooltipPopup {
+    background: #374151; /* Dark gray */
+    color: #f9fafb; /* Light text */
+    border-color: #10b981; /* Green border */
+    box-shadow: 
+      0 4px 16px rgba(16, 185, 129, 0.3),
+      0 2px 4px rgba(0, 0, 0, 0.2);
+  }
+  
+  .tooltipArrow {
+    border-right-color: #374151; /* Match dark background */
+  }
+  
+  .summarizeButton:hover .tooltipPopup {
+    border-color: #34d399; /* Lighter green on hover */
+    box-shadow: 
+      0 6px 20px rgba(16, 185, 129, 0.4),
+      0 2px 4px rgba(0, 0, 0, 0.2);
+  }
+}
+
+/* Responsive: Move tooltip below on small screens */
+@media (max-width: 768px) {
+  .tooltipPopup {
+    left: 50%;
+    top: calc(100% + 16px);
+    transform: translate(-50%, 10px);
+  }
+  
+  .tooltipArrow {
+    left: 50%;
+    top: -6px;
+    bottom: auto;
+    transform: translateX(-50%);
+    border-right: 6px solid transparent;
+    border-left: 6px solid transparent;
+    border-top: none;
+    border-bottom: 6px solid #f3f4f6;
+  }
+  
+  .summarizeButton:hover .tooltipPopup {
+    transform: translate(-50%, 0);
+  }
+  
+  @keyframes tooltipScalePulse {
+    0%, 100% {
+      transform: translate(-50%, 0) scale(1);
+    }
+    50% {
+      transform: translate(-50%, 0) scale(1.02);
+    }
+  }
+}
+
+@media (max-width: 768px) and (prefers-color-scheme: dark) {
+  .tooltipArrow {
+    border-bottom-color: #374151;
+  }
+}
+
+/* Loading Spinner (replaces icon when summarizing) */
+.summarizeSpinner {
+  width: 28px;
+  height: 28px;
+  border: 3px solid rgba(255, 255, 255, 0.3);
+  border-top-color: #ffffff; /* White spinner */
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+  position: relative;
+  z-index: 1;
+}
+
+/* Keyboard Focus (Accessibility) */
+.summarizeButton:focus-visible {
+  outline: 3px solid #10b981;
+  outline-offset: 4px;
+}
+
+/* ============================================================================
+   ANIMATIONS
+   ============================================================================ */
+
+/* Appear Animation (fade + scale) */
+@keyframes summarizeButtonAppear {
+  from {
+    opacity: 0;
+    transform: scale(0.8);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* Gradient Rotation Animation - CONTINUOUS */
+@keyframes rotateGradient {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Spinner Animation */
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* ============================================================================
+   RESPONSIVE DESIGN
+   ============================================================================ */
+
+/* Tablets and smaller */
+@media (max-width: 768px) {
+  .summarizeButton {
+    width: 52px;
+    height: 52px;
+    top: 20px;
+    left: 20px;
+  }
+  
+  .summarizeIcon,
+  .summarizeSpinner {
+    width: 26px;
+    height: 26px;
+  }
+}
+
+/* Mobile phones */
+@media (max-width: 480px) {
+  .summarizeButton {
+    width: 48px;
+    height: 48px;
+    top: 16px;
+    left: 16px;
+  }
+  
+  .summarizeButton::after {
+    inset: 3px; /* Thinner ring on mobile */
+  }
+  
+  .summarizeIcon,
+  .summarizeSpinner {
+    width: 24px;
+    height: 24px;
+  }
+}
+
+/* Very small screens */
+@media (max-width: 360px) {
+  .summarizeButton {
+    width: 44px;
+    height: 44px;
+    top: 12px;
+    left: 12px;
+  }
+  
+  .summarizeIcon,
+  .summarizeSpinner {
+    width: 22px;
+    height: 22px;
+  }
+}
+
+/* ============================================================================
+   ACCESSIBILITY ENHANCEMENTS
+   ============================================================================ */
+
+/* Reduced motion for users who prefer it */
+@media (prefers-reduced-motion: reduce) {
+  .summarizeButton::before {
+    animation: none !important; /* Stop rotation for reduced motion */
+  }
+  
+  .summarizeButton,
+  .summarizeButton::after,
+  .summarizeIcon {
+    transition: none !important;
+  }
+  
+  .summarizeButton:hover {
+    transform: none;
+  }
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+  .summarizeButton::before {
+    background: conic-gradient(
+      from 0deg,
+      #00ff00 0deg,
+      #ffffff 120deg,
+      #00ff00 240deg,
+      #000000 360deg
+    );
+  }
+  
+  .summarizeButton::after {
+    background: #ffffff;
+  }
+  
+  .summarizeIcon {
+    stroke: #000000;
+    stroke-width: 3;
+  }
+}

@@ -1,7 +1,6 @@
 // src/components/home/DocumentViewer/DocumentViewer.js
-// HYBRID VERSION: PDF.js Rendering + Text-Based Highlighting
-// PERFORMANCE FIX: Renders ONLY the current page instead of all pages
-// ZOOM FEATURE: Supports zoom in/out with keyboard shortcuts (FIXED: Zoom applied to pages, not container)
+// UPDATED WITH SUMMARIZE PAGE FEATURE
+// HYBRID VERSION: PDF.js Rendering + Text-Based Highlighting + Page Summarization
 
 'use client';
 
@@ -28,7 +27,8 @@ export default function DocumentViewer({
   isOpen, 
   onClose,
   citation, // { document, page, country, highlight_markers }
-  currentRegion 
+  currentRegion,
+  onSummarizePage // 🆕 NEW: Callback to trigger summarization in chat
 }) {
   const [isLoading, setIsLoading] = useState(false);
   const [documentData, setDocumentData] = useState(null);
@@ -38,6 +38,7 @@ export default function DocumentViewer({
   const [zoom, setZoom] = useState(1.0);
   const [highlightedSections, setHighlightedSections] = useState([]);
   const [highlightStats, setHighlightStats] = useState({ attempted: 0, successful: 0, failed: 0 });
+  const [isSummarizing, setIsSummarizing] = useState(false); // 🆕 NEW: Track summarization state
   
   const documentContentRef = useRef(null);
   const pageRefs = useRef({});
@@ -47,6 +48,36 @@ export default function DocumentViewer({
     console.log('🔧 DocumentViewer Backend URL:', BACKEND_URL);
     console.log('🔧 DocumentViewer Env Var:', process.env.NEXT_PUBLIC_RAG_BACKEND_URL || 'NOT SET');
   }, []);
+
+  /**
+   * 🆕 NEW: Handle Summarize Page Click
+   */
+  const handleSummarizePage = async () => {
+    if (!citation || !currentPage || !documentData) {
+      console.warn('⚠️ Cannot summarize: missing citation or page data');
+      return;
+    }
+
+    console.log('📝 Summarize Page clicked:', {
+      document: citation.document,
+      page: currentPage,
+      country: citation.country || currentRegion
+    });
+
+    // Call parent callback to trigger summarization in chat
+    if (onSummarizePage) {
+      setIsSummarizing(true);
+      try {
+        await onSummarizePage({
+          document: citation.document,
+          page: currentPage,
+          country: citation.country || currentRegion
+        });
+      } finally {
+        setIsSummarizing(false);
+      }
+    }
+  };
 
   /**
    * Map document name to PDF filename
@@ -325,6 +356,35 @@ export default function DocumentViewer({
         className={styles.documentContent}
         ref={documentContentRef}
       >
+        {/* 🆕 NEW: Floating Summarize Button - Top Left Corner */}
+        {!isLoading && !error && documentData && currentPage && (
+          <button
+            onClick={handleSummarizePage}
+            disabled={isSummarizing}
+            className={styles.summarizeButton}
+            aria-label="Summarize current page"
+          >
+            {isSummarizing ? (
+              <div className={styles.summarizeSpinner}></div>
+            ) : (
+              <svg 
+                xmlns="http://www.w3.org/2000/svg" 
+                className={styles.summarizeIcon} 
+                fill="none" 
+                viewBox="0 0 24 24" 
+                stroke="currentColor"
+              >
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+              </svg>
+            )}
+            {/* Custom Popup Tooltip */}
+            <span className={styles.tooltipPopup}>
+              <span className={styles.tooltipArrow}></span>
+              Summarize this page
+            </span>
+          </button>
+        )}
+
         {isLoading && (
           <div className={styles.loadingState}>
             <div className={styles.spinner}></div>
@@ -363,7 +423,7 @@ export default function DocumentViewer({
               <PDFPageViewer
                 pdfUrl={pdfUrl}
                 pageNumber={parseInt(currentPage)}
-                highlightMarkers={citation?.highlight_markers || []} // ✅ FIXED: Pass highlight markers in correct camelCase format
+                highlightMarkers={citation?.highlight_markers || []}
                 onPageRendered={(pageNum) => console.log(`✅ Page ${pageNum} rendered`)}
                 onError={(error) => console.error(`❌ Page ${currentPage} error:`, error)}
               />

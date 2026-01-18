@@ -603,6 +603,177 @@ export default function HomePage() {
     }
   };
 
+  // 🆕 NEW: Handle page summarization from DocumentViewer
+  const handleSummarizePage = async (pageInfo) => {
+    if (!currentConversation) {
+      console.warn('⚠️ No active conversation for summarization');
+      return;
+    }
+
+    const { document, page, country } = pageInfo;
+    
+    console.log('📝 Summarize page requested:', {
+      document,
+      page,
+      country,
+      conversationId: currentConversation._id
+    });
+
+    try {
+      // Format the auto-generated user message
+      const summarizeQuery = `Summarize ${document} Page ${page}`;
+      
+      // Add user message immediately to UI
+      const tempUserMessage = {
+        role: 'user',
+        content: summarizeQuery,
+        timestamp: new Date().toISOString(),
+        _id: 'temp-summarize-' + Date.now(),
+        isSummarizeRequest: true // 🔖 Tag this as a summarize request
+      };
+
+      setCurrentConversation(prev => ({
+        ...prev,
+        messages: [...(prev?.messages || []), tempUserMessage]
+      }));
+
+      setIsGenerating(true);
+
+      const token = localStorage.getItem('authToken');
+
+      // STEP 1: Add user summarize request to conversation
+      console.log('📝 Step 1: Adding summarize request to conversation...');
+      const addUserResponse = await fetch('/api/messages/add', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          conversationId: currentConversation._id,
+          content: summarizeQuery,
+          role: 'user',
+        }),
+      });
+
+      if (!addUserResponse.ok) {
+        throw new Error('Failed to add summarize request');
+      }
+
+      console.log('✅ Summarize request added to conversation');
+
+      // STEP 2: Call backend summarize endpoint
+      console.log('🤖 Step 2: Calling summarize-page API...');
+      const summarizeResponse = await fetch(`${BACKEND_URL}/api/summarize-page`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          document: document,
+          page: page,
+          country: country
+        }),
+      });
+
+      if (!summarizeResponse.ok) {
+        const errorData = await summarizeResponse.json();
+        throw new Error(errorData.detail || 'Failed to summarize page');
+      }
+
+      const summaryData = await summarizeResponse.json();
+      console.log('✅ Summary received:', {
+        summaryLength: summaryData.summary?.length,
+        metadata: summaryData.metadata
+      });
+
+      // STEP 3: Add assistant summary response to conversation
+      console.log('💾 Step 3: Adding summary to conversation...');
+      
+      // Create regulation object for the summary (similar to regular queries)
+      const summaryRegulation = {
+        answer: summaryData.summary,
+        query_type: 'page_summary', // 🆕 New query type for summaries
+        confidence: 1.0, // High confidence for direct page content
+        processingTime: 0,
+        references: [
+          {
+            document: document,
+            page: page,
+            country: country,
+            display_text: `${document} Page ${page}`
+          }
+        ],
+        queryMetadata: {
+          summarizationType: 'single_page',
+          pageLength: summaryData.metadata?.page_length || 0,
+          section: summaryData.metadata?.section || 'Unknown'
+        }
+      };
+
+      const addAssistantResponse = await fetch('/api/messages/add', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          conversationId: currentConversation._id,
+          content: summaryData.summary,
+          role: 'assistant',
+          regulation: summaryRegulation
+        }),
+      });
+
+      if (!addAssistantResponse.ok) {
+  const errorText = await addAssistantResponse.text();
+  console.error('❌ Failed to add summary:', {
+    status: addAssistantResponse.status,
+    statusText: addAssistantResponse.statusText,
+    errorBody: errorText
+  });
+  throw new Error(`Failed to add summary: ${errorText}`);
+}
+
+      const updatedConversation = await addAssistantResponse.json();
+      console.log('✅ Summary added to conversation');
+
+      // STEP 4: Update UI with final conversation state
+      setCurrentConversation(updatedConversation.conversation);
+      
+      // Update conversation in list
+      setConversations(prevConvs =>
+        prevConvs.map(c =>
+          c._id === updatedConversation.conversation._id
+            ? updatedConversation.conversation
+            : c
+        )
+      );
+
+      console.log('✅ Page summarization complete!');
+
+    } catch (error) {
+      console.error('❌ Error summarizing page:', error);
+      
+      // Add error message to UI
+      const errorMessage = {
+        role: 'assistant',
+        content: `Sorry, I couldn't summarize that page. Error: ${error.message}`,
+        timestamp: new Date().toISOString(),
+        _id: 'error-' + Date.now(),
+        isError: true
+      };
+
+      setCurrentConversation(prev => ({
+        ...prev,
+        messages: [...(prev?.messages || []), errorMessage]
+      }));
+
+    } finally {
+      setIsGenerating(false);
+    }
+  };
+
   // Edit message
   const handleEditMessage = async (messageId, newContent) => {
     if (!currentConversation) return;
@@ -800,6 +971,7 @@ export default function HomePage() {
           isGenerating={isGenerating}
           onEditMessage={handleEditMessage}
           currentRegulationResult={currentRegulationResult}
+          onSummarizePage={handleSummarizePage}
         />
       </div>
     </div>
