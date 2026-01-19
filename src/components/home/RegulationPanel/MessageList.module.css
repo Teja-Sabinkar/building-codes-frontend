@@ -1574,20 +1574,32 @@
 
 
 
-
-
-
+/* 🔧 FIX: Light theme text colors (DEFAULT) */
 .messageContent,
 .messageContent ul,
 .messageContent ol,
 .messageContent li,
 .messageContent p {
-  color: #f3f4f6 !important; /* Bright white-gray */
+  color: #1f2937 !important; /* Dark text for light theme */
   opacity: 1 !important;
 }
 
-/* Fix list markers */
+/* Fix list markers - light theme */
 .messageContent li::marker {
+  color: #1f2937 !important;
+}
+
+/* 🌙 Dark theme text colors */
+:global(.dark-mode) .messageContent,
+:global(.dark-mode) .messageContent ul,
+:global(.dark-mode) .messageContent ol,
+:global(.dark-mode) .messageContent li,
+:global(.dark-mode) .messageContent p {
+  color: #f3f4f6 !important; /* Bright white-gray for dark theme */
+}
+
+/* Fix list markers - dark theme */
+:global(.dark-mode) .messageContent li::marker {
   color: #f3f4f6 !important;
 }
 

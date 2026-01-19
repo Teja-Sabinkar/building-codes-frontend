@@ -349,7 +349,7 @@
   overflow: auto; /* CRITICAL: Enable scrolling for zoomed content */
   position: relative;
   scroll-behavior: smooth;
-  background: #525659; /* PDF viewer gray background */
+  background: #f3f4f6; /* 🔧 UPDATED: Light gray background for light theme */
   
   /* ZOOM FIX: Prevent content from breaking layout */
   min-height: 0;

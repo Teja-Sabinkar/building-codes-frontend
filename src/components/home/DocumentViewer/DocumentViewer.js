@@ -380,7 +380,7 @@ export default function DocumentViewer({
             {/* Custom Popup Tooltip */}
             <span className={styles.tooltipPopup}>
               <span className={styles.tooltipArrow}></span>
-              Summarize this page
+              Summarize this page with A.I.
             </span>
           </button>
         )}
