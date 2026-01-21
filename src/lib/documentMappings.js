@@ -100,18 +100,21 @@ export const DOCUMENT_CATEGORIES = {
           {
             displayName: 'IS 3370 (Part 2)-2009 - Concrete Storage Structures',
             documentName: 'IS 3370 (Part 2)-2009 - CODE OF PRACTICE FOR CONCRETE STRUCTURES FOR STORAGE OF LIQUIDS',
+            pageCount: 23,
             pdfFilename: 'IS 3370 (Part 2)-2009 - CODE OF PRACTICE FOR CONCRETE STRUCTURES FOR STORAGE OF LIQUIDS.pdf',
             icon: 'document'
           },
           {
             displayName: 'IS 3370 (Part 3)-1967 - Concrete Storage Structures',
             documentName: 'IS 3370 (Part 3)-1967 - CODE OF PRACTICE FOR CONCRETE STRUCTURES FOR STORAGE OF LIQUIDS',
+            pageCount: 18,
             pdfFilename: 'IS 3370 (Part 3)-1967 - CODE OF PRACTICE FOR CONCRETE STRUCTURES FOR STORAGE OF LIQUIDS.pdf',
             icon: 'document'
           },
           {
             displayName: 'IS 3370 (Part 4)-1967 - Concrete Storage Structures',
             documentName: 'IS 3370 (Part 4)-1967 - CODE OF PRACTICE FOR CONCRETE STRUCTURES FOR STORAGE OF LIQUIDS',
+            pageCount: 53,
             pdfFilename: 'IS 3370 (Part 4)-1967 - CODE OF PRACTICE FOR CONCRETE STRUCTURES FOR STORAGE OF LIQUIDS.pdf',
             icon: 'document'
           },
