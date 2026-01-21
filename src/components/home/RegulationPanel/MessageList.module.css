@@ -961,6 +961,7 @@
     background-color: #34d399;
   }
 }
+
 /* ========================================
    USER FEEDBACK BUTTONS STYLES
    Thumbs Up/Down for Assistant Responses
@@ -969,13 +970,14 @@
 /* Feedback container */
 .feedbackContainer {
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   gap: 0.75rem;
   padding: 1rem 0 0 0;
   margin-top: 1rem;
   margin-bottom: 2rem;
   border-top: 1px solid #e5e7eb;
   transition: all 0.3s ease;
+  align-items: center;
 }
 
 :global(.dark-mode) .feedbackContainer {
@@ -1005,7 +1007,6 @@
 .feedbackButton {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
   padding: 0.5rem 1rem;
   border: 2px solid #e5e7eb;
   background: #ffffff;
@@ -1072,7 +1073,7 @@
 
 /* Feedback label */
 .feedbackLabel {
-  font-size: 0.875rem;
+  font-size: 0rem;
   transition: all 0.2s ease;
 }
 
@@ -1128,7 +1129,6 @@
 
   .feedbackButtons {
     flex-direction: row;
-    gap: 0.5rem;
   }
 
   .feedbackButton {
@@ -1182,6 +1182,7 @@
 
 /* Reduced motion support */
 @media (prefers-reduced-motion: reduce) {
+
   .feedbackContainer,
   .feedbackButton,
   .feedbackIcon,
@@ -1192,7 +1193,9 @@
   .feedbackButton:hover:not(:disabled) {
     transform: none;
   }
-}/* MessageList.module.css - ADD THESE STYLES */
+}
+
+/* MessageList.module.css - ADD THESE STYLES */
 
 /* Success message styling - ADD THIS TO THE FILE */
 .feedbackSuccess {
@@ -1222,6 +1225,7 @@
     opacity: 0;
     transform: translateY(-10px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -1293,6 +1297,7 @@
 
 /* Mobile responsiveness for feedback messages */
 @media (max-width: 640px) {
+
   .feedbackSuccess,
   .feedbackError,
   .feedbackSubmitting {
@@ -1307,11 +1312,11 @@
   .feedbackSuccess {
     animation: none;
   }
-  
+
   .feedbackSubmitting::before {
     animation: none;
   }
-  
+
   .feedbackSuccess,
   .feedbackError,
   .feedbackSubmitting {
@@ -1325,20 +1330,21 @@
     border-width: 2px;
     border-color: #047857;
   }
-  
+
   :global(.dark-mode) .feedbackSuccess {
     border-color: #10b981;
   }
-  
+
   .feedbackError {
     border-width: 2px;
     border-color: #dc2626;
   }
-  
+
   :global(.dark-mode) .feedbackError {
     border-color: #f87171;
   }
 }
+
 /* ===== CLICKABLE CITATIONS ===== */
 .clickableReference {
   cursor: pointer;
@@ -1399,15 +1405,27 @@
   animation: typingBounce 1.4s infinite ease-in-out;
 }
 
-.typingDot:nth-child(1) { animation-delay: 0s; }
-.typingDot:nth-child(2) { animation-delay: 0.2s; }
-.typingDot:nth-child(3) { animation-delay: 0.4s; }
+.typingDot:nth-child(1) {
+  animation-delay: 0s;
+}
+
+.typingDot:nth-child(2) {
+  animation-delay: 0.2s;
+}
+
+.typingDot:nth-child(3) {
+  animation-delay: 0.4s;
+}
 
 @keyframes typingBounce {
-  0%, 60%, 100% {
+
+  0%,
+  60%,
+  100% {
     transform: translateY(0);
     opacity: 0.4;
   }
+
   30% {
     transform: translateY(-8px);
     opacity: 1;
@@ -1476,7 +1494,8 @@
   display: block;
   background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
   color: #e2e8f0;
-  padding: 14px 18px; /* Slightly more padding for the label */
+  padding: 14px 18px;
+  /* Slightly more padding for the label */
   border-radius: 8px;
   font-size: 0.875rem;
   line-height: 1.6;
@@ -1490,7 +1509,7 @@
 }
 
 /* 🆕 Style for "Quoted from:" label */
-.tooltipContent > span:first-child {
+.tooltipContent>span:first-child {
   font-weight: 600;
   color: #10b981;
   margin-bottom: 8px;
@@ -1528,7 +1547,7 @@
   filter: drop-shadow(0 -1px 0 rgba(5, 150, 105, 0.4));
 }
 
-:global(.dark-mode) .tooltipContent > span:first-child {
+:global(.dark-mode) .tooltipContent>span:first-child {
   color: #34d399;
   border-bottom-color: rgba(52, 211, 153, 0.2);
 }
@@ -1549,6 +1568,7 @@
     opacity: 0;
     transform: translateX(-50%) translateY(4px);
   }
+
   to {
     opacity: 1;
     transform: translateX(-50%) translateY(8px);
@@ -1580,7 +1600,8 @@
 .messageContent ol,
 .messageContent li,
 .messageContent p {
-  color: #1f2937 !important; /* Dark text for light theme */
+  color: #1f2937 !important;
+  /* Dark text for light theme */
   opacity: 1 !important;
 }
 
@@ -1595,7 +1616,8 @@
 :global(.dark-mode) .messageContent ol,
 :global(.dark-mode) .messageContent li,
 :global(.dark-mode) .messageContent p {
-  color: #f3f4f6 !important; /* Bright white-gray for dark theme */
+  color: #f3f4f6 !important;
+  /* Bright white-gray for dark theme */
 }
 
 /* Fix list markers - dark theme */
@@ -1616,8 +1638,9 @@
   display: flex;
   flex-direction: row;
   align-items: center;
-  gap: 12px; 
-  perspective: 500px; /* ✅ Enable 3D perspective for cylinder effect */
+  gap: 12px;
+  perspective: 500px;
+  /* ✅ Enable 3D perspective for cylinder effect */
 }
 
 /* Icon wrapper */
@@ -1635,10 +1658,13 @@
 }
 
 @keyframes pulse {
-  0%, 100% {
+
+  0%,
+  100% {
     opacity: 1;
     transform: scale(1);
   }
+
   50% {
     opacity: 0.7;
     transform: scale(1.05);
@@ -1649,8 +1675,10 @@
 .progressiveTextContainer {
   display: flex;
   align-items: center;
-  height: 20px; /* ✅ Fixed height to clip text during rotation */
-  overflow: hidden; /* ✅ Hide text when it rotates out of view */
+  height: 20px;
+  /* ✅ Fixed height to clip text during rotation */
+  overflow: hidden;
+  /* ✅ Hide text when it rotates out of view */
   position: relative;
 }
 
@@ -1671,9 +1699,11 @@
     transform: translateY(30px) rotateX(-90deg);
     opacity: 0;
   }
+
   50% {
     opacity: 0.7;
   }
+
   100% {
     transform: translateY(0) rotateX(0deg);
     opacity: 1;
@@ -1737,11 +1767,12 @@
   .progressiveText {
     animation: fadeIn 0.3s ease-out forwards !important;
   }
-  
+
   @keyframes fadeIn {
     from {
       opacity: 0;
     }
+
     to {
       opacity: 1;
     }
@@ -1802,7 +1833,8 @@
    ============================================================================ */
 
 :global(:not(.dark-mode)) .editButton {
-  color: #059669; /* Darker green for light mode */
+  color: #059669;
+  /* Darker green for light mode */
 }
 
 :global(:not(.dark-mode)) .editIcon {
@@ -1810,7 +1842,8 @@
 }
 
 :global(:not(.dark-mode)) .editButton:hover {
-  color: #10b981; /* Brightens to medium green */
+  color: #10b981;
+  /* Brightens to medium green */
   background: transparent;
 }
 
@@ -1823,7 +1856,8 @@
    ============================================================================ */
 
 :global(.dark-mode) .editButton {
-  color: #10b981; /* Base green */
+  color: #10b981;
+  /* Base green */
 }
 
 :global(.dark-mode) .editIcon {
@@ -1831,12 +1865,15 @@
 }
 
 :global(.dark-mode) .editButton:hover {
-  color: #6ee7b7 !important; /* ✅ Bright light green */
-  background: transparent !important; /* ✅ No background */
+  color: #6ee7b7 !important;
+  /* ✅ Bright light green */
+  background: transparent !important;
+  /* ✅ No background */
 }
 
 :global(.dark-mode) .editButton:hover .editIcon {
-  color: #6ee7b7 !important; /* ✅ Icon brightens */
+  color: #6ee7b7 !important;
+  /* ✅ Icon brightens */
 }
 
 /* Mobile */
@@ -1855,6 +1892,7 @@
 
 /* Accessibility */
 @media (prefers-reduced-motion: reduce) {
+
   .editButton,
   .editIcon {
     transition: color 0.2s ease !important;
@@ -1876,18 +1914,22 @@
   align-items: center;
   gap: 6px;
   padding: 6px 12px;
-  background: transparent; /* ✅ Transparent */
-  color: #10b981; /* ✅ Green text */
+  background: transparent;
+  /* ✅ Transparent */
+  color: #10b981;
+  /* ✅ Green text */
   border: none;
   border-radius: 6px;
   font-size: 13px;
   font-weight: 500;
   cursor: pointer;
-  transition: color 0.3s ease; /* ✅ Only color transitions */
+  transition: color 0.3s ease;
+  /* ✅ Only color transitions */
 }
 
 .saveButton:hover {
-  color: #6ee7b7; /* ✅ Brightens on hover */
+  color: #6ee7b7;
+  /* ✅ Brightens on hover */
   background: transparent;
 }
 
@@ -1918,18 +1960,22 @@
   align-items: center;
   gap: 6px;
   padding: 6px 12px;
-  background: transparent; /* ✅ Transparent */
-  color: #ef4444; /* ✅ Red text */
+  background: transparent;
+  /* ✅ Transparent */
+  color: #ef4444;
+  /* ✅ Red text */
   border: none;
   border-radius: 6px;
   font-size: 13px;
   font-weight: 500;
   cursor: pointer;
-  transition: color 0.3s ease; /* ✅ Only color transitions */
+  transition: color 0.3s ease;
+  /* ✅ Only color transitions */
 }
 
 .cancelButton:hover {
-  color: #fca5a5; /* ✅ Brightens to light red on hover */
+  color: #fca5a5;
+  /* ✅ Brightens to light red on hover */
   background: transparent;
 }
 
@@ -1970,18 +2016,23 @@
   align-items: center;
   gap: 6px;
   padding: 6px 12px;
-  background: transparent; /* ✅ Transparent when not hovering */
-  color: #10b981; /* ✅ Green text */
+  background: transparent;
+  /* ✅ Transparent when not hovering */
+  color: #10b981;
+  /* ✅ Green text */
   border-radius: 6px;
   font-size: 13px;
   font-weight: 500;
   cursor: pointer;
-  transition: all 0.3s ease; /* ✅ Smooth transitions */
+  transition: all 0.3s ease;
+  /* ✅ Smooth transitions */
 }
 
 .saveButton:hover {
-  color: #6ee7b7; /* ✅ Brighter green text */
-  background: rgba(16, 185, 129, 0.15); /* ✅ Light green background */
+  color: #6ee7b7;
+  /* ✅ Brighter green text */
+  background: rgba(16, 185, 129, 0.15);
+  /* ✅ Light green background */
 }
 
 .saveButton:active {
@@ -2014,19 +2065,25 @@
   align-items: center;
   gap: 6px;
   padding: 6px 12px;
-  background: transparent; /* ✅ Transparent when not hovering */
-  color: #ef4444; /* ✅ Red text */
+  background: transparent;
+  /* ✅ Transparent when not hovering */
+  color: #ef4444;
+  /* ✅ Red text */
   border-radius: 6px;
   font-size: 13px;
   font-weight: 500;
   cursor: pointer;
-  transition: all 0.3s ease; /* ✅ Smooth transitions */
+  transition: all 0.3s ease;
+  /* ✅ Smooth transitions */
 }
 
 .cancelButton:hover {
-  color: #fca5a5; /* ✅ Brighter red text */
-  background: rgba(239, 68, 68, 0.15); /* ✅ Light red background */
-  border: 1px solid #fca5a5; /* ✅ Brighter red border */
+  color: #fca5a5;
+  /* ✅ Brighter red text */
+  background: rgba(239, 68, 68, 0.15);
+  /* ✅ Light red background */
+  border: 1px solid #fca5a5;
+  /* ✅ Brighter red border */
 }
 
 .cancelButton:active {
@@ -2167,6 +2224,7 @@
    ============================================================================ */
 
 @media (max-width: 480px) {
+
   .saveButton,
   .cancelButton {
     padding: 5px 10px;
@@ -2186,6 +2244,7 @@
    ============================================================================ */
 
 @media (prefers-reduced-motion: reduce) {
+
   .saveButton,
   .cancelButton,
   .saveIcon,
@@ -2215,7 +2274,8 @@
   padding: 6px 12px;
   background: transparent;
   color: #10b981;
-  border: none; /* ✅ Edit stays borderless */
+  border: none;
+  /* ✅ Edit stays borderless */
   border-radius: 6px;
   font-size: 13px;
   font-weight: 500;
@@ -2225,7 +2285,8 @@
 
 .editButton:hover {
   color: #6ee7b7;
-  background: transparent; /* ✅ Edit stays transparent on hover */
+  background: transparent;
+  /* ✅ Edit stays transparent on hover */
 }
 
 .editButton:active {
@@ -2269,6 +2330,7 @@
 :global(.dark-mode) .editButton:hover .editIcon {
   color: #6ee7b7 !important;
 }
+
 /* ============================================================================
    TIMESTAMP DISPLAY STYLES (Replaces Edit Button)
    ============================================================================ */

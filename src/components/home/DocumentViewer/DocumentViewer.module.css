@@ -1683,3 +1683,84 @@
     stroke-width: 3;
   }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/* ============================================================================
+   ADDITIONS TO DocumentViewer.module.css
+   Add these styles to your existing DocumentViewer.module.css file
+   ============================================================================ */
+
+/* 🆕 NEW: Browse List Wrapper */
+.browseListWrapper {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+
+/* Ensure browse list takes full height of document viewer */
+.documentViewerContainer .browseListWrapper {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Mobile full-screen support for browse list */
+@media (max-width: 480px) {
+  .browseListWrapper {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 10000;
+    background: rgba(0, 0, 0, 0.95);
+  }
+
+  :global(.dark-mode) .browseListWrapper {
+    background: rgba(0, 0, 0, 0.98);
+  }
+}
+
+/* ============================================================================
+   END OF ADDITIONS
+   ============================================================================ */
+
+/* NOTE: The above styles should be added to your existing DocumentViewer.module.css file.
+   All other existing styles (summarizeButton, documentContent, etc.) should remain as-is. */

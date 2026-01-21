@@ -774,6 +774,22 @@ export default function HomePage() {
     }
   };
 
+
+  // 🆕 NEW: Handle PDF browse toggle
+  const handleToggleBrowse = () => {
+    if (!currentConversation) {
+      console.warn('⚠️ No conversation selected');
+      return;
+    }
+
+    console.log('📚 Toggle PDF browse clicked');
+  };
+
+  // 🆕 NEW: Handle browse document selection  
+  const handleBrowseDocumentSelect = (documentInfo) => {
+    console.log('📄 Browse document selected:', documentInfo);
+  };
+
   // Edit message
   const handleEditMessage = async (messageId, newContent) => {
     if (!currentConversation) return;
@@ -972,6 +988,8 @@ export default function HomePage() {
           onEditMessage={handleEditMessage}
           currentRegulationResult={currentRegulationResult}
           onSummarizePage={handleSummarizePage}
+          onToggleBrowse={handleToggleBrowse}
+          onBrowseDocumentSelect={handleBrowseDocumentSelect}
         />
       </div>
     </div>

@@ -1,7 +1,7 @@
 // src/components/home/RegulationPanel/RegulationPanel.js - Building Codes Assistant - MOBILE RESPONSIVE
 'use client';
 
-import { useState, useEffect, memo } from 'react';
+import { useState, useEffect, memo, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import ConversationList from './ConversationList';
 import MessageList from './MessageList';
@@ -18,6 +18,8 @@ const MemoizedDocumentViewer = memo(DocumentViewer, (prevProps, nextProps) => {
   return (
     prevProps.isOpen === nextProps.isOpen &&
     prevProps.citation === nextProps.citation &&
+    prevProps.browseMode === nextProps.browseMode &&
+    prevProps.browseDocument === nextProps.browseDocument &&
     prevProps.currentRegion === nextProps.currentRegion &&
     prevProps.onSummarizePage === nextProps.onSummarizePage
   );
@@ -37,7 +39,9 @@ export default function RegulationPanel({
   currentRegulationResult,
   onSummarizePage,
   isSidebarOpen = true,
-  onToggleSidebar
+  onToggleSidebar,
+  onToggleBrowse,          // 🆕 NEW
+  onBrowseDocumentSelect   // 🆕 NEW
 }) {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [isTitleEditOpen, setIsTitleEditOpen] = useState(false);
@@ -50,9 +54,17 @@ export default function RegulationPanel({
   // Document viewer state
   const [documentViewer, setDocumentViewer] = useState({
     isOpen: false,
-    citation: null
+    citation: null,
+    browseMode: false,        // 🆕 NEW
+    browseDocument: null,     // 🆕 NEW
+    browseCountry: null,      // 🆕 NEW
+    browsePdfFilename: null,  // 🆕 NEW
+    browseDisplayName: null   // 🆕 NEW
   });
   const router = useRouter();
+
+  // 🆕 Track previous conversation ID for auto-close feature
+  const prevConversationIdRef = useRef(currentConversation?._id);
 
   // Handle mobile detection and sidebar state
   useEffect(() => {
@@ -68,6 +80,36 @@ export default function RegulationPanel({
     window.addEventListener('resize', checkMobile);
     return () => window.removeEventListener('resize', checkMobile);
   }, []);
+
+  // 🆕 AUTO-CLOSE: Close DocumentViewer when switching conversations (FIXED VERSION)
+  useEffect(() => {
+    const currentId = currentConversation?._id;
+    const prevId = prevConversationIdRef.current;
+    
+    // Check if conversation actually changed (not initial load or same conversation re-render)
+    if (prevId && currentId && prevId !== currentId) {
+      // Different conversation detected - close DocumentViewer if open
+      if (documentViewer.isOpen) {
+        console.log('📄 Conversation switched - auto-closing DocumentViewer', {
+          from: prevId,
+          to: currentId
+        });
+        
+        setDocumentViewer({
+          isOpen: false,
+          citation: null,
+          browseMode: false,
+          browseDocument: null,
+          browseCountry: null,
+          browsePdfFilename: null,
+          browseDisplayName: null
+        });
+      }
+    }
+    
+    // Update ref for next render
+    prevConversationIdRef.current = currentId;
+  }, [currentConversation?._id, documentViewer.isOpen]);
 
   // Handle sidebar state
   useEffect(() => {
@@ -237,7 +279,12 @@ export default function RegulationPanel({
     
     setDocumentViewer({
       isOpen: true,
-      citation: citation
+      citation: citation,
+      browseMode: false,        // Citation mode, not browse
+      browseDocument: null,     // Reset browse properties
+      browseCountry: null,
+      browsePdfFilename: null,
+      browseDisplayName: null
     });
   };
 
@@ -247,8 +294,67 @@ export default function RegulationPanel({
     
     setDocumentViewer({
       isOpen: false,
-      citation: null
+      citation: null,
+      browseMode: false,        // Reset all properties
+      browseDocument: null,
+      browseCountry: null,
+      browsePdfFilename: null,
+      browseDisplayName: null
     });
+  };
+
+
+  // 🆕 NEW: Handle PDF browse toggle
+  const handleToggleBrowse = () => {
+    if (!currentConversation) {
+      console.warn('⚠️ No conversation selected');
+      return;
+    }
+
+    console.log('📚 Toggle PDF browse clicked');
+
+    if (documentViewer.isOpen && documentViewer.browseMode && !documentViewer.browseDocument) {
+      // Close if already showing browse list
+      setDocumentViewer({
+        isOpen: false,
+        citation: null,
+        browseMode: false,
+        browseDocument: null,
+        browseCountry: null,
+        browsePdfFilename: null,
+        browseDisplayName: null
+      });
+    } else {
+      // Open browse list
+      setDocumentViewer({
+        isOpen: true,
+        citation: null,
+        browseMode: true,
+        browseDocument: null,  // null = show list
+        browseCountry: currentConversation.region || 'India',
+        browsePdfFilename: null,
+        browseDisplayName: null
+      });
+    }
+  };
+
+  // 🆕 NEW: Handle browse document selection
+  const handleBrowseDocumentSelect = ({ documentName, pdfFilename, country, displayName, category }) => {
+    console.log('📄 Browse document selected:', { documentName, country, category });
+
+    setDocumentViewer({
+      isOpen: true,
+      citation: null,
+      browseMode: true,
+      browseDocument: documentName,
+      browseCountry: country,
+      browsePdfFilename: pdfFilename,
+      browseDisplayName: displayName
+    });
+
+    if (onBrowseDocumentSelect) {
+      onBrowseDocumentSelect({ documentName, pdfFilename, country, displayName, category });
+    }
   };
 
   const toggleSidebar = () => {
@@ -443,7 +549,33 @@ export default function RegulationPanel({
                 ) : (
                   <h2 className={styles.conversationTitle}>{displayTitle}</h2>
                 )}
-              </div>
+  
+                
+                {/* 🆕 NEW: PDF Browse Button */}
+                {currentConversation && (
+                  <button
+                    onClick={handleToggleBrowse}
+                    className={styles.pdfBrowseButton}
+                    title="Browse PDFs"
+                    aria-label="Browse region PDFs"
+                  >
+                    <svg 
+                      xmlns="http://www.w3.org/2000/svg" 
+                      className={styles.pdfBrowseIcon} 
+                      fill="none" 
+                      viewBox="0 0 24 24" 
+                      stroke="currentColor"
+                    >
+                      <path 
+                        strokeLinecap="round" 
+                        strokeLinejoin="round" 
+                        strokeWidth={2} 
+                        d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" 
+                      />
+                    </svg>
+                  </button>
+                )}
+            </div>
             ) : (
               <h2></h2>
             )}
@@ -505,7 +637,14 @@ export default function RegulationPanel({
                 isOpen={documentViewer.isOpen}
                 onClose={handleCloseDocumentViewer}
                 citation={documentViewer.citation}
+                browseMode={documentViewer.browseMode || false}
+                browseDocument={documentViewer.browseDocument || null}
+                browseCountry={documentViewer.browseCountry || null}
+                browsePdfFilename={documentViewer.browsePdfFilename || null}
+                browseDisplayName={documentViewer.browseDisplayName || null}
                 onSummarizePage={onSummarizePage}
+                onBrowseDocumentSelect={handleBrowseDocumentSelect}
+                isMobile={isMobile}
                 currentRegion={currentConversation?.region || 'Scotland'}
               />
             </div>
