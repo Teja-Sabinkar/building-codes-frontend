@@ -21,7 +21,8 @@ const MemoizedDocumentViewer = memo(DocumentViewer, (prevProps, nextProps) => {
     prevProps.browseMode === nextProps.browseMode &&
     prevProps.browseDocument === nextProps.browseDocument &&
     prevProps.currentRegion === nextProps.currentRegion &&
-    prevProps.onSummarizePage === nextProps.onSummarizePage
+    prevProps.onSummarizePage === nextProps.onSummarizePage &&
+    prevProps.userId === nextProps.userId
   );
 });
 
@@ -41,7 +42,8 @@ export default function RegulationPanel({
   isSidebarOpen = true,
   onToggleSidebar,
   onToggleBrowse,          // 🆕 NEW
-  onBrowseDocumentSelect   // 🆕 NEW
+  onBrowseDocumentSelect,  // 🆕 NEW
+  userId                   // 🆕 RECENTLY VIEWED: User ID for tracking
 }) {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [isTitleEditOpen, setIsTitleEditOpen] = useState(false);
@@ -646,6 +648,7 @@ export default function RegulationPanel({
                 onBrowseDocumentSelect={handleBrowseDocumentSelect}
                 isMobile={isMobile}
                 currentRegion={currentConversation?.region || 'Scotland'}
+                userId={userId}
               />
             </div>
           )}

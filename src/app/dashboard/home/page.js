@@ -990,6 +990,7 @@ export default function HomePage() {
           onSummarizePage={handleSummarizePage}
           onToggleBrowse={handleToggleBrowse}
           onBrowseDocumentSelect={handleBrowseDocumentSelect}
+          userId={user?.id}
         />
       </div>
     </div>

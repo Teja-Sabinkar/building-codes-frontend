@@ -1,4 +1,4 @@
-// models/User.js - ENHANCED with Better Email Verification Handling
+// models/User.js - ENHANCED with Recently Viewed PDFs Feature
 import mongoose from 'mongoose';
 import bcrypt from 'bcryptjs';
 import crypto from 'crypto';
@@ -178,6 +178,101 @@ const userSchema = new mongoose.Schema({
       enum: ['light', 'dark'],
       default: 'dark'
     }
+  },
+
+  // ============================================================================
+  // 🆕 NEW FEATURE: RECENTLY VIEWED PDFs
+  // ============================================================================
+  // Stores recently viewed PDFs per region (cross-conversation)
+  // Maximum 10 PDFs per region, sorted by most recent first
+  recentlyViewedPdfs: {
+    India: [{
+      documentName: {
+        type: String,
+        required: true
+      },
+      displayName: {
+        type: String,
+        required: true
+      },
+      pdfFilename: {
+        type: String,
+        required: true
+      },
+      page: {
+        type: Number,
+        required: true,
+        min: 1
+      },
+      viewedAt: {
+        type: Date,
+        required: true,
+        default: Date.now
+      },
+      country: {
+        type: String,
+        required: true,
+        enum: ['India']
+      }
+    }],
+    Scotland: [{
+      documentName: {
+        type: String,
+        required: true
+      },
+      displayName: {
+        type: String,
+        required: true
+      },
+      pdfFilename: {
+        type: String,
+        required: true
+      },
+      page: {
+        type: Number,
+        required: true,
+        min: 1
+      },
+      viewedAt: {
+        type: Date,
+        required: true,
+        default: Date.now
+      },
+      country: {
+        type: String,
+        required: true,
+        enum: ['Scotland']
+      }
+    }],
+    Dubai: [{
+      documentName: {
+        type: String,
+        required: true
+      },
+      displayName: {
+        type: String,
+        required: true
+      },
+      pdfFilename: {
+        type: String,
+        required: true
+      },
+      page: {
+        type: Number,
+        required: true,
+        min: 1
+      },
+      viewedAt: {
+        type: Date,
+        required: true,
+        default: Date.now
+      },
+      country: {
+        type: String,
+        required: true,
+        enum: ['Dubai']
+      }
+    }]
   }
 }, { timestamps: true });
 
@@ -206,7 +301,7 @@ userSchema.methods.comparePassword = async function (candidatePassword) {
 
 // ENHANCED: Method to generate email verification token with logging
 userSchema.methods.createEmailVerificationToken = function () {
-  console.log(`🔑 Creating email verification token for user: ${this._id}`);
+  console.log(`🔐 Creating email verification token for user: ${this._id}`);
   
   // Create a random token
   const verificationToken = crypto.randomBytes(32).toString('hex');
@@ -233,7 +328,7 @@ userSchema.methods.createEmailVerificationToken = function () {
 
 // Method to generate password reset token
 userSchema.methods.createPasswordResetToken = function () {
-  console.log(`🔑 Creating password reset token for user: ${this._id}`);
+  console.log(`🔐 Creating password reset token for user: ${this._id}`);
   
   const resetToken = crypto.randomBytes(32).toString('hex');
 
@@ -365,6 +460,161 @@ userSchema.statics.getActiveUsersCount = function () {
 userSchema.statics.getDeletedUsersCount = function () {
   return this.countDocuments({ isDeleted: true });
 };
+
+// ============================================================================
+// 🆕 RECENTLY VIEWED PDFs METHODS
+// ============================================================================
+
+/**
+ * Add or update a recently viewed PDF for a specific region
+ * @param {Object} pdfData - PDF viewing data
+ * @param {String} pdfData.documentName - Document name (e.g., "NBC 2016-VOL.1")
+ * @param {String} pdfData.displayName - Display name for UI
+ * @param {String} pdfData.pdfFilename - PDF filename
+ * @param {Number} pdfData.page - Last viewed page number
+ * @param {String} pdfData.country - Region (India, Scotland, Dubai)
+ * @returns {Promise<User>} Updated user document
+ */
+userSchema.methods.addRecentlyViewedPdf = async function (pdfData) {
+  const { documentName, displayName, pdfFilename, page, country } = pdfData;
+
+  console.log(`📄 Adding recently viewed PDF for user ${this._id}:`, {
+    documentName,
+    country,
+    page
+  });
+
+  // Validate region
+  const validRegions = ['India', 'Scotland', 'Dubai'];
+  if (!validRegions.includes(country)) {
+    throw new Error(`Invalid region: ${country}. Must be one of: ${validRegions.join(', ')}`);
+  }
+
+  // Initialize region array if it doesn't exist
+  if (!this.recentlyViewedPdfs) {
+    this.recentlyViewedPdfs = {
+      India: [],
+      Scotland: [],
+      Dubai: []
+    };
+  }
+
+  if (!this.recentlyViewedPdfs[country]) {
+    this.recentlyViewedPdfs[country] = [];
+  }
+
+  // Get region-specific array
+  const regionPdfs = this.recentlyViewedPdfs[country];
+
+  // Check if document already exists in region history
+  const existingIndex = regionPdfs.findIndex(
+    pdf => pdf.documentName === documentName
+  );
+
+  const newPdfEntry = {
+    documentName,
+    displayName,
+    pdfFilename,
+    page: parseInt(page, 10),
+    viewedAt: new Date(),
+    country
+  };
+
+  if (existingIndex !== -1) {
+    // Update existing entry (update page and timestamp)
+    console.log(`📝 Updating existing PDF entry at index ${existingIndex}`);
+    regionPdfs[existingIndex] = newPdfEntry;
+  } else {
+    // Add new entry at the beginning (most recent first)
+    console.log(`📝 Adding new PDF entry to ${country} history`);
+    regionPdfs.unshift(newPdfEntry);
+  }
+
+  // Keep only the 10 most recent PDFs per region
+  if (regionPdfs.length > 10) {
+    console.log(`✂️ Trimming ${country} history from ${regionPdfs.length} to 10 items`);
+    this.recentlyViewedPdfs[country] = regionPdfs.slice(0, 10);
+  }
+
+  // Mark as modified (important for nested objects)
+  this.markModified('recentlyViewedPdfs');
+
+  console.log(`✅ Recently viewed updated for ${country}:`, {
+    totalInRegion: this.recentlyViewedPdfs[country].length,
+    latestDocument: documentName,
+    latestPage: page
+  });
+
+  return this.save();
+};
+
+/**
+ * Get recently viewed PDFs for a specific region
+ * @param {String} country - Region (India, Scotland, Dubai)
+ * @returns {Array} Array of recently viewed PDFs (max 10, sorted by most recent)
+ */
+userSchema.methods.getRecentlyViewedPdfs = function (country) {
+  console.log(`📚 Retrieving recently viewed PDFs for region: ${country}`);
+
+  // Validate region
+  const validRegions = ['India', 'Scotland', 'Dubai'];
+  if (!validRegions.includes(country)) {
+    throw new Error(`Invalid region: ${country}. Must be one of: ${validRegions.join(', ')}`);
+  }
+
+  // Initialize if doesn't exist
+  if (!this.recentlyViewedPdfs || !this.recentlyViewedPdfs[country]) {
+    console.log(`📭 No recently viewed PDFs for ${country}`);
+    return [];
+  }
+
+  const regionPdfs = this.recentlyViewedPdfs[country] || [];
+
+  // Sort by viewedAt (most recent first) and return
+  const sortedPdfs = regionPdfs
+    .sort((a, b) => new Date(b.viewedAt) - new Date(a.viewedAt))
+    .slice(0, 10); // Ensure maximum 10
+
+  console.log(`✅ Retrieved ${sortedPdfs.length} recently viewed PDFs for ${country}`);
+
+  return sortedPdfs;
+};
+
+/**
+ * Clear recently viewed PDFs for a specific region
+ * @param {String} country - Region (India, Scotland, Dubai)
+ * @returns {Promise<User>} Updated user document
+ */
+userSchema.methods.clearRecentlyViewedPdfs = async function (country) {
+  console.log(`🗑️ Clearing recently viewed PDFs for region: ${country}`);
+
+  // Validate region
+  const validRegions = ['India', 'Scotland', 'Dubai'];
+  if (!validRegions.includes(country)) {
+    throw new Error(`Invalid region: ${country}. Must be one of: ${validRegions.join(', ')}`);
+  }
+
+  // Initialize if doesn't exist
+  if (!this.recentlyViewedPdfs) {
+    this.recentlyViewedPdfs = {
+      India: [],
+      Scotland: [],
+      Dubai: []
+    };
+  }
+
+  // Clear the specific region
+  this.recentlyViewedPdfs[country] = [];
+  this.markModified('recentlyViewedPdfs');
+
+  console.log(`✅ Cleared recently viewed PDFs for ${country}`);
+
+  return this.save();
+};
+
+// ============================================================================
+// END OF RECENTLY VIEWED PDFs METHODS
+// ============================================================================
 
 // Method to update usage statistics
 userSchema.methods.updateUsageStats = function (regulationData) {

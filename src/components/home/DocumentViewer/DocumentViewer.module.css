@@ -1225,7 +1225,7 @@
 /* Main Button Container */
 .summarizeButton {
   position: absolute;
-  top: 24px;
+  top: 12px;
   left: 24px;
   z-index: 100;
   
@@ -1684,44 +1684,6 @@
   }
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 /* ============================================================================
    ADDITIONS TO DocumentViewer.module.css
    Add these styles to your existing DocumentViewer.module.css file
@@ -1758,9 +1720,226 @@
   }
 }
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 /* ============================================================================
-   END OF ADDITIONS
+   CSS ADDITIONS FOR DocumentViewer.module.css
+   ADD THESE STYLES TO YOUR EXISTING DocumentViewer.module.css FILE
    ============================================================================ */
 
-/* NOTE: The above styles should be added to your existing DocumentViewer.module.css file.
-   All other existing styles (summarizeButton, documentContent, etc.) should remain as-is. */
+/* 🆕 NEW: Header Actions Container
+   ============================================================================
+   Flexbox container for right-side actions (recently viewed + close button)
+   ============================================================================ */
+
+.headerActions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* 🆕 NEW: Recently Viewed Button
+   ============================================================================
+   History button that appears on right side of DocumentHeader
+   Positioned before the close button
+   ============================================================================ */
+
+.recentlyViewedBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border: none;
+  border-radius: 6px;
+  background: #f3f4f6;
+  color: #059669;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  position: relative;
+}
+
+.recentlyViewedBtn:hover {
+  background: #e5e7eb;
+  transform: scale(1.05);
+}
+
+.recentlyViewedBtn:active {
+  transform: scale(0.95);
+}
+
+.recentlyViewedBtn svg {
+  width: 18px;
+  height: 18px;
+}
+
+/* Dark mode variant */
+:global(.dark-mode) .recentlyViewedBtn {
+  background: #2d2d2d;
+  color: #10b981;
+}
+
+:global(.dark-mode) .recentlyViewedBtn:hover {
+  background: #3d3d3d;
+}
+
+/* Focus state for accessibility */
+.recentlyViewedBtn:focus-visible {
+  outline: 2px solid #059669;
+  outline-offset: 2px;
+}
+
+:global(.dark-mode) .recentlyViewedBtn:focus-visible {
+  outline-color: #10b981;
+}
+
+/* Disabled state (if needed) */
+.recentlyViewedBtn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.recentlyViewedBtn:disabled:hover {
+  background: #f3f4f6;
+  transform: none;
+}
+
+:global(.dark-mode) .recentlyViewedBtn:disabled:hover {
+  background: #2d2d2d;
+}
+
+/* ============================================================================
+   Mobile Responsive Adjustments
+   ============================================================================ */
+
+@media (max-width: 768px) {
+  .headerActions {
+    gap: 6px;
+  }
+
+  .recentlyViewedBtn {
+    width: 32px;
+    height: 32px;
+  }
+
+  .recentlyViewedBtn svg {
+    width: 16px;
+    height: 16px;
+  }
+}
+
+@media (max-width: 480px) {
+  .recentlyViewedBtn {
+    width: 30px;
+    height: 30px;
+  }
+
+  .recentlyViewedBtn svg {
+    width: 15px;
+    height: 15px;
+  }
+}
+
+/* ============================================================================
+   Accessibility - Reduced Motion
+   ============================================================================ */
+
+@media (prefers-reduced-motion: reduce) {
+  .recentlyViewedBtn {
+    transition: none;
+  }
+
+  .recentlyViewedBtn:hover {
+    transform: none;
+  }
+
+  .recentlyViewedBtn:active {
+    transform: none;
+  }
+}
+
+/* ============================================================================
+   High Contrast Mode Support
+   ============================================================================ */
+
+@media (prefers-contrast: high) {
+  .recentlyViewedBtn {
+    border: 2px solid currentColor;
+  }
+}
+
+/* ============================================================================
+   END OF CSS ADDITIONS
+   ============================================================================
+   
+   INSTRUCTIONS:
+   1. Copy all styles above
+   2. Paste at the end of your DocumentViewer.module.css file
+   3. Ensure no duplicate class names
+   4. Save and test
+   ============================================================================ */
