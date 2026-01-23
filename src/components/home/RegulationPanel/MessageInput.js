@@ -175,7 +175,7 @@ export default function MessageInput({
         <div className={styles.helperText}>
           {disabled ? (
             <span className={styles.disabledTip}>
-              ⚠️ Please start a new conversation to begin asking about building regulations
+              ⚠️ Your building codes assistant is currently working on a report, please wait.
             </span>
           ) : (
             <div className={styles.tipsContainer}>
