@@ -1,4 +1,4 @@
-// components/auth/SignupForm.js - With Smart Persistence Theme Logic
+// components/auth/SignupForm.js - Updated with Terms and Privacy modals
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -6,6 +6,8 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useAuth } from '@/hooks/useAuth';
 import styles from '@/components/auth/AuthCommon.module.css';
+import TermsModal from '@/components/legal/TermsModal';
+import PrivacyModal from '@/components/legal/PrivacyModal';
 
 export default function SignupForm() {
   const router = useRouter();
@@ -21,28 +23,29 @@ export default function SignupForm() {
   const [isLoading, setIsLoading] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
   const [successMessage, setSuccessMessage] = useState('');
+  
+  // Modal states
+  const [isTermsModalOpen, setIsTermsModalOpen] = useState(false);
+  const [isPrivacyModalOpen, setIsPrivacyModalOpen] = useState(false);
 
-  // 🆕 SMART PERSISTENCE: Apply guest theme on mount
+  // Apply guest theme on mount
   useEffect(() => {
     const applyGuestTheme = () => {
       try {
-        // Check for guest theme preference (from previous logout)
         const guestTheme = localStorage.getItem('regGPT-guestTheme') || 'dark';
         const isDark = guestTheme === 'dark';
         
-        console.log('🎨 Signup page applying guest theme:', guestTheme);
+        console.log('Signup page applying guest theme:', guestTheme);
         
-        // Apply theme to document body
         if (isDark) {
           document.body.classList.add('dark-mode');
         } else {
           document.body.classList.remove('dark-mode');
         }
         
-        console.log('✅ Guest theme applied:', isDark ? 'dark' : 'light');
+        console.log('Guest theme applied:', isDark ? 'dark' : 'light');
       } catch (error) {
-        console.error('❌ Error applying guest theme:', error);
-        // Default to light theme on error
+        console.error('Error applying guest theme:', error);
         document.body.classList.remove('dark-mode');
       }
     };
@@ -113,9 +116,9 @@ export default function SignupForm() {
         setIsSuccess(true);
         setSuccessMessage(result.message);
         
-        // 🆕 SMART PERSISTENCE: Clear guest theme on successful signup
+        // Clear guest theme on successful signup
         localStorage.removeItem('regGPT-guestTheme');
-        console.log('🧹 Cleared guest theme - new account will start with light theme');
+        console.log('Cleared guest theme - new account will start with light theme');
         
         // Redirect to verification page
         setTimeout(() => {
@@ -136,6 +139,17 @@ export default function SignupForm() {
     }
   };
 
+  // Handlers for opening modals
+  const openTermsModal = (e) => {
+    e.preventDefault();
+    setIsTermsModalOpen(true);
+  };
+
+  const openPrivacyModal = (e) => {
+    e.preventDefault();
+    setIsPrivacyModalOpen(true);
+  };
+
   if (isSuccess) {
     return (
       <div className="w-full">
@@ -154,139 +168,155 @@ export default function SignupForm() {
   }
 
   return (
-    <div className="w-full">
-      <form onSubmit={handleSubmit} className={styles.formContainer}>
-        <h2 className={styles.formTitle}>Create Account</h2>
-        
-        {errors.form && (
-          <div className={styles.errorMessage}>
-            {errors.form}
-          </div>
-        )}
-        
-        <div className={styles.formGroup}>
-          <label className={styles.formLabel} htmlFor="name">
-            Full Name
-          </label>
-          <input
-            id="name"
-            name="name"
-            type="text"
-            placeholder="Your full name"
-            value={formData.name}
-            onChange={handleChange}
-            className={`${styles.formInput} ${errors.name ? 'border-red-500' : ''}`}
-          />
-          {errors.name && (
-            <p className={styles.formError}>{errors.name}</p>
+    <>
+      <div className="w-full">
+        <form onSubmit={handleSubmit} className={styles.formContainer}>
+          <h2 className={styles.formTitle}>Create Account</h2>
+          
+          {errors.form && (
+            <div className={styles.errorMessage}>
+              {errors.form}
+            </div>
           )}
-        </div>
-        
-        <div className={styles.formGroup}>
-          <label className={styles.formLabel} htmlFor="email">
-            Email
-          </label>
-          <input
-            id="email"
-            name="email"
-            type="email"
-            placeholder="Email address"
-            value={formData.email}
-            onChange={handleChange}
-            className={`${styles.formInput} ${errors.email ? 'border-red-500' : ''}`}
-          />
-          {errors.email && (
-            <p className={styles.formError}>{errors.email}</p>
-          )}
-        </div>
-        
-        <div className={styles.formGroup}>
-          <label className={styles.formLabel} htmlFor="password">
-            Password
-          </label>
-          <input
-            id="password"
-            name="password"
-            type="password"
-            placeholder="******************"
-            value={formData.password}
-            onChange={handleChange}
-            className={`${styles.formInput} ${errors.password ? 'border-red-500' : ''}`}
-          />
-          {errors.password && (
-            <p className={styles.formError}>{errors.password}</p>
-          )}
-        </div>
-        
-        <div className={styles.formGroup}>
-          <label className={styles.formLabel} htmlFor="confirmPassword">
-            Confirm Password
-          </label>
-          <input
-            id="confirmPassword"
-            name="confirmPassword"
-            type="password"
-            placeholder="******************"
-            value={formData.confirmPassword}
-            onChange={handleChange}
-            className={`${styles.formInput} ${errors.confirmPassword ? 'border-red-500' : ''}`}
-          />
-          {errors.confirmPassword && (
-            <p className={styles.formError}>{errors.confirmPassword}</p>
-          )}
-        </div>
-        
-        <div className={styles.formGroup}>
-          <label className={styles.checkboxGroup}>
+          
+          <div className={styles.formGroup}>
+            <label className={styles.formLabel} htmlFor="name">
+              Full Name
+            </label>
             <input
-              type="checkbox"
-              name="agreeToTerms"
-              checked={formData.agreeToTerms}
+              id="name"
+              name="name"
+              type="text"
+              placeholder="Your full name"
+              value={formData.name}
               onChange={handleChange}
-              className={styles.checkbox}
+              className={`${styles.formInput} ${errors.name ? 'border-red-500' : ''}`}
             />
-            <span className={styles.checkboxLabel}>
-              I agree to the{' '}
-              <Link href="/terms" className={styles.link}>
-                Terms of Service
-              </Link>{' '}
-              and{' '}
-              <Link href="/privacy" className={styles.link}>
-                Privacy Policy
-              </Link>
-            </span>
-          </label>
-          {errors.agreeToTerms && (
-            <p className={styles.formError}>{errors.agreeToTerms}</p>
-          )}
-        </div>
-        
-        <div className="flex items-center justify-center">
-          <button
-            type="submit"
-            className={styles.submitButton}
-            disabled={isLoading}
-          >
-            {isLoading ? (
-              <>
-                <div className={styles.loadingSpinner}></div>
-                <span className="ml-2">Creating Account...</span>
-              </>
-            ) : (
-              'Sign Up'
+            {errors.name && (
+              <p className={styles.formError}>{errors.name}</p>
             )}
-          </button>
+          </div>
+          
+          <div className={styles.formGroup}>
+            <label className={styles.formLabel} htmlFor="email">
+              Email
+            </label>
+            <input
+              id="email"
+              name="email"
+              type="email"
+              placeholder="Email address"
+              value={formData.email}
+              onChange={handleChange}
+              className={`${styles.formInput} ${errors.email ? 'border-red-500' : ''}`}
+            />
+            {errors.email && (
+              <p className={styles.formError}>{errors.email}</p>
+            )}
+          </div>
+          
+          <div className={styles.formGroup}>
+            <label className={styles.formLabel} htmlFor="password">
+              Password
+            </label>
+            <input
+              id="password"
+              name="password"
+              type="password"
+              placeholder="******************"
+              value={formData.password}
+              onChange={handleChange}
+              className={`${styles.formInput} ${errors.password ? 'border-red-500' : ''}`}
+            />
+            {errors.password && (
+              <p className={styles.formError}>{errors.password}</p>
+            )}
+          </div>
+          
+          <div className={styles.formGroup}>
+            <label className={styles.formLabel} htmlFor="confirmPassword">
+              Confirm Password
+            </label>
+            <input
+              id="confirmPassword"
+              name="confirmPassword"
+              type="password"
+              placeholder="******************"
+              value={formData.confirmPassword}
+              onChange={handleChange}
+              className={`${styles.formInput} ${errors.confirmPassword ? 'border-red-500' : ''}`}
+            />
+            {errors.confirmPassword && (
+              <p className={styles.formError}>{errors.confirmPassword}</p>
+            )}
+          </div>
+          
+          <div className={styles.formGroup}>
+            <label className={styles.checkboxGroup}>
+              <input
+                type="checkbox"
+                name="agreeToTerms"
+                checked={formData.agreeToTerms}
+                onChange={handleChange}
+                className={styles.checkbox}
+              />
+              <span className={styles.checkboxLabel}>
+                I agree to the{' '}
+                <button 
+                  type="button"
+                  onClick={openTermsModal} 
+                  className={styles.link}
+                  style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer' }}
+                >
+                  Terms of Service
+                </button>{' '}
+                and{' '}
+                <button 
+                  type="button"
+                  onClick={openPrivacyModal} 
+                  className={styles.link}
+                  style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer' }}
+                >
+                  Privacy Policy
+                </button>
+              </span>
+            </label>
+            {errors.agreeToTerms && (
+              <p className={styles.formError}>{errors.agreeToTerms}</p>
+            )}
+          </div>
+          
+          <div className="flex items-center justify-center">
+            <button
+              type="submit"
+              className={styles.submitButton}
+              disabled={isLoading}
+            >
+              {isLoading ? (
+                <>
+                  <div className={styles.loadingSpinner}></div>
+                  <span className="ml-2">Creating Account...</span>
+                </>
+              ) : (
+                'Sign Up'
+              )}
+            </button>
+          </div>
+        </form>
+        
+        <div className={styles.formFooter}>
+          <p>
+            Already have an account?{' '}
+            <Link href="/auth/login" className={styles.link}>
+              Log in
+            </Link>
+          </p>
         </div>
-      </form>
-      
-      <div className={styles.formFooter}>
-        <p>
-          Already have an account?{' '}
-          <Link href="/auth/login" className={styles.link}>
-            Log in
-          </Link>
-        </p>
       </div>
-    </div>
+
+      {/* Modals */}
+      <TermsModal isOpen={isTermsModalOpen} onClose={() => setIsTermsModalOpen(false)} />
+      <PrivacyModal isOpen={isPrivacyModalOpen} onClose={() => setIsPrivacyModalOpen(false)} />
+    </>
   );
 }
