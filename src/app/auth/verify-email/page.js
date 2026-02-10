@@ -1,4 +1,4 @@
-// app/auth/verify-email/page.js - With Smart Persistence Theme Logic + Suspense Fix
+// app/auth/verify-email/page.js - With Smart Persistence Theme Logic + Suspense Fix + Resend Functionality
 'use client';
 
 import { useState, useEffect, Suspense } from 'react';
@@ -12,8 +12,10 @@ function VerifyEmailContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const token = searchParams.get('token');
+  const email = searchParams.get('email');
   
   const [isVerifying, setIsVerifying] = useState(false);
+  const [isResending, setIsResending] = useState(false);
   const [verificationStatus, setVerificationStatus] = useState({
     success: false,
     error: null,
@@ -93,6 +95,35 @@ function VerifyEmailContent() {
     }
   };
 
+  const handleResendVerification = async () => {
+    if (!email) {
+      alert('Email not found. Please sign up again.');
+      return;
+    }
+
+    setIsResending(true);
+    
+    try {
+      const response = await fetch('/api/auth/resend-verification', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email })
+      });
+      
+      const data = await response.json();
+      
+      if (response.ok) {
+        alert('New verification email sent! Check your inbox and spam folder.');
+      } else {
+        alert(data.error || 'Failed to resend email. Please try again.');
+      }
+    } catch (error) {
+      alert('Error sending email. Please try again later.');
+    } finally {
+      setIsResending(false);
+    }
+  };
+
   return (
     <div className={styles.container}>
       <div className={styles.wrapper}>
@@ -133,13 +164,11 @@ function VerifyEmailContent() {
                 If your verification link has expired, you can request a new one.
               </p>
               <button
-                onClick={() => {
-                  // This would be implemented to resend verification email
-                  alert('Verification email resent. Please check your inbox.');
-                }}
-                className="inline-block bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-6 rounded-md focus:outline-none focus:shadow-outline transition-colors"
+                onClick={handleResendVerification}
+                disabled={isResending}
+                className="inline-block bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-6 rounded-md focus:outline-none focus:shadow-outline transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                Resend Verification Email
+                {isResending ? 'Sending...' : 'Resend Verification Email'}
               </button>
             </div>
           ) : (
@@ -151,13 +180,11 @@ function VerifyEmailContent() {
                 If you didn't receive the email, check your spam folder or request a new verification link.
               </p>
               <button
-                onClick={() => {
-                  // This would be implemented to resend verification email
-                  alert('Verification email resent. Please check your inbox.');
-                }}
-                className="inline-block bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-6 rounded-md focus:outline-none focus:shadow-outline transition-colors"
+                onClick={handleResendVerification}
+                disabled={isResending}
+                className="inline-block bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-6 rounded-md focus:outline-none focus:shadow-outline transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                Resend Verification Email
+                {isResending ? 'Sending...' : 'Resend Verification Email'}
               </button>
             </div>
           )}
