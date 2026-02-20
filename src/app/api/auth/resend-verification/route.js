@@ -1,5 +1,4 @@
-// File: src/app/api/auth/resend-verification/route.js
-
+// app/api/auth/resend-verification/route.js - FIXED
 import { NextResponse } from 'next/server';
 import crypto from 'crypto';
 import connectToDatabase from '@/lib/db/mongodb';
@@ -21,35 +20,48 @@ export async function POST(request) {
 
     await connectToDatabase();
 
+    // 🔧 FIX 1: Search by email only (not by isEmailVerified: false)
+    // The user might exist but have a hashed token - we need to find them regardless
     const user = await User.findOne({
-      email: email.toLowerCase(),
-      isEmailVerified: false
+      email: email.toLowerCase()
     });
 
     console.log('👤 User found:', user ? 'YES' : 'NO');
+    console.log('👤 isEmailVerified:', user ? user.isEmailVerified : 'N/A');
 
     if (!user) {
       return NextResponse.json(
-        { error: 'User not found or already verified' },
+        { error: 'No account found with this email address. Please sign up first.' },
         { status: 404 }
       );
     }
 
-    // Generate new token
-    const newToken = crypto.randomBytes(32).toString('hex');
+    // If already verified, no need to resend
+    if (user.isEmailVerified) {
+      return NextResponse.json(
+        { error: 'This email is already verified. Please log in.' },
+        { status: 400 }
+      );
+    }
 
-    // Update MongoDB
-    user.emailVerificationToken = newToken;
+    // Generate new plain token
+    const newPlainToken = crypto.randomBytes(32).toString('hex');
+
+    // 🔧 FIX 2: Store the PLAIN token directly (not hashed)
+    // This matches what verify-email/route.js expects (direct comparison)
+    user.emailVerificationToken = newPlainToken;
     user.emailVerificationExpires = new Date(Date.now() + 24 * 60 * 60 * 1000);
     user.emailVerificationAttempts = (user.emailVerificationAttempts || 0) + 1;
     user.lastVerificationEmailSent = new Date();
 
     await user.save();
 
-    console.log('✅ MongoDB updated with new token');
+    console.log('✅ MongoDB updated with new plain token');
 
     // Build verification link
-    const verificationLink = `https://www.reggpt.uk/auth/verify-email?token=${newToken}&email=${email}`;
+    const verificationLink = `${process.env.NEXT_PUBLIC_APP_URL}/auth/verify-email?token=${newPlainToken}&email=${encodeURIComponent(email)}`;
+
+    console.log('🔗 Verification link generated');
 
     // Send email
     const transporter = nodemailer.createTransport({
