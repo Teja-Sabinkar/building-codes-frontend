@@ -8,7 +8,7 @@ import { useState, useEffect } from 'react';
  * Provides theme persistence across sessions using localStorage
  */
 export function useGuestTheme() {
-  const [guestTheme, setGuestTheme] = useState('light');
+  const [guestTheme, setGuestTheme] = useState('dark');
   const [isLoading, setIsLoading] = useState(true);
 
   // Load guest theme preference on mount
@@ -86,7 +86,7 @@ export function useGuestTheme() {
   const getGuestTheme = () => {
     try {
       const savedTheme = localStorage.getItem('regGPT-guestTheme');
-      return savedTheme || 'light';
+      return savedTheme || 'dark';
     } catch (error) {
       console.error('❌ Error getting guest theme:', error);
       return 'light';
@@ -145,7 +145,7 @@ export function saveThemeOnLogout() {
  */
 export function applyGuestThemeImmediate() {
   try {
-    const guestTheme = localStorage.getItem('regGPT-guestTheme') || 'light';
+    const guestTheme = localStorage.getItem('regGPT-guestTheme') || 'dark';
     
     if (guestTheme === 'dark') {
       document.documentElement.classList.add('dark-mode');
